@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if not user.is_authenticated and not res %}
+<div id="landing-section" style="text-align: center; padding: 40px 20px; background: #1c2833; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 8px 15px rgba(0,0,0,0.2);">
+    <div style="font-size: 60px; margin-bottom: 15px;">🔮</div>
+    <h2 style="color: #f1c40f; margin-bottom: 10px; font-size: 26px;">त्रिकाल दर्शन</h2>
+    <p style="color: #bdc3c7; margin-bottom: 30px;">प्रीमियम ज्योतिष सेवाओं के लिए लॉगिन करें।</p>
+    <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
+        <a href="{% url 'login' %}" style="width: 85%; max-width: 300px; padding: 12px; background: #e67e22; color: white; text-decoration: none; border-radius: 25px; font-weight: bold;">🔐 लॉगिन करें</a>
+        <a href="{% url 'register' %}" style="width: 85%; max-width: 300px; padding: 12px; background: #2980b9; color: white; text-decoration: none; border-radius: 25px; font-weight: bold;">📝 अकाउंट बनाएं</a>
+        <button onclick="showFormOnly()" style="background: transparent; color: #95a5a6; border: none; font-weight: bold; cursor: pointer; margin-top: 10px;">🕵️‍♂️ गेस्ट की तरह आगे बढ़ें</button>
+    </div>
+</div>
+{% endif %}
+
+<div id="main-app-section" style="display: {% if user.is_authenticated or res %}block{% else %}none{% endif %};">
+    
+    {% if not user.is_authenticated %}
+    <div style="background: rgba(41, 128, 185, 0.1); border: 1px solid #2980b9; padding: 12px; border-radius: 12px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div>
+            <span style="color: #ecf0f1; font-size: 14px; font-weight: bold;">🕵️‍♂️ गेस्ट मोड</span>
+            <p style="margin: 0; color: #bdc3c7; font-size: 11px;">डेटा सेव करने के लिए अकाउंट बनाएं</p>
+        </div>
+        <div style="display: flex; gap: 8px;">
+            <a href="{% url 'login' %}" style="background: #e67e22; color: white; text-decoration: none; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: bold;">लॉगिन</a>
+            <a href="{% url 'register' %}" style="background: #2980b9; color: white; text-decoration: none; padding: 6px 15px; border-radius: 20px; font-size: 13px; font-weight: bold;">साइन-अप</a>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if user.is_authenticated %}
+    <div style="margin-bottom: 25px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0; color: #ecf0f1;">👤 {{ user.username }} का डैशबोर्ड</h3>
+            <a href="{% url 'user_logout' %}" style="color: #e74c3c; font-size: 13px; text-decoration: none; font-weight: bold;">लॉगआउट</a>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px;">
+            {% for sk in saved_kundalis %}
+            <form method="POST" style="margin: 0;">
+                {% csrf_token %}
+                <input type="hidden" name="name" value="{{ sk.name }}"><input type="hidden" name="gender" value="{{ sk.gender }}">
+                <input type="hidden" name="dd" value="{{ sk.day }}"><input type="hidden" name="mm" value="{{ sk.month }}"><input type="hidden" name="yyyy" value="{{ sk.year }}">
+                <input type="hidden" name="hh" value="{{ sk.hour }}"><input type="hidden" name="min" value="{{ sk.minute }}"><input type="hidden" name="sec" value="{{ sk.second }}">
+                <input type="hidden" name="city_name" value="{{ sk.city }}"><input type="hidden" name="lat" value="{{ sk.lat }}"><input type="hidden" name="lon" value="{{ sk.lon }}">
+                <button type="submit" name="action" value="calc" style="width: 100%; height: 100px; background: #2c3e50; border: 2px solid #34495e; border-radius: 12px; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <span style="font-size: 24px; margin-bottom: 5px;">📜</span>
+                    <span style="font-size: 12px; font-weight: bold; text-align: center; width: 90%; overflow: hidden; text-overflow: ellipsis;">{{ sk.name }}</span>
+                </button>
+            </form>
+            {% endfor %}
+
+            <div onclick="showNewForm()" style="width: 100%; height: 100px; background: rgba(39, 174, 96, 0.1); border: 2px dashed #27ae60; border-radius: 12px; color: #2ecc71; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <span style="font-size: 30px;">➕</span>
+                <span style="font-size: 11px; font-weight: bold;">नई कुंडली</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div id="form-container" style="display: {% if not user.is_authenticated %}block{% else %}none{% endif %}; background: #1a252f; padding: 20px; border-radius: 15px; border: 1px solid #34495e; margin-bottom: 25px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #2c3e50; padding-bottom: 10px;">
+            <h4 style="margin: 0; color: #f1c40f;">✨ विवरण दर्ज करें</h4>
+            {% if user.is_authenticated %}
+            <button onclick="hideForm()" style="background: transparent; border: none; color: #e74c3c; font-size: 20px; cursor: pointer;">✕</button>
+            {% endif %}
+        </div>
+
+        <form method="POST" id="kundaliForm" onsubmit="return validateForm()">
+            {% csrf_token %} 
+            <div class="form-row">
+                <input type="text" name="name" placeholder="जातक का नाम" required>
+                <select name="gender" required>
+                    <option value="" disabled selected>लिंग चुनें</option>
+                    <option value="पुरुष">पुरुष</option><option value="स्त्री">स्त्री</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <select name="dd" required><option value="" disabled selected>दिन</option>{% for i in days %}<option value="{{ i }}">{{ i }}</option>{% endfor %}</select>
+                <select name="mm" required><option value="" disabled selected>महीना</option>{% for m in month_choices %}<option value="{{ m.val }}">{{ m.name }}</option>{% endfor %}</select>
+                <select name="yyyy" required><option value="" disabled selected>वर्ष</option>{% for i in years %}<option value="{{ i }}">{{ i }}</option>{% endfor %}</select>
+            </div>
+            <div class="form-row">
+                <select name="hh" required><option value="" disabled selected>घंटा</option>{% for i in hours %}<option value="{{ i }}">{{ i }}</option>{% endfor %}</select>
+                <select name="min" required><option value="" disabled selected>मिनट</option>{% for i in minutes %}<option value="{{ i }}">{{ i }}</option>{% endfor %}</select>
+                <select name="sec" required><option value="" disabled selected>सेकंड</option>{% for i in seconds %}<option value="{{ i }}">{{ i }}</option>{% endfor %}</select>
+            </div>
+            <div class="form-row">
+                <input type="text" id="citySearch" placeholder="शहर खोजें" autocomplete="off" oninput="searchCity()" required>
+                <div id="cityResults"></div>
+                <input type="hidden" name="lat" id="lat" required><input type="hidden" name="lon" id="lon" required><input type="hidden" name="city_name" id="city_name" required>
+            </div>
+            <button type="submit" name="action" value="calc" style="background: #27ae60; color: white; width: 100%; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer;">कुंडली बनाएं</button>
+        </form>
+    </div>
+
+    {% if res %}
+    <div class="result-head" style="background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; margin-top: 20px; box-shadow: 0 8px 15px rgba(0,0,0,0.1);">
+        <h2 style="margin:0 0 15px 0; color:#f1c40f; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 10px; text-align: center;">
+            🙏 {{ res.greeting }} {{ res.name }} की जन्म कुंडली
+        </h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px; background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px;">
+            <div>
+                <p style="margin: 5px 0;">📅 <b>जन्म तिथि:</b> {{ request.POST.dd }}-{{ request.POST.mm }}-{{ request.POST.yyyy }}</p>
+                <p style="margin: 5px 0;">⏰ <b>जन्म समय:</b> {{ request.POST.hh }}:{{ request.POST.min }}:{{ request.POST.sec }}</p>
+                <p style="margin: 5px 0;">📍 <b>जन्म स्थान:</b> {{ res.city }}</p>
+                <p style="margin: 5px 0;">♈ <b>लग्न राशि:</b> <span style="color: #f1c40f; font-weight: bold;">{{ res.lagna }}</span></p>
+            </div>
+            <div style="border-left: 1px solid rgba(255,255,255,0.2); padding-left: 15px;">
+                <p style="margin: 5px 0;">🌙 <b>चन्द्र राशि:</b> {{ res.chandra_rashi|default:"-" }}</p>
+                <p style="margin: 5px 0;">✨ <b>नक्षत्र:</b> {{ res.nakshatra|default:"-" }}</p>
+                <p style="margin: 5px 0;">📆 <b>तिथि:</b> {{ res.tithi|default:"-" }} ({{ res.paksha|default:"-" }})</p>
+                <p style="margin: 5px 0;">🕉️ <b>हिन्दू मास:</b> {{ res.hindu_month|default:"-" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs-container" style="background: #2c3e50; border-radius: 8px; display: flex; overflow-x: auto; margin-bottom: 20px;">
+        <button class="tab-link active" onclick="openTab(event, 'TabChart')" style="flex: 1; padding: 12px; border: none; background: #e67e22; color: white; font-weight: bold; cursor: pointer; white-space: nowrap;">चार्ट्स</button>
+        <button class="tab-link" onclick="openTab(event, 'TabPlanets')" style="flex: 1; padding: 12px; border: none; background: transparent; color: white; cursor: pointer; white-space: nowrap;">ग्रह स्थिति</button>
+        <button class="tab-link" onclick="openTab(event, 'TabDasha')" style="flex: 1; padding: 12px; border: none; background: transparent; color: white; cursor: pointer; white-space: nowrap;">दशा चक्र</button>
+        <button class="tab-link" onclick="openTab(event, 'TabAI')" style="flex: 1; padding: 12px; border: none; background: transparent; color: white; cursor: pointer; white-space: nowrap;">AI फलित</button>
+    </div>
+
+    <div id="TabChart" class="tab-content" style="display: block;">
+        {% if not user.is_authenticated %}
+            <div style="background: #1c2833; padding: 30px; text-align: center; color: white; border-radius: 12px;">🔒 लॉगिन करें</div>
+        {% elif tabs.is_chart_paid and not user.is_superuser and not user.userprofile.is_premium %}
+            <div style="background: #1c2833; padding: 30px; text-align: center; color: white; border-radius: 12px;">💎 प्रीमियम फीचर</div>
+        {% else %}
+            {% include 'tabs/chart_tab.html' %}
+        {% endif %}
+    </div>
+
+    <div id="TabPlanets" class="tab-content" style="display: none;">
+        {% if not user.is_authenticated %}
+            <div style="background: #1c2833; padding: 30px; text-align: center; color: white; border-radius: 12px;">🔒 लॉगिन करें</div>
+        {% elif tabs.is_planets_paid and not user.is_superuser and not user.userprofile.is_premium %}
+            <div style="background: #1c2833; padding: 30px; text-align: center; color: white; border-radius: 12px;">💎 प्रीमियम फीचर</div>
+        {% else %}
+            {% include 'tabs/planets_tab.html' %}
+        {% endif %}
+    </div>
+    
+    <div id="TabDasha" class="tab-content" style="display: none;">
+        {% if not user.is_authenticated %}
+            <div style="background: #1c2833; padding: 30px; text-align: center; color: white; border-radius: 12px;">🔒 लॉगिन करें</div>
+        {% elif tabs.is_dasha_paid and not user.is_superuser and not user.userprofile.is_premium %}
+            <div style="background: #1c2833; padding: 30px; text-align: center; color: white; border-radius: 12px;">💎 प्रीमियम फीचर</div>
+        {% else %}
+            {% include 'tabs/dasha_tab.html' %}
+        {% endif %}
+    </div>
+
+    <div id="TabAI" class="tab-content" style="display: none;">
+        {% if not user.is_authenticated %}
+            <div style="background: #1c2833; padding: 30px; text-align: center; color: white; border-radius: 12px;">🔒 लॉगिन करें</div>
+        {% elif tabs.is_ai_paid and not user.is_superuser and not user.userprofile.is_premium %}
+            <div style="background: #1c2833; padding: 30px; text-align: center; color: white; border-radius: 12px;">💎 प्रीमियम फीचर</div>
+        {% else %}
+            {% include 'tabs/ai_tab.html' %}
+        {% endif %}
+    </div>
+
+    {% endif %} </div> <script>
+    function showNewForm() { document.getElementById('form-container').style.display = 'block'; }
+    function hideForm() { document.getElementById('form-container').style.display = 'none'; }
+    function showFormOnly() { 
+        document.getElementById('landing-section').style.display = 'none'; 
+        document.getElementById('main-app-section').style.display = 'block'; 
+        document.getElementById('form-container').style.display = 'block';
+    }
+    function openTab(evt, tabName) {
+        var i, tabcontent, tablinks;
+        tabcontent = document.getElementsByClassName("tab-content");
+        for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; }
+        tablinks = document.getElementsByClassName("tab-link");
+        for (i = 0; i < tablinks.length; i++) { tablinks[i].style.background = "transparent"; }
+        document.getElementById(tabName).style.display = "block";
+        evt.currentTarget.style.background = "#e67e22";
+    }
+</script>
+
+<style>
+    .form-row { display: flex; gap: 10px; margin-bottom: 10px; }
+    .form-row input, .form-row select { flex: 1; padding: 10px; background: #2c3e50; color: white; border: 1px solid #34495e; border-radius: 8px; }
+</style>
+
+{% endblock %}

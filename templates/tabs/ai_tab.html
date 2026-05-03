@@ -1,0 +1,110 @@
+
+    <form id="aiHiddenForm" style="display:none;">
+         {% csrf_token %}
+        <input type="hidden" name="name" value="{{ request.POST.name }}">
+        <input type="hidden" name="gender" value="{{ request.POST.gender }}">
+        <input type="hidden" name="dd" value="{{ request.POST.dd }}">
+        <input type="hidden" name="mm" value="{{ request.POST.mm }}">
+        <input type="hidden" name="yyyy" value="{{ request.POST.yyyy }}">
+        <input type="hidden" name="hh" value="{{ request.POST.hh }}">
+        <input type="hidden" name="min" value="{{ request.POST.min }}">
+        <input type="hidden" name="sec" value="{{ request.POST.sec }}">
+        <input type="hidden" name="city_name" value="{{ request.POST.city_name }}">
+        <input type="hidden" name="lat" value="{{ request.POST.lat }}">
+        <input type="hidden" name="lon" value="{{ request.POST.lon }}">
+    </form>
+    
+    <div style="margin-top: 20px; text-align: center;">
+        <div id="ai-btn-container">
+            <h2 style="color: #f39c12; margin-bottom: 20px;">✨ त्रिकाल AI कस्टमाइज़्ड फलित</h2>
+            
+            <div style="background: #1c2833; border-radius: 12px; padding: 20px; margin: 0 auto 30px auto; max-width: 500px; text-align: left; box-shadow: 0 8px 20px rgba(0,0,0,0.2);">
+                <p style="color: #bdc3c7; font-size: 14px; margin-bottom: 15px; border-bottom: 1px solid #34495e; padding-bottom: 8px;">📋 कृपया विषय चुनें:</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <label style="color: white; font-size: 14px;"><input type="checkbox" name="topics" value="SUMMARY" checked> 🌟 व्यक्तित्व</label>
+                    <label style="color: white; font-size: 14px;"><input type="checkbox" name="topics" value="CAREER"> 💼 करियर/धन</label>
+                    <label style="color: white; font-size: 14px;"><input type="checkbox" name="topics" value="MARRIAGE"> ❤️ विवाह</label>
+                    <label style="color: white; font-size: 14px;"><input type="checkbox" name="topics" value="HEALTH" checked> 🏥 स्वास्थ्य</label>
+                    <label style="color: white; font-size: 14px;"><input type="checkbox" name="topics" value="DASHA"> ⏳ वर्तमान दशा</label>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <p style="color: #f1c40f; font-size: 13px; margin-bottom: 8px;">🎯 आपका विशेष प्रश्न (Optional)</p>
+                    <textarea id="custom_question_input" rows="2" style="width: 100%; border-radius: 8px; padding: 10px; border: 1px solid #f39c12; background: #2c3e50; color: white; font-size: 14px; resize: none; box-sizing: border-box;" placeholder="जैसे: मेरी नौकरी कब लगेगी?"></textarea>
+                </div>
+            </div>
+
+            <button type="button" onclick="fetchAIAnalysis()" style="background: linear-gradient(135deg, #e67e22, #d35400); color: white; font-size: 18px; font-weight: bold; padding: 15px 40px; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 15px rgba(230, 126, 34, 0.4);">
+                🔮 AI एनालिसिस प्राप्त करें
+            </button>
+        </div>
+
+        <div id="ai-spinner" style="display: none; margin-top: 20px;">
+            <div style="border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #f39c12; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
+            <p style="color: #f39c12; font-weight: bold; margin-top: 15px;">त्रिकाल AI गणना कर रहा है...</p>
+        </div>
+
+        <div id="ai-cards-container" style="display: flex; flex-direction: column; gap: 20px; text-align: left; margin-top: 30px;"></div>
+    </div>
+
+<script>
+function fetchAIAnalysis() {
+    const btnContainer = document.getElementById('ai-btn-container');
+    const spinner = document.getElementById('ai-spinner');
+    const cardsContainer = document.getElementById('ai-cards-container');
+    
+    btnContainer.style.display = 'none';
+    spinner.style.display = 'block';
+    cardsContainer.innerHTML = '';
+
+    const formElement = document.getElementById('aiHiddenForm');
+    const formData = new FormData(formElement);
+    
+    // चुने हुए टॉपिक्स को सही तरीके से जोड़ें (getlist के लिए)
+    document.querySelectorAll('input[name="topics"]:checked').forEach(cb => {
+        formData.append('topics', cb.value);
+    });
+    
+    formData.append('custom_question', document.getElementById('custom_question_input').value);
+
+    // 🚀 सही URL (स्लैश के साथ) और सही बॉडी वेरिएबल (formData)
+    fetch('/api/get_ai_analysis/', { 
+        method: 'POST', 
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: formData 
+    })
+    .then(response => response.json())
+    .then(data => {
+        spinner.style.display = 'none';
+        btnContainer.style.display = 'block';
+        
+        if(data.status === 'success') {
+            let cardsHtml = '';
+            let colors = ['#e67e22', '#8e44ad', '#27ae60', '#c0392b', '#2980b9'];          
+            data.predictions.forEach((pred, index) => {
+                let color = colors[index % colors.length];
+                cardsHtml += `
+                    <div style="background: #ffffff; border-left: 6px solid ${color}; border-radius: 10px; padding: 18px; box-shadow: 0 4px 10px rgba(0,0,0,0.08); margin-bottom:15px;">
+                        <h3 style="color: #2c3e50; margin-top: 0; margin-bottom: 10px; font-size: 18px; border-bottom: 1px dashed #bdc3c7; padding-bottom: 8px;">✨ ${pred.planet_name}</h3>
+                        <div style="color: #34495e; font-size: 15px; line-height: 1.6;">${pred.text}</div>
+                    </div>`;
+            });
+            document.getElementById('ai-cards-container').innerHTML = cardsHtml;
+        } else {
+            alert('AI Error: ' + data.message);
+        }
+    })
+    .catch(err => {
+        spinner.style.display = 'none';
+        btnContainer.style.display = 'block';
+        cardsContainer.innerHTML = '<p style="color:#e74c3c; text-align:center;">❌ नेटवर्क एरर। कृपया दोबारा प्रयास करें।</p>';
+    });
+}
+</script>
+
+<style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+
+
+

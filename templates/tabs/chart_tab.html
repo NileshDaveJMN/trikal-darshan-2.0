@@ -1,0 +1,8 @@
+<div class="chart-wrapper" style="margin-bottom: 20px;">
+    {% for h in res.houses %}
+    <div class="house-box h{{ forloop.counter }}">
+        <span class="p-text">{{ h.planets }}</span>
+        <span class="r-num">{{ h.r_num }}</span>
+    </div>
+    {% endfor %}
+</div>

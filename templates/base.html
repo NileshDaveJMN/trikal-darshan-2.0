@@ -1,0 +1,79 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta name="google-site-verification" content="-hKZRFClyJV_1GWOTzAG1OqL7Obr3HsZlh_tapXG4fk" />
+    <meta charset="UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta name="description" content="त्रिकाल दर्शन - दुनिया की पहली AI-आधारित फ्री जन्म कुंडली और सटीक वैदिक ज्योतिष गणना। आज का पंचांग, दैनिक राशिफल और चौघड़िया मुहूर्त 2026 देखें।">
+    <meta name="keywords" content="AI Kundali Analysis, Free Janam Kundali in Hindi, ज्योतिष, आज का पंचांग, चौघड़िया मुहूर्त, Trikal Darshan, कुंडली मिलान, भविष्यफल, AI Astrology">
+    <meta name="author" content="Nilesh Dave">
+    <link rel="canonical" href="https://trikaldarshan.pythonanywhere.com/">
+
+    <meta property="og:title" content="त्रिकाल दर्शन - फ्री AI कुंडली और सटीक पंचांग">
+    <meta property="og:description" content="अपनी कुंडली का एआई (AI) विश्लेषण प्राप्त करें और आज का शुभ मुहूर्त व चौघड़िया जानें।">
+    <meta property="og:image" content="{% static 'logo.png' %}">
+    <meta property="og:url" content="https://trikaldarshan.pythonanywhere.com/">
+    <meta property="og:type" content="website">
+
+    <link rel="icon" type="image/png" href="{% static 'logo.png' %}">
+
+    <title>{% block title %}त्रिकाल दर्शन - AI कुंडली और दैनिक पंचांग{% endblock %}</title>
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1">
+    <div id="TabDownload" class="tab-content" style="display: none;">
+    {% if not user.is_authenticated %}
+        <div style="background: #1c2833; padding: 30px; text-align: center; color: white; border-radius: 12px;">🔒 रिपोर्ट डाउनलोड करने के लिए लॉगिन करें</div>
+    {% elif not user.is_superuser and not user.userprofile.is_premium %}
+        <div style="background: #1c2833; padding: 40px 20px; text-align: center; color: white; border-radius: 12px; border: 1px solid #334155;">
+            <div style="font-size: 50px; margin-bottom: 15px;">📜</div>
+            <h3 style="color: #d4af37; margin-bottom: 10px;">प्रीमियम कुंडली रिपोर्ट</h3>
+            <p style="color: #94a3b8; margin-bottom: 20px;">अपनी जन्म कुंडली को PDF फॉर्मेट में डाउनलोड करें।</p>
+            <a href="#" style="background: #d4af37; color: #0f172a; text-decoration: none; padding: 12px 25px; border-radius: 25px; font-weight: bold;">अभी अनलॉक करें</a>
+        </div>
+    {% else %}
+        <div style="background: #1e293b; padding: 30px; text-align: center; color: white; border-radius: 12px; border: 1px dashed #d4af37;">
+            <h3 style="color: #d4af37; margin-bottom: 15px;">आपकी रिपोर्ट तैयार है!</h3>
+            <p style="margin-bottom: 20px; color: #e2e8f0;">नीचे दिए गए बटन पर क्लिक करके अपनी विस्तृत PDF कुंडली डाउनलोड करें।</p>
+            <button onclick="downloadPDF()" style="background: #27ae60; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px;">
+                📥 PDF डाउनलोड करें
+            </button>
+        </div>
+    {% endif %}
+</div>
+
+</head>
+<body>
+    
+
+    <div style="position: absolute; top: 15px; right: 15px; z-index: 1000;">
+        <a href="/static/trikaldarshan.apk" onclick="return confirmDownload(event)" style="text-decoration: none;">
+            <button class="top-action-btn btn-app">
+                <span style="margin-right: 4px;">📲</span> App
+            </button>
+        </a>
+    </div>
+
+    <div class="header"><h1>🔮 त्रिकाल दर्शन</h1></div>
+    
+    <nav>
+        <div class="nav-links">
+            <a href="/">🏠 कुंडली</a>
+            <a href="/panchang">📅 दैनिक पंचांग</a>
+            <a href="/contact">📞 संपर्क</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+
+    <footer style="text-align: center; padding: 20px; color: #bdc3c7; font-size: 12px; margin-top: 30px;">
+        © 2026 त्रिकाल दर्शन - Designed & Developed by Nilesh Dave
+    </footer>
+
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>

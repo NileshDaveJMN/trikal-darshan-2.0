@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+    /* 🌟 प्रीमियम डार्क थीम CSS 🌟 */
+    .premium-nav { background: #1e293b; border: 1px solid #334155; padding: 12px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+    .premium-nav a { color: #d4af37; text-decoration: none; font-weight: bold; font-size: 20px; background: #0f172a; padding: 5px 15px; border-radius: 8px; border: 1px solid #334155; transition: 0.3s; }
+    .premium-nav .date-display { color: #e2e8f0; font-weight: bold; font-size: 18px; }
+
+    .p-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 25px; }
+    .p-card-premium { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 15px; text-align: center; }
+    .p-card-premium .p-title { font-size: 15px; color: #94a3b8; display: block; margin-bottom: 8px; } 
+    .p-card-premium .p-value { font-size: 20px; color: #e2e8f0; font-weight: bold; }
+
+    .muhurat-container h3 { color: #d4af37; font-size: 18px; margin-bottom: 20px; text-align: center; }
+    .muhurat-box span.m-label { font-size: 15px; font-weight: bold; }
+    .muhurat-box span.m-time { font-size: 17px; color: #e2e8f0; margin-top: 8px; font-weight: bold; }
+    
+    .choghadiya-container { background: #1e293b; border-radius: 15px; padding: 20px; border: 1px solid #334155; box-shadow: 0 4px 10px rgba(0,0,0,0.15); margin-bottom: 20px; }
+    .ch-row-premium { display: flex; justify-content: space-between; padding: 12px 10px; border-bottom: 1px solid #1e293b; font-size: 16px; }
+    .ch-head-premium { text-align: center; color: #d4af37; font-weight: bold; font-size: 18px; padding-bottom: 10px; }
+
+    /* Modal Override for Dark Theme */
+    .modal-content { background-color: #1e293b !important; color: #e2e8f0 !important; border: 1px solid #d4af37 !important; border-radius: 15px !important; }
+    .modal-header { color: #d4af37 !important; border-bottom: 1px solid #334155 !important; font-weight: bold; }
+    .close-btn { background: #d4af37 !important; color: #0f172a !important; border-radius: 20px !important; font-weight: bold !important; }
+</style>
+
+<div class="premium-nav">
+    <a href="/panchang?date={{ p_data.prev_date }}">&#8592;</a>
+    <div class="date-display">🗓️ {{ p_data.date_str }} ({{ p_data.day }})</div>
+    <a href="/panchang?date={{ p_data.next_date }}">&#8594;</a>
+</div>
+
+<div class="panchang-dashboard">
+    <div class="p-grid">
+        <div class="p-card-premium"><span class="p-title">🌙 तिथि</span><span class="p-value">{{ p_data.tithi }}</span></div>
+        <div class="p-card-premium"><span class="p-title">🌓 पक्ष</span><span class="p-value">{{ p_data.paksha }}</span></div>
+        <div class="p-card-premium"><span class="p-title">✨ नक्षत्र</span><span class="p-value">{{ p_data.nakshatra }}</span></div>
+        <div class="p-card-premium"><span class="p-title">♋ चन्द्र राशि</span><span class="p-value">{{ p_data.moon_rashi }}</span></div>
+        <div class="p-card-premium"><span class="p-title">🌅 सूर्योदय</span><span class="p-value">{{ p_data.sunrise }}</span></div>
+        <div class="p-card-premium"><span class="p-title">🌇 सूर्यास्त</span><span class="p-value">{{ p_data.sunset }}</span></div>
+        <div class="p-card-premium"><span class="p-title">🚩 विक्रम सम्वत</span><span class="p-value">{{ p_data.samvat }}</span></div>
+        <div class="p-card-premium" style="grid-column: span 2;"><span class="p-title">🪔 हिन्दू मास</span><span class="p-value">चैत्र / वैशाख</span></div>
+    </div>
+
+    <div class="muhurat-container">
+        <h3 style="color: #e2e8f0; font-size: 16px; margin-top: 0; margin-bottom: 15px; border-bottom: 1px solid #334155; padding-bottom: 10px; text-align: center;">
+            <span style="color: #d4af37;">⚠️ महत्वपूर्ण मुहूर्त</span> (जानकारी के लिए टैप करें)
+        </h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div class="muhurat-box" style="background: #2d1b1b; border-left: 4px solid #ef4444;" onclick="showInfo('rahukaal')">
+                <span style="color: #fca5a5; font-size: 13px; font-weight: bold;">🔴 राहुकाल</span>
+                <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px;">{{ p_data.rahukaal }}</span>
+            </div>
+            <div class="muhurat-box" style="background: #332200; border-left: 4px solid #f59e0b;" onclick="showInfo('yamaganda')">
+                <span style="color: #fcd34d; font-size: 13px; font-weight: bold;">🟠 यमगंड</span>
+                <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px;">{{ p_data.yamaganda }}</span>
+            </div>
+            <div class="muhurat-box" style="background: #1b2d24; border-left: 4px solid #22c55e;" onclick="showInfo('gulika')">
+                <span style="color: #86efac; font-size: 13px; font-weight: bold;">🟢 गुलिक</span>
+                <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px;">{{ p_data.gulika }}</span>
+            </div>
+            <div class="muhurat-box" style="background: #162032; border-left: 4px solid #3b82f6;" onclick="showInfo('abhijit')">
+                <span style="color: #93c5fd; font-size: 13px; font-weight: bold;">🔵 अभिजित</span>
+                <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px;">{{ p_data.abhijit }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="choghadiya-container">
+        <h3 style="color: #e2e8f0; font-size: 16px; margin-top: 0; text-align: center; margin-bottom: 20px;">
+            ⏳ वर्तमान: <span style="color: #d4af37;">{{ p_data.choghadiya }}</span>
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <div style="background: #0f172a; border-radius: 10px; padding: 10px; border: 1px solid #334155;">
+                <div style="text-align: center; color: #d4af37; font-weight: bold; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #1e293b;">☀️ दिन</div>
+                {% for cg in p_data.all_day_choghadiya %}
+                <div class="ch-row-premium">
+                    <span class="ch-name-text" style="font-weight: bold;">{{ cg.name }}</span>
+                    <span style="color: #94a3b8;">{{ cg.time }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div style="background: #0f172a; border-radius: 10px; padding: 10px; border: 1px solid #334155;">
+                <div style="text-align: center; color: #94a3b8; font-weight: bold; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid #1e293b;">🌙 रात्रि</div>
+                {% for cg in p_data.all_night_choghadiya %}
+                <div class="ch-row-premium">
+                    <span class="ch-name-text" style="font-weight: bold;">{{ cg.name }}</span>
+                    <span style="color: #94a3b8;">{{ cg.time }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="infoModal" class="modal">
+    <div class="modal-content">
+        <div id="modalHeader" class="modal-header"></div>
+        <div id="modalBody" class="modal-body" style="line-height: 1.6; margin: 15px 0;"></div>
+        <button class="close-btn" onclick="closeModal()" style="width: 100%; padding: 10px; border: none; cursor: pointer;">समझ गया</button>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        let ch_names = document.querySelectorAll('.ch-name-text');
+        ch_names.forEach(el => {
+            let text = el.innerText.trim();
+            if (['शुभ', 'अमृत', 'लाभ'].includes(text)) {
+                el.style.color = '#d4af37'; // Golden (Positive)
+            } else if (['रोग', 'उद्वेग', 'काल'].includes(text)) {
+                el.style.color = '#ff8787'; // Soft Red (Negative)
+            } else {
+                el.style.color = '#94a3b8'; // Slate Gray (Neutral/Chal)
+            }
+        });
+    });
+</script>
+
+{% endblock %}

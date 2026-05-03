@@ -1,0 +1,28 @@
+{% if res.sav_points %}
+<div style="margin-top: 10px; margin-bottom: 30px;">
+    <h3 style="color: #d35400; text-align: center; margin-bottom: 10px; font-size: 18px;">📊 सर्वाष्टकवर्ग (SAV) बल</h3>
+    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; background: #fff8e1; border: 1px solid #ffe082; border-radius: 12px; padding: 12px;">
+        {% for points in res.sav_points %}
+        <div style="background: #ffffff; border: 1px solid #f8c471; border-radius: 6px; padding: 8px 2px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+            <div style="font-size: 10px; color: #7f8c8d;">भाव {{ forloop.counter }}</div>
+            <div style="font-size: 18px; font-weight: bold; color: {% if points >= 28 %}#27ae60{% else %}#c0392b{% endif %}; margin-top: 2px;">{{ points }}</div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% with planet_info=res.planet_details %}
+{% if planet_info %}
+<div style="border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 30px;">
+    <table style="width: 100%; border-collapse: collapse; text-align: center;">
+        <tr style="background: #8e44ad; color: white;"><th style="padding: 12px;">ग्रह</th><th style="padding: 12px;">राशि</th><th style="padding: 12px;">अंश (Degree)</th></tr>
+        {% for p in planet_info %}
+        <tr style="background: {% if forloop.counter|divisibleby:2 %}#f5eef8{% else %}#ffffff{% endif %}; border-bottom: 1px solid #ebdef0;">
+            <td style="padding: 10px; font-weight: bold; color: #2c3e50;">{{ p.name }}</td><td style="padding: 10px; color: #d35400;">{{ p.rashi }}</td><td style="padding: 10px; font-family: monospace; color: #16a085; font-size: 14px;">{{ p.degree }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% endif %}
+{% endwith %}

@@ -1,0 +1,92 @@
+/* static/css/style.css */
+
+/* --- 1. Base & Header (Midnight Dark Mode) --- */
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f172a; text-align: center; margin: 0; color: #e2e8f0; }
+.header { background: linear-gradient(135deg, #b71c1c 0%, #8e0000 100%); color: white; padding: 18px; border-bottom: 5px solid #ffca28; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+.header h1 { margin: 0; font-size: 26px; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); }
+
+/* --- 2. Navigation --- */
+nav { background: #1e293b; padding: 14px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+.nav-links { display: flex; justify-content: center; gap: 20px; flex-wrap: wrap; }
+nav a { color: #e8eaf6; text-decoration: none; font-weight: bold; font-size: 15px; padding: 5px 10px; border-radius: 20px; transition: 0.3s; }
+nav a:hover { background: rgba(255,255,255,0.1); color: #ffca28; }
+
+/* --- 11. Top Corner Buttons (App & Admin) --- */
+.top-action-btn { width: auto !important; margin-top: 0 !important; padding: 6px 14px !important; border-radius: 20px !important; font-size: 12px !important; border: 2px solid white !important; font-weight: 800 !important; cursor: pointer; box-shadow: 0 3px 8px rgba(0,0,0,0.3); display: flex; align-items: center; transition: 0.3s; }
+.btn-admin { background: #ffca28 !important; color: #b71c1c !important; }
+.btn-admin:hover { background: #ffffff !important; transform: scale(1.05); }
+.btn-app { background: #28a745 !important; color: #ffffff !important; }
+.btn-app:hover { background: #ffffff !important; color: #28a745 !important; transform: scale(1.05); }
+
+/* --- 3. Main Container --- */
+.container { max-width: 650px; margin: 0 auto 40px auto; background: #1e293b; padding: 25px; border-radius: 18px; box-shadow: 0 10px 35px rgba(0,0,0,0.5); color: #f8fafc; }
+
+/* --- 4. Forms & Inputs (Dark Mode) --- */
+.form-row { display: flex; gap: 10px; margin-bottom: 15px; position: relative; }
+.form-row input, .form-row select, .form-row textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #475569; font-size: 15px; background: #334155; color: #ffffff; font-family: inherit; box-sizing: border-box; transition: 0.3s; }
+.form-row input:focus, .form-row select:focus { border-color: #ffca28; outline: none; background: #3f4f66; box-shadow: 0 0 5px rgba(255,202,40,0.3); }
+
+button { width: 100%; background: linear-gradient(45deg, #b71c1c, #e53935); color: white; border: none; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 18px; cursor: pointer; transition: 0.3s; margin-top: 10px; box-shadow: 0 4px 10px rgba(183,28,28,0.3); }
+button:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(183,28,28,0.4); }
+
+/* --- 5. City Search Dropdown --- */
+#cityResults { position: absolute; top: 100%; left: 0; right: 0; background: #334155; border: 1px solid #475569; border-radius: 0 0 10px 10px; max-height: 180px; overflow-y: auto; z-index: 1000; text-align: left; display: none; box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+.city-option { padding: 12px 15px; cursor: pointer; border-bottom: 1px solid #475569; font-size: 14px; color: #e2e8f0; transition: 0.2s; }
+.city-option:hover { background: #475569; color: #ffca28; font-weight: bold; padding-left: 20px; }
+
+/* --- 6. Premium Result Header --- */
+.result-head { background: linear-gradient(135deg, #334155 0%, #1e293b 100%); padding: 18px 20px; border-radius: 12px; border-left: 6px solid #ffca28; text-align: left; margin: 25px 0; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+.result-head h3 { margin: 0 0 6px 0; color: #ffca28; font-size: 20px; }
+.result-head p { margin: 0; color: #cbd5e1; font-size: 14.5px; font-weight: 500; }
+
+/* --- 7. Kundali Chart --- */
+.chart-wrapper { width: 400px; height: 350px; margin: 35px 0; position: relative; left: 50%; transform: translateX(-50%); background-image: url('/static/chart.png'); background-size: 100% 100%; background-repeat: no-repeat; filter: drop-shadow(0px 8px 16px rgba(0,0,0,0.3)); }
+@media screen and (max-width: 450px) { .chart-wrapper { transform: translateX(-50%) scale(0.85); transform-origin: top center; margin-bottom: -30px; } }
+@media screen and (max-width: 380px) { .chart-wrapper { transform: translateX(-50%) scale(0.75); margin-bottom: -60px; } }
+.house-box { position: absolute; width: 85px; height: 65px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.h1 { top: 110px; left: 158px; } .h2 { top: 25px;  left: 55px;  } .h3 { top: 55px;  left: 10px;  } .h4 { top: 140px; left: 55px;  }
+.h5 { top: 225px; left: 10px;  } .h6 { top: 275px; left: 55px;  } .h7 { top: 240px; left: 158px; } .h8 { top: 275px; left: 260px; }
+.h9 { top: 230px; left: 310px; } .h10 { top: 140px; left: 260px; } .h11 { top: 50px;  left: 310px; } .h12 { top: 25px;  left: 260px; }
+.r-num { color: #b71c1c; font-weight: bold; font-size: 22px; line-height: 1; text-shadow: 1px 1px 2px rgba(255,255,255,0.8); }
+.p-text { color: #1a237e; font-size: 13.5px; font-weight: 800; margin-bottom: 4px; height: 18px; text-shadow: 1px 1px 2px rgba(255,255,255,0.9); }
+
+/* --- 8. Modern Tables (Dark Mode) --- */
+table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 25px; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+th, td { padding: 12px 15px; text-align: center; font-size: 14.5px; border-bottom: 1px solid #475569; color: #f8fafc; }
+th { background: linear-gradient(45deg, #b71c1c, #8e0000); color: white; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) { background-color: #2a384e; }
+tr:hover { background-color: #334155; transition: 0.3s; }
+
+/* --- 9. Premium Panchang Dashboard (Dark Mode) --- */
+.date-nav { display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #334155, #1e293b); padding: 15px; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); border-left: 6px solid #ffca28; }
+.date-nav a { text-decoration: none; font-size: 26px; color: #ffca28; font-weight: bold; padding: 0 15px; transition: transform 0.2s; }
+.date-nav a:hover { transform: scale(1.3); }
+.date-display { font-weight: 800; color: #f8fafc; font-size: 17px; }
+
+.panchang-dashboard { background: transparent; padding: 0; color: #e2e8f0; text-align: center; }
+.p-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+@media (max-width: 480px) { .p-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; } }
+
+.p-card { background: #334155; padding: 15px 10px; border-radius: 12px; border-bottom: 4px solid #ffca28; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transition: 0.3s; display: flex; flex-direction: column; justify-content: center; }
+.p-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.4); border-bottom-color: #b71c1c; }
+.p-title { color: #ffca28; font-size: 12px; font-weight: 800; margin-bottom: 8px; opacity: 0.9; }
+.p-value { font-size: 14px; font-weight: 700; color: #ffffff; }
+
+.muhurat-card { background: linear-gradient(135deg, #451a1a 0%, #2b1111 100%); border-bottom: none; border-left: 6px solid #d32f2f; grid-column: span 3; text-align: left; }
+.choghadiya-card { background: linear-gradient(135deg, #1a237e 0%, #0d124a 100%); border-bottom: none; border-left: 6px solid #5c6bc0; grid-column: span 3; text-align: left; }
+
+.ch-col-container { display: flex; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
+.ch-col { flex: 1; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 10px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }
+.ch-head { text-align: center; font-size: 14px; color: #fff; font-weight: bold; margin-bottom: 12px; background: linear-gradient(45deg, #1a237e, #3949ab); padding: 8px; border-radius: 8px; box-shadow: 0 3px 6px rgba(0,0,0,0.2);}
+.ch-row { display: flex; justify-content: space-between; font-size: 13px; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,0.15); }
+.ch-row:last-child { border-bottom: none; }
+.ch-name { color: #ffca28; font-weight: 800; }
+.ch-time { color: #cbd5e1; font-weight: 700; }
+
+/* --- 10. Modals (Dark Mode) --- */
+.modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); backdrop-filter: blur(4px); }
+.modal-content { background-color: #1e293b; margin: 20% auto; padding: 25px; border-radius: 15px; width: 85%; max-width: 400px; text-align: left; box-shadow: 0 10px 30px rgba(0,0,0,0.8); color: #f8fafc; border: 1px solid #475569; }
+.modal-header { font-weight: bold; font-size: 18px; color: #ffca28; margin-bottom: 15px; border-bottom: 2px solid #334155; padding-bottom: 10px; }
+.modal-body { font-size: 14.5px; color: #cbd5e1; line-height: 1.6; }
+.close-btn { background: linear-gradient(45deg, #b71c1c, #e53935); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-top: 20px; float: right; font-weight: bold; box-shadow: 0 4px 8px rgba(183,28,28,0.3); }

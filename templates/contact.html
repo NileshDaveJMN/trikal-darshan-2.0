@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h2 style="color: #f1c40f; border-bottom: 2px solid #eee; padding-bottom: 10px;">📞 हमसे संपर्क करें</h2>
+<form method="POST">
+    {% csrf_token %} <div class="form-row">
+        <input type="text" name="name" placeholder="आपका नाम" required>
+        <input type="email" name="email" placeholder="ईमेल पता" required>
+        <input type="tel" name="mobile" placeholder="आपका मोबाइल नंबर (WhatsApp)" pattern="[0-9]{10}" title="कृपया 10 अंकों का सही मोबाइल नंबर दर्ज करें" required style="width: 100%; padding: 10px; background: #1e293b; color: white; border: 1px solid #334155; border-radius: 8px; margin-bottom: 15px;">
+
+    </div>
+    <div class="form-row">
+        <textarea name="message" rows="5" placeholder="अपना संदेश यहाँ लिखें..." required style="resize: vertical;"></textarea>
+    </div>
+    <button type="submit" name="action" value="contact">संदेश भेजें</button>
+</form>
+{% if msg_sent %}
+<div style="background: #e8f5e9; color: #2e7d32; padding: 12px; margin-top: 15px; border-radius: 8px; font-weight: bold;">✅ आपका संदेश सफलतापूर्वक भेज दिया गया है!</div>
+{% endif %}
+{% endblock %}

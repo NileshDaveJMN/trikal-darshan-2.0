@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 400px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
+    <h2 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">🔐 लॉगिन करें</h2>
+    
+    {% if messages %}
+        {% for m in messages %}<p style="color: #c0392b; text-align: center; font-weight: bold;">{{ m }}</p>{% endfor %}
+    {% endif %}
+    
+    <form method="POST">
+        {% csrf_token %}
+        <input type="text" name="username" placeholder="यूज़रनेम" required style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #bdc3c7; border-radius: 8px; box-sizing: border-box;">
+        <input type="password" name="password" placeholder="पासवर्ड" required style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #bdc3c7; border-radius: 8px; box-sizing: border-box;">
+        <button type="submit" style="width: 100%; background: linear-gradient(135deg, #e67e22, #d35400); color: white; font-weight: bold; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">लॉगिन</button>
+    </form>
+    
+    <p style="text-align: center; margin-top: 20px; color: #7f8c8d;">अकाउंट नहीं है? <a href="{% url 'register' %}" style="color: #2980b9; font-weight: bold; text-decoration: none;">नया अकाउंट बनाएं</a></p>
+</div>
+{% endblock %}
