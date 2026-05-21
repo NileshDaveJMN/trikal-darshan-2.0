@@ -144,23 +144,39 @@ def save_milan_api(request):
             
     return JsonResponse({'status': 'error', 'message': 'Invalid Request'})
 
-
 # =========================================================
 # PDF DOWNLOAD
 # =========================================================
 
 def download_milan_pdf(request):
-    # 1. URL से डेटा लेना
+    # 1. URL से बेसिक डेटा लेना
+    b_naks = request.GET.get('b_naks', '-')
+    b_rashi = request.GET.get('b_rashi', '-')
+    b_manglik_bool = request.GET.get('b_manglik') == 'yes'
+    
+    g_naks = request.GET.get('g_naks', '-')
+    g_rashi = request.GET.get('g_rashi', '-')
+    g_manglik_bool = request.GET.get('g_manglik') == 'yes'
+
+    # 🌟 फिक्स: अष्टकूट और उपाय का डेटा वापस लाने के लिए इंजन को फिर से रन करें (क्रेडिट नहीं कटेगा)
+    from engines.milan_engine import calculate_milan
+    milan_result = calculate_milan(b_naks, b_rashi, b_manglik_bool, g_naks, g_rashi, g_manglik_bool)
+    
+    breakdown = milan_result.get("breakdown", {})
+    remedies = milan_result.get("remedies", [])
+
     context = {
         'b_name': request.GET.get('b_name', 'वर'),
         'g_name': request.GET.get('g_name', 'कन्या'),
-        'b_naks': request.GET.get('b_naks', '-'),
-        'g_naks': request.GET.get('g_naks', '-'),
-        'b_rashi': request.GET.get('b_rashi', '-'),
-        'g_rashi': request.GET.get('g_rashi', '-'),
-        'b_manglik': 'हाँ' if request.GET.get('b_manglik') == 'yes' else 'नहीं',
-        'g_manglik': 'हाँ' if request.GET.get('g_manglik') == 'yes' else 'नहीं',
+        'b_naks': b_naks,
+        'g_naks': g_naks,
+        'b_rashi': b_rashi,
+        'g_rashi': g_rashi,
+        'b_manglik': 'हाँ' if b_manglik_bool else 'नहीं',
+        'g_manglik': 'हाँ' if g_manglik_bool else 'नहीं',
         'total_score': request.GET.get('score', '0'),
+        'breakdown': breakdown,  # 🌟 यह टेबल का डेटा है जो मिसिंग था!
+        'remedies': remedies,    # 🌟 यह उपाय का डेटा है!
     }
     
     try:
@@ -170,16 +186,18 @@ def download_milan_pdf(request):
         context['is_recommended'] = False
 
     # 2. HTML डिज़ाइन को तैयार करना
+    from django.template.loader import render_to_string
     html_string = render_to_string('milan_pdf.html', context)
 
-    # 3. PDF बनाना (या मोबाइल पर एरर मैसेज दिखाना)
+    # 3. PDF बनाना
     try:
         from weasyprint import HTML
+        from django.http import HttpResponse
         pdf_file = HTML(string=html_string).write_pdf()
         
         response = HttpResponse(pdf_file, content_type='application/pdf')
         response['Content-Disposition'] = 'inline; filename="milan_report.pdf"'
         return response
     except Exception as e:
-        # अगर Pydroid (मोबाइल) पर हैं, तो ऐप क्रैश होने से बचाना
-        return HttpResponse("<h3 style='text-align:center; margin-top:50px; color:#e74c3c;'>लोकल मोबाइल सर्वर (Pydroid) पर PDF डाउनलोड सपोर्ट नहीं करता।<br><br>कृपया इसे लाइव सर्वर (PythonAnywhere) पर टेस्ट करें।</h3>")
+        from django.http import HttpResponse
+        return HttpResponse(f"<h3 style='text-align:center; margin-top:50px; color:#e74c3c;'>PDF बनाने में त्रुटि: {str(e)}</h3>")
