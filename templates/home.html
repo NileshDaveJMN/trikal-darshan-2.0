@@ -275,6 +275,22 @@
 </div>
 
 {% include 'inline_js.html' %}
+<style>
+.pdf-export-mode {
+    background: #ffffff !important;
+    border-color: #000000 !important;
+}
+.pdf-export-mode svg rect, 
+.pdf-export-mode svg line, 
+.pdf-export-mode svg polygon {
+    stroke: #000000 !important;
+}
+.pdf-export-mode strong, 
+.pdf-export-mode div {
+    color: #000000 !important;
+}
+</style>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script>
 function captureChartAndDownload() {
@@ -283,12 +299,20 @@ function captureChartAndDownload() {
     const form = document.getElementById('pdfDownloadForm');
     
     if (chartDiv) {
-        // चार्ट की हाई क्वालिटी फोटो खींचना (scale: 2)
-        html2canvas(chartDiv, { backgroundColor: "#0f172a", scale: 2 }).then(canvas => {
-            hiddenInput.value = canvas.toDataURL("image/png"); // फोटो को डेटा में बदलना
-            form.submit(); // फिर फॉर्म सबमिट करना
+        // 🌟 जादू: फोटो खींचने से ठीक पहले चार्ट को 'व्हाइट (Inverse)' कर दो
+        chartDiv.classList.add('pdf-export-mode');
+        
+        // फोटो खींचो
+        html2canvas(chartDiv, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
+            hiddenInput.value = canvas.toDataURL("image/png");
+            
+            // 🌟 फोटो खींचने के तुरंत बाद चार्ट को वापस वेबसाइट के लिए डार्क कर दो
+            chartDiv.classList.remove('pdf-export-mode');
+            
+            form.submit();
         }).catch(err => {
             console.error("Chart capture error:", err);
+            chartDiv.classList.remove('pdf-export-mode');
             form.submit(); 
         });
     } else {
@@ -296,6 +320,7 @@ function captureChartAndDownload() {
     }
 }
 </script>
+
     
 </body>
 </html>

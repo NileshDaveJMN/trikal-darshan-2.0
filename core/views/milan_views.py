@@ -159,26 +159,36 @@ def calculate_milan_api(request):
 # PDF DOWNLOAD
 # =========================================================
 def download_milan_pdf(request):
-    b_manglik_bool = request.GET.get('b_manglik') == 'yes'
-    g_manglik_bool = request.GET.get('g_manglik') == 'yes'
+    # 1. URL से डेटा निकालना (चाहे किसी भी नाम से आया हो)
+    b_name = request.GET.get('b_name', 'वर')
+    g_name = request.GET.get('g_name', 'कन्या')
+    b_naks = request.GET.get('b_naks') or request.GET.get('boy_nakshatra') or '-'
+    g_naks = request.GET.get('g_naks') or request.GET.get('girl_nakshatra') or '-'
+    b_rashi = request.GET.get('b_rashi', '-')
+    g_rashi = request.GET.get('g_rashi', '-')
+    b_manglik = request.GET.get('b_manglik') == 'yes'
+    g_manglik = request.GET.get('g_manglik') == 'yes'
 
-    # 🌟 नया फिक्स: कोई कैलकुलेशन नहीं, सीधे मेमोरी से डेटा उठाएं! 
-    milan_result = request.session.get('last_milan_result', {})
+    # 2. ब्रह्मास्त्र: इंजन से सीधा दोबारा कैलकुलेट करना (ताकि डेटा कभी मिस न हो)
+    from engines.milan_engine import calculate_milan
+    milan_result = calculate_milan(b_naks, b_rashi, b_manglik, g_naks, g_rashi, g_manglik)
+    
+    # 3. बैकअप: अगर URL में नाम नहीं आया, तो Session (Memory) से उठाना
+    if not milan_result or "error" in milan_result or not milan_result.get("breakdown"):
+        milan_result = request.session.get('last_milan_result', {})
+
     breakdown = milan_result.get("breakdown", {})
     remedies = milan_result.get("remedies", [])
 
     context = {
-        'b_name': request.GET.get('b_name', 'वर'),
-        'g_name': request.GET.get('g_name', 'कन्या'),
-        'b_naks': request.GET.get('b_naks', '-'),
-        'g_naks': request.GET.get('g_naks', '-'),
-        'b_rashi': request.GET.get('b_rashi', '-'),
-        'g_rashi': request.GET.get('g_rashi', '-'),
-        'b_manglik': 'हाँ' if b_manglik_bool else 'नहीं',
-        'g_manglik': 'हाँ' if g_manglik_bool else 'नहीं',
-        'total_score': request.GET.get('score', '0'),
-        'breakdown': breakdown,  
-        'remedies': remedies,    
+        'b_name': b_name, 'g_name': g_name,
+        'b_naks': b_naks, 'g_naks': g_naks,
+        'b_rashi': b_rashi, 'g_rashi': g_rashi,
+        'b_manglik': 'हाँ' if b_manglik else 'नहीं',
+        'g_manglik': 'हाँ' if g_manglik else 'नहीं',
+        'total_score': request.GET.get('score', milan_result.get('total_score', '0')),
+        'breakdown': breakdown,
+        'remedies': remedies,
     }
     
     try:
@@ -201,4 +211,3 @@ def download_milan_pdf(request):
     except Exception as e:
         from django.http import HttpResponse
         return HttpResponse(f"<h3 style='text-align:center; margin-top:50px; color:#e74c3c;'>PDF बनाने में त्रुटि: {str(e)}</h3>")
-
