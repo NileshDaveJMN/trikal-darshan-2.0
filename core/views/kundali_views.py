@@ -1,4 +1,6 @@
 # views/kundali_views.py
+from django.http import HttpResponse
+
 import os
 import json
 from datetime import datetime
