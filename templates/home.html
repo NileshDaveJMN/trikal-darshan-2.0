@@ -195,20 +195,24 @@
                     <div style="color: #cbd5e1; font-size: 16px; font-weight: bold;">
                         <span style="margin-right: 8px;">👤</span> {{ res.name|default:"-" }}
                     </div>
+                    <form id="pdfDownloadForm" method="POST" action="{% url 'download_kundali_pdf' %}" target="_blank" style="margin:0; padding:0; display:flex; align-items:center;">
+    {% csrf_token %}
+    <input type="hidden" name="include_charts" value="yes">
+    <input type="hidden" name="include_planets" value="yes">
+    <input type="hidden" name="include_ai" value="yes">
+    <input type="hidden" name="include_dosha" value="yes">
+    <input type="hidden" name="chart_image_data" id="chart_image_data">
+    
+    <button type="button" onclick="captureChartAndDownload()" style="background:none; border:none; cursor:pointer; padding:5px; transition: 0.3s;" title="PDF रिपोर्ट डाउनलोड करें">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffca28" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="3" x2="12" y2="21"></line>
+            <polyline points="19 14 12 21 5 14"></polyline>
+        </svg>
+    </button>
+</form>
+
                     
-                    <form method="POST" action="{% url 'download_kundali_pdf' %}" target="_blank" style="margin:0; padding:0; display:flex; align-items:center;">
-                        {% csrf_token %}
-                        <input type="hidden" name="include_charts" value="yes">
-                        <input type="hidden" name="include_planets" value="yes">
-                        <input type="hidden" name="include_ai" value="yes">
-                        <input type="hidden" name="include_dosha" value="yes">
-                        <button type="submit" style="background:none; border:none; cursor:pointer; padding:5px; transition: 0.3s;" title="PDF रिपोर्ट डाउनलोड करें">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffca28" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="12" y1="3" x2="12" y2="21"></line>
-                                <polyline points="19 14 12 21 5 14"></polyline>
-                            </svg>
-                        </button>
-                    </form>
+    
                 </div>
                 {% endif %}
                 <div id="panel-lagna" class="sub-panel active" style="display:block;">
@@ -271,5 +275,27 @@
 </div>
 
 {% include 'inline_js.html' %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+function captureChartAndDownload() {
+    const chartDiv = document.getElementById('kundali_chart_div');
+    const hiddenInput = document.getElementById('chart_image_data');
+    const form = document.getElementById('pdfDownloadForm');
+    
+    if (chartDiv) {
+        // चार्ट की हाई क्वालिटी फोटो खींचना (scale: 2)
+        html2canvas(chartDiv, { backgroundColor: "#0f172a", scale: 2 }).then(canvas => {
+            hiddenInput.value = canvas.toDataURL("image/png"); // फोटो को डेटा में बदलना
+            form.submit(); // फिर फॉर्म सबमिट करना
+        }).catch(err => {
+            console.error("Chart capture error:", err);
+            form.submit(); 
+        });
+    } else {
+        form.submit();
+    }
+}
+</script>
+    
 </body>
 </html>

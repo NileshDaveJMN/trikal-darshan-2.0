@@ -40,75 +40,6 @@ def milan_view(request):
 # =========================================================
 # CALCULATE MILAN API (WITH CREDIT LOGIC)
 # =========================================================
-def calculate_milan_api(request):
-    if not request.user.is_authenticated:
-        return JsonResponse({'status': 'error', 'message': 'मिलान देखने के लिए कृपया लॉगिन करें।'})
-
-    if request.method == 'POST':
-        # 🌟 नया फिक्स: चेक करें कि क्या यूज़र सेव की हुई हिस्ट्री देख रहा है
-        history_id = request.POST.get('history_id')
-        if history_id:
-            history = KundaliMilanHistory.objects.filter(id=history_id, user=request.user).first()
-            if history:
-                # सेव की गई इनपुट्स से दोबारा पूरा इंजन रन करें (0 क्रेडिट पर भी चलेगा, कोई कटौती नहीं होगी)
-                b_name = history.boy_name
-                b_naks = history.boy_nakshatra
-                b_rashi = history.boy_rashi
-                b_manglik = "yes" in str(history.manglik_status).lower() or "पूर्ण" in str(history.manglik_status)
-
-                g_name = history.girl_name
-                g_naks = history.girl_nakshatra
-                g_rashi = history.girl_rashi
-                g_manglik = "yes" in str(history.manglik_status).lower() or "पूर्ण" in str(history.manglik_status)
-                
-                milan_result = calculate_milan(b_naks, b_rashi, b_manglik, g_naks, g_rashi, g_manglik)
-                
-                if "error" in milan_result:
-                    return JsonResponse({'status': 'error', 'message': milan_result["error"]})
-
-                return JsonResponse({
-                    'status': 'success',
-                    'data': milan_result,
-                    'names': {'boy': b_name, 'girl': g_name}
-                })
-
-        # --- नए मिलान का स्टैंडर्ड फ्लो (क्रेडिट्स चेक और कटौती होगी) ---
-        user_profile = request.user.userprofile
-        if user_profile.milan_credits <= 0:
-            return JsonResponse({
-                'status': 'error', 
-                'message': '⚠️ आपके मिलान क्रेडिट्स खत्म हो गए हैं! कृपया रिचार्ज करें।'
-            })
-
-        b_name = request.POST.get('boy_name', 'Boy')
-        b_naks = request.POST.get('boy_naks') or request.POST.get('boy_nakshatra')
-        b_rashi = request.POST.get('boy_rashi')
-        b_manglik = request.POST.get('boy_manglik') == 'yes'
-
-        g_name = request.POST.get('girl_name', 'Girl')
-        g_naks = request.POST.get('girl_naks') or request.POST.get('girl_nakshatra')
-        g_rashi = request.POST.get('girl_rashi')
-        g_manglik = request.POST.get('girl_manglik') == 'yes'
-        
-        if not b_naks or not g_naks:
-            return JsonResponse({'status': 'error', 'message': 'कृपया दोनों का नक्षत्र चुनें।'})
-
-        milan_result = calculate_milan(b_naks, b_rashi, b_manglik, g_naks, g_rashi, g_manglik)
-
-        if "error" in milan_result:
-            return JsonResponse({'status': 'error', 'message': milan_result["error"]})
-
-        # नया मिलान होने पर ही क्रेडिट काटें
-        user_profile.milan_credits -= 1
-        user_profile.save()
-
-        return JsonResponse({
-            'status': 'success',
-            'data': milan_result,
-            'names': {'boy': b_name, 'girl': g_name}
-        })
-
-    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
 # =========================================================
 # SAVE MILAN API
@@ -148,35 +79,106 @@ def save_milan_api(request):
 # PDF DOWNLOAD
 # =========================================================
 
+# =========================================================
+# CALCULATE MILAN API (WITH CREDIT LOGIC)
+# =========================================================
+def calculate_milan_api(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'मिलान देखने के लिए कृपया लॉगिन करें।'})
+
+    if request.method == 'POST':
+        history_id = request.POST.get('history_id')
+        if history_id:
+            history = KundaliMilanHistory.objects.filter(id=history_id, user=request.user).first()
+            if history:
+                b_name = history.boy_name
+                b_naks = history.boy_nakshatra
+                b_rashi = history.boy_rashi
+                b_manglik = "yes" in str(history.manglik_status).lower() or "पूर्ण" in str(history.manglik_status)
+
+                g_name = history.girl_name
+                g_naks = history.girl_nakshatra
+                g_rashi = history.girl_rashi
+                g_manglik = "yes" in str(history.manglik_status).lower() or "पूर्ण" in str(history.manglik_status)
+                
+                milan_result = calculate_milan(b_naks, b_rashi, b_manglik, g_naks, g_rashi, g_manglik)
+                
+                if "error" in milan_result:
+                    return JsonResponse({'status': 'error', 'message': milan_result["error"]})
+
+                # 🌟 फिक्स: PDF के लिए डेटा सेशन (मेमोरी) में सेव करें
+                request.session['last_milan_result'] = milan_result
+                request.session.modified = True
+
+                return JsonResponse({
+                    'status': 'success',
+                    'data': milan_result,
+                    'names': {'boy': b_name, 'girl': g_name}
+                })
+
+        # --- नए मिलान का फ्लो ---
+        user_profile = request.user.userprofile
+        if user_profile.milan_credits <= 0:
+            return JsonResponse({'status': 'error', 'message': '⚠️ आपके मिलान क्रेडिट्स खत्म हो गए हैं! कृपया रिचार्ज करें।'})
+
+        b_name = request.POST.get('boy_name', 'Boy')
+        b_naks = request.POST.get('boy_naks') or request.POST.get('boy_nakshatra')
+        b_rashi = request.POST.get('boy_rashi')
+        b_manglik = request.POST.get('boy_manglik') == 'yes'
+
+        g_name = request.POST.get('girl_name', 'Girl')
+        g_naks = request.POST.get('girl_naks') or request.POST.get('girl_nakshatra')
+        g_rashi = request.POST.get('girl_rashi')
+        g_manglik = request.POST.get('girl_manglik') == 'yes'
+        
+        if not b_naks or not g_naks:
+            return JsonResponse({'status': 'error', 'message': 'कृपया दोनों का नक्षत्र चुनें।'})
+
+        milan_result = calculate_milan(b_naks, b_rashi, b_manglik, g_naks, g_rashi, g_manglik)
+
+        if "error" in milan_result:
+            return JsonResponse({'status': 'error', 'message': milan_result["error"]})
+
+        user_profile.milan_credits -= 1
+        user_profile.save()
+
+        # 🌟 फिक्स: PDF के लिए डेटा सेशन (मेमोरी) में सेव करें
+        request.session['last_milan_result'] = milan_result
+        request.session.modified = True
+
+        return JsonResponse({
+            'status': 'success',
+            'data': milan_result,
+            'names': {'boy': b_name, 'girl': g_name}
+        })
+
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
+
+
+# =========================================================
+# PDF DOWNLOAD
+# =========================================================
 def download_milan_pdf(request):
-    # 1. URL से बेसिक डेटा लेना
-    b_naks = request.GET.get('b_naks', '-')
-    b_rashi = request.GET.get('b_rashi', '-')
     b_manglik_bool = request.GET.get('b_manglik') == 'yes'
-    
-    g_naks = request.GET.get('g_naks', '-')
-    g_rashi = request.GET.get('g_rashi', '-')
     g_manglik_bool = request.GET.get('g_manglik') == 'yes'
 
-    # 🌟 फिक्स: अष्टकूट और उपाय का डेटा वापस लाने के लिए इंजन को फिर से रन करें (क्रेडिट नहीं कटेगा)
-    from engines.milan_engine import calculate_milan
-    milan_result = calculate_milan(b_naks, b_rashi, b_manglik_bool, g_naks, g_rashi, g_manglik_bool)
-    
+    # 🌟 नया फिक्स: कोई कैलकुलेशन नहीं, सीधे मेमोरी से डेटा उठाएं! 
+    milan_result = request.session.get('last_milan_result', {})
     breakdown = milan_result.get("breakdown", {})
     remedies = milan_result.get("remedies", [])
 
     context = {
         'b_name': request.GET.get('b_name', 'वर'),
         'g_name': request.GET.get('g_name', 'कन्या'),
-        'b_naks': b_naks,
-        'g_naks': g_naks,
-        'b_rashi': b_rashi,
-        'g_rashi': g_rashi,
+        'b_naks': request.GET.get('b_naks', '-'),
+        'g_naks': request.GET.get('g_naks', '-'),
+        'b_rashi': request.GET.get('b_rashi', '-'),
+        'g_rashi': request.GET.get('g_rashi', '-'),
         'b_manglik': 'हाँ' if b_manglik_bool else 'नहीं',
         'g_manglik': 'हाँ' if g_manglik_bool else 'नहीं',
         'total_score': request.GET.get('score', '0'),
-        'breakdown': breakdown,  # 🌟 यह टेबल का डेटा है जो मिसिंग था!
-        'remedies': remedies,    # 🌟 यह उपाय का डेटा है!
+        'breakdown': breakdown,  
+        'remedies': remedies,    
     }
     
     try:
@@ -185,11 +187,9 @@ def download_milan_pdf(request):
     except:
         context['is_recommended'] = False
 
-    # 2. HTML डिज़ाइन को तैयार करना
     from django.template.loader import render_to_string
     html_string = render_to_string('milan_pdf.html', context)
 
-    # 3. PDF बनाना
     try:
         from weasyprint import HTML
         from django.http import HttpResponse
@@ -201,3 +201,4 @@ def download_milan_pdf(request):
     except Exception as e:
         from django.http import HttpResponse
         return HttpResponse(f"<h3 style='text-align:center; margin-top:50px; color:#e74c3c;'>PDF बनाने में त्रुटि: {str(e)}</h3>")
+
