@@ -268,7 +268,7 @@ def home(request, k_id=None):
 
 def download_kundali_pdf(request):
     if not WEASYPRINT_AVAILABLE:
-        from django.http import HttpResponse
+        
         return HttpResponse("लोकल मोबाइल सर्वर पर PDF डाउनलोड सपोर्ट नहीं करता। कृपया इसे लाइव सर्वर (PythonAnywhere) पर टेस्ट करें।", status=501)
         
     
