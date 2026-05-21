@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /download-kundali-pdf/
+Disallow: /download-milan-pdf/
+
+Sitemap: https://www.trikaldarshan.pythonanywhere.com/sitemap.xml

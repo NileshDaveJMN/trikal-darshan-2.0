@@ -9,6 +9,8 @@ from core.views.seo_views import sitemap_xml, robots_txt
 from django.urls import path, include
 from core.views import master_views, auth_views, kundali_views # Kundali views still needed for actions like calc, pdf
 from core.views.auth_views import submit_payment 
+from django.urls import path
+from django.views.generic import TemplateView
 
 urlpatterns = [
     # जांगो का अपना डिफ़ॉल्ट एडमिन पैनल
@@ -39,8 +41,8 @@ urlpatterns = [
     path('admin/', admin_view, name='admin_view'),
     path('admin/leads', admin_leads, name='admin_leads'),
     # SEO robots.txt URL
-    path('robots.txt', robots_txt, name='robots_txt'),
-    path('sitemap.xml', sitemap_xml, name='sitemap_xml'),
+    path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
+    path('sitemap.xml', TemplateView.as_view(template_name="sitemap.xml", content_type="application/xml")),
     path('calc/', kundali_views.kundali_calculation, name='calc_kundali'),
 path('api/save_milan/', save_milan_api, name='api_save_milan'),
 path('admin-panel/', admin_view, name='admin_view'),
