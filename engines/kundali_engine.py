@@ -58,7 +58,7 @@ def get_vimshottari_dasha(moon_degree, birth_date):
 
 def get_kundali_data(name, gender, dd, mm, yyyy, hh, m_m, ss, city, lat, lon, need_ai=False, selected_topics=None, custom_question=""):
     try:
-        dt_ist = datetime(yyyy, mm, dd, hh, m_m, ss)
+        dt_ist = datetime(int(yyyy), int(mm), int(dd), int(hh), int(m_m), int(ss))
         dt_utc = dt_ist - timedelta(hours=5, minutes=30)
         jd_ut = swe.julday(dt_utc.year, dt_utc.month, dt_utc.day, dt_utc.hour + dt_utc.minute/60.0 + dt_utc.second/3600.0)
         swe.set_sid_mode(swe.SIDM_LAHIRI)
@@ -120,25 +120,67 @@ def get_kundali_data(name, gender, dd, mm, yyyy, hh, m_m, ss, city, lat, lon, ne
         tithi_name = tithis_list[int(angle_diff / 12)]
         paksha_name = "शुक्ल" if angle_diff < 180 else "कृष्ण"
         
-        # 4. हिन्दू मास (अमांत सिस्टम के अनुसार)
+        # 4. हिन्दू मास
         hindu_months = ["चैत्र", "वैशाख", "ज्येष्ठ", "आषाढ़", "श्रावण", "भाद्रपद", "आश्विन", "कार्तिक", "मार्गशीर्ष", "पौष", "माघ", "फाल्गुन"]
-        new_moon_deg = (sun_deg - angle_diff) % 360
-        hindu_month_name = hindu_months[(int(new_moon_deg / 30) + 1) % 12]
+        days_since_amavasya = angle_diff / 12.0
+        sun_deg_at_amavasya = (sun_deg - days_since_amavasya) % 360
+        amavasya_sun_rashi = int(sun_deg_at_amavasya / 30)
+        month_idx = (amavasya_sun_rashi + 1) % 12
+        hindu_month_name = hindu_months[month_idx]
+
+        # 5. वार (Day of Week)
+        vara_list = ["सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार"]
+        vara_name = vara_list[dt_ist.weekday()]
+
+        # 6. योग (Yoga)
+        yoga_deg = (moon_deg + sun_deg) % 360
+        yogas_list = ["विष्कुम्भ", "प्रीति", "आयुष्मान", "सौभाग्य", "शोभन", "अतिगण्ड", "सुकर्मा", "धृति", "शूल", "गण्ड", "वृद्धि", "ध्रुव", "व्याघात", "हर्षण", "वज्र", "सिद्धि", "व्यतीपात", "वरीयान", "परिघ", "शिव", "सिद्ध", "साध्य", "शुभ", "शुक्ल", "ब्रह्म", "इन्द्र", "वैधृति"]
+        yoga_name = yogas_list[int(yoga_deg / (360/27))]
+
+        # 7. करण (Karana)
+        karana_index = int(angle_diff / 6)
+        if karana_index == 0:
+            karana_name = "किंतुघ्न"
+        elif karana_index == 57:
+            karana_name = "शकुनि"
+        elif karana_index == 58:
+            karana_name = "चतुष्पद"
+        elif karana_index == 59:
+            karana_name = "नाग"
+        else:
+            karana_names = ["बव", "बालव", "कौलव", "तैतिल", "गर", "वणिज", "विष्टि"]
+            karana_name = karana_names[(karana_index - 1) % 7]
+
+        # 8. विक्रम संवत (Vikram Samvat)
+        samvat = int(yyyy) + 57
+        
+        # 9. DOB and TOB Formats
+        dob_str = f"{int(dd):02d}/{int(mm):02d}/{int(yyyy)}"
+        tob_str = f"{int(hh):02d}:{int(m_m):02d}"
 
         greeting = "श्री" if gender == "पुरुष" else "सुश्री"
         
         return {
-            "name": name, "greeting": greeting, "city": city, "lagna": z_names[l_idx], "houses": houses,
+            "name": name, "gender": gender, "day": dd, "month": mm, "year": yyyy,
+            "hour": hh, "minute": m_m, "second": ss, "city": city, "lat": lat, "lon": lon,   
+            "greeting": greeting, "lagna": z_names[l_idx], "houses": houses,
             "planet_details": planet_details, "manglik": manglik_text, "kaalsarp": kaalsarp_text,
             "predictions": predictions_data, "current_dasha_text": current_dasha_text, 
             "dasha": dasha_data, "sav_points": sav_data,
-            # 👇 नया पंचांग डेटा जो HTML में भेजा जा रहा है 👇
             "chandra_rashi": chandra_rashi_name,
             "nakshatra": nakshatra_name,
             "tithi": tithi_name,
             "paksha": paksha_name,
-            "hindu_month": hindu_month_name
+            "hindu_month": hindu_month_name,
+            "vara": vara_name,        # नया जोड़ा गया
+            "yoga": yoga_name,        # नया जोड़ा गया
+            "karana": karana_name,    # नया जोड़ा गया
+            "samvat": str(samvat),    # नया जोड़ा गया
+            "dob": dob_str,           # नया जोड़ा गया
+            "tob": tob_str            # नया जोड़ा गया
         }
     except Exception as e:
+        import traceback
         print(f"Kundali Error: {e}")
+        traceback.print_exc()
         return None

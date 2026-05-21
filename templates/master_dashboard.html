@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>त्रिकाल दर्शन - App</title>
+    
+    <style>
+        /* --- CSS Reset: No scroll on body --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body, html { 
+            height: 100%; 
+            overflow: hidden; /* स्क्रीन फिक्स रहेगी */
+            background-color: #0f172a; /* प्रीमियम डार्क थीम */
+            color: #cbd5e1; 
+            font-family: sans-serif; 
+        }
+        
+        /* --- Master App Container --- */
+        .app-container { 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; /* 100% Screen Height */
+        }
+        
+        /* --- 1. Top Header --- */
+        .app-header { 
+            padding: 15px; 
+            background: #1e293b; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155; 
+        }
+        .brand { font-size: 18px; font-weight: bold; color: #ffca28; }
+        
+        /* --- 2. Head Tab Bar (Real Tabs) --- */
+        .tab-bar { 
+            display: flex; 
+            background: #1e293b; 
+            border-bottom: 1px solid #334155; 
+        }
+        .tab-btn { 
+            flex: 1; 
+            padding: 12px 0; 
+            background: transparent; 
+            color: #94a3b8; 
+            border: none; 
+            font-size: 13px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            border-bottom: 3px solid transparent; 
+            transition: 0.2s;
+        }
+        .tab-btn.active { 
+            color: #f1c40f; 
+            background: rgba(241, 196, 15, 0.05);
+            border-bottom: 3px solid #f1c40f; 
+        }
+        
+        /* --- 3. Main Content Area (Data Scrolls Here) --- */
+        .content-area { 
+            flex: 1; 
+            overflow-y: auto; /* सिर्फ यह हिस्सा स्क्रॉल होगा */
+            padding: 20px; 
+        }
+        
+        /* --- Tab Panels --- */
+        .tab-panel { display: none; animation: fadeIn 0.3s ease; }
+        .tab-panel.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* --- Form & Button Styles --- */
+        input, select { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 15px; 
+            border-radius: 8px; 
+            border: 1px solid #334155; 
+            background: #1e293b; 
+            color: white; 
+        }
+        button.primary-btn { 
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #f39c12, #e67e22); 
+            color: white; 
+            border: none; 
+            border-radius: 8px;
+            font-weight: bold; 
+            font-size: 15px; 
+            box-shadow: 0 4px 10px rgba(230,126,34,0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="app-header">
+            <div class="brand">🔮 त्रिकाल दर्शन</div>
+            {% if user.is_authenticated %}
+                <div style="font-size: 12px;">🪙 K:{{ user_profile.kundali_credits|default:0 }} | M:{{ user_profile.milan_credits|default:0 }}</div>
+            {% else %}
+                <a href="{% url 'login' %}" style="color: #f39c12; text-decoration: none; font-size: 13px; font-weight: bold;">लॉगिन</a>
+            {% endif %}
+        </div>
+        
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="openAppTab(event, 'tab-user')">👤 यूज़र</button>
+            <button class="tab-btn" onclick="openAppTab(event, 'tab-kundali')">📜 कुंडली</button>
+            <button class="tab-btn" onclick="openAppTab(event, 'tab-milan')">💑 मिलान</button>
+            <button class="tab-btn" onclick="openAppTab(event, 'tab-panchang')">📅 पंचांग</button>
+        </div>
+        
+        <div class="content-area">
+            
+            <div id="tab-user" class="tab-panel active">
+                <h2 style="color: white; margin-bottom: 15px;">डैशबोर्ड</h2>
+                {% if user.is_authenticated %}
+                    <p>स्वागत है, <strong>{{ user.username }}</strong>!</p>
+                    {% else %}
+                    <p style="font-size: 14px; line-height: 1.6;">प्रीमियम सेवाओं का लाभ उठाने के लिए कृपया लॉगिन करें।</p>
+                {% endif %}
+            </div>
+            
+            <div id="tab-kundali" class="tab-panel">
+                <h2 style="color: white; margin-bottom: 15px;">नई कुंडली बनाएं</h2>
+                <form>
+                    {{ k_form.as_p }}
+                    <button type="button" class="primary-btn">जन्म कुंडली देखें</button>
+                </form>
+            </div>
+            
+            <div id="tab-milan" class="tab-panel">
+                <h2 style="color: white; margin-bottom: 15px;">गुण मिलान</h2>
+                <form>
+                    {{ m_form.as_p }}
+                    <button type="button" class="primary-btn">मिलान चेक करें</button>
+                </form>
+            </div>
+            
+            <div id="tab-panchang" class="tab-panel">
+                <h2 style="color: white; margin-bottom: 15px;">आज का पंचांग</h2>
+                <p style="font-size: 14px;">पंचांग डेटा यहाँ लोड होगा...</p>
+            </div>
+
+        </div>
+    </div>
+    
+    <script>
+        function openAppTab(evt, tabId) {
+            // Hide all panels
+            let panels = document.getElementsByClassName("tab-panel");
+            for (let i = 0; i < panels.length; i++) {
+                panels[i].classList.remove("active");
+            }
+            
+            // Remove 'active' state from all tabs
+            let btns = document.getElementsByClassName("tab-btn");
+            for (let i = 0; i < btns.length; i++) {
+                btns[i].classList.remove("active");
+            }
+            
+            // Show the selected panel & activate tab
+            document.getElementById(tabId).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+    </script>
+
+</body>
+</html>

@@ -25,6 +25,15 @@ def get_panchang_data(target_dt_ist, is_today):
         moon_rashi = z_names[int(moon_lon / 30)]
         days = ["सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार"]
 
+        # 🌟 नया चंद्र मास (Lunar Month) लॉजिक 🌟
+        moon_sun_diff = (moon_lon - sun_lon) % 360
+        days_since_amavasya = moon_sun_diff / 12.190749
+        amavasya_sun_lon = (sun_lon - (days_since_amavasya * 0.9856)) % 360
+        amavasya_sun_rashi_idx = int(amavasya_sun_lon / 30)
+        
+        maas_names = ["वैशाख", "ज्येष्ठ", "आषाढ़", "श्रावण", "भाद्रपद", "आश्विन", "कार्तिक", "मार्गशीर्ष", "पौष", "माघ", "फाल्गुन", "चैत्र"]
+        hindu_maas = maas_names[amavasya_sun_rashi_idx]
+
         obs = ephem.Observer()
         obs.lat, obs.long = '28.5839', '77.2090'
         obs.elevation = 216
@@ -126,7 +135,7 @@ def get_panchang_data(target_dt_ist, is_today):
             "sunset": ss_ist.strftime('%H:%M'),
             "rahukaal": rahukaal, "yamaganda": yamaganda, "gulika": gulika, "abhijit": abhijit,
             "choghadiya": current_choghadiya, "all_day_choghadiya": all_day_choghadiya, "all_night_choghadiya": all_night_choghadiya,
-            "samvat": target_dt_ist.year + 57
+            "samvat": target_dt_ist.year + 57, "hindu_maas": hindu_maas
         }
     except Exception as e:
         print(f"Panchang Error: {e}")

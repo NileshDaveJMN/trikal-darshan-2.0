@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        @font-face {
+            font-family: 'HindiFont';
+            src: url('file:///home/Trikaldarshan/Trikaldarshan/static/fonts/Mangal.ttf');
+        }
+        @page { size: A4; margin: 1cm; }
+        * { font-family: 'HindiFont', sans-serif !important; }
+        body { color: #333; line-height: 1.5; margin: 0; }
+        .header { text-align: center; border-bottom: 3px solid #e74c3c; padding-bottom: 10px; margin-bottom: 20px; }
+        .header h1 { color: #e74c3c; font-size: 28px; margin: 0; }
+        .score-box { text-align: center; margin: 20px 0; font-size: 24px; font-weight: bold; color: #27ae60; background: #f4f6f7; padding: 15px; border-radius: 10px; border: 1px solid #dcdde1; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { border: 1px solid #dee2e6; padding: 8px; text-align: center; font-size: 14px; }
+        th { background-color: #f8f9fa; color: #2c3e50; }
+        .section-title { background-color: #34495e; color: #fff; padding: 8px 12px; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>त्रिकाल दर्शन - अष्टकूट गुण मिलान</h1>
+        <p style="font-size: 18px; margin-top:5px;"><strong>वर:</strong> {{ b_name }} &nbsp; | &nbsp; <strong>कन्या:</strong> {{ g_name }}</p>
+    </div>
+    
+    <div class="score-box">
+        कुल प्राप्त गुण: <span style="font-size: 32px; color: #e67e22;">{{ total_score }}</span> / 36<br>
+        <div style="font-size: 18px; margin-top: 10px; color: {% if is_recommended %}#27ae60{% else %}#c0392b{% endif %};">
+            परिणाम: {% if is_recommended %}यह मिलान अत्यंत शुभ है।{% else %}यह मिलान सामान्य या कम है।{% endif %}
+        </div>
+    </div>
+
+    <div class="section-title">वर-वधू का ज्योतिषीय विवरण</div>
+    <table>
+        <tr>
+            <th>विवरण</th><th>वर (Boy)</th><th>कन्या (Girl)</th>
+        </tr>
+        <tr>
+            <td>राशि</td><td>{{ b_rashi }}</td><td>{{ g_rashi }}</td>
+        </tr>
+        <tr>
+            <td>नक्षत्र</td><td>{{ b_naks }}</td><td>{{ g_naks }}</td>
+        </tr>
+        <tr>
+            <td>मांगलिक विचार</td><td>{{ b_manglik }}</td><td>{{ g_manglik }}</td>
+        </tr>
+    </table>
+
+    <div class="section-title">अष्टकूट मिलान सारणी (36 गुणों का विवरण)</div>
+    <table>
+        <thead>
+            <tr><th>कूट (Koot)</th><th>प्राप्त अंक (Score)</th><th>अधिकतम अंक (Max)</th><th>स्थिति (Status)</th></tr>
+        </thead>
+        <tbody>
+            {% for koot_name, data in breakdown.items %}
+            <tr>
+                <td><strong>{{ koot_name }}</strong></td>
+                <td style="color: #27ae60; font-weight: bold;">{{ data.score }}</td>
+                <td>{{ data.max }}</td>
+                <td>{{ data.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if remedies %}
+    <div class="section-title">ज्योतिषीय उपाय एवं सावधानियां</div>
+    <ul style="margin-top: 15px;">
+        {% for r in remedies %}
+        <li style="margin-bottom: 12px; font-size: 14px;"><strong>{{ r.issue }}:</strong> {{ r.solution }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</body>
+</html>

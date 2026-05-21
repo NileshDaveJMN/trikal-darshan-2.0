@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="padding: 20px; max-width: 1000px; margin: 0 auto; color: white;">
+    
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h2 style="color: #f1c40f; font-size: 26px; margin-bottom: 5px;">💎 त्रिकाल प्रीमियम डैशबोर्ड</h2>
+        <p style="color: #94a3b8; font-size: 15px;">नमस्ते {{ user.username }}! अपनी जरूरत के अनुसार क्रेडिट्स खरीदें और सटीक विश्लेषण अनलॉक करें।</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px;">
+        
+        <div style="background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 25px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            <div style="font-size: 35px; margin-bottom: 10px;">📜</div>
+            <h3 style="color: #e2e8f0; margin: 0 0 10px 0;">कुंडली पैक</h3>
+            <div style="font-size: 28px; font-weight: bold; color: #ffffff;">₹51</div>
+            <hr style="border-top: 1px solid #334155; margin: 15px 0;">
+            <p style="color: #94a3b8; font-size: 14px; text-align: left; line-height: 1.8;">✨ <strong>3 कुंडली क्रेडिट्स</strong><br>✅ AI कस्टमाइज़्ड फलित<br>✅ दोष एवं सटीक उपाय<br>📥 PDF रिपोर्ट डाउनलोड</p>
+            <a href="{% url 'milan_payment' %}?pack=KUNDALI_51" style="display: block; margin-top: 20px; padding: 12px; background: #334155; color: white; border-radius: 8px; text-decoration: none; font-weight: bold;">अभी खरीदें</a>
+        </div>
+
+        <div style="background: #1e293b; border: 1px solid #334155; border-radius: 16px; padding: 25px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+            <div style="font-size: 35px; margin-bottom: 10px;">💑</div>
+            <h3 style="color: #e2e8f0; margin: 0 0 10px 0;">गुण मिलान पैक</h3>
+            <div style="font-size: 28px; font-weight: bold; color: #ffffff;">₹51</div>
+            <hr style="border-top: 1px solid #334155; margin: 15px 0;">
+            <p style="color: #94a3b8; font-size: 14px; text-align: left; line-height: 1.8;">✨ <strong>3 मिलान क्रेडिट्स</strong><br>✅ अष्टकूट 36 गुण विवरण<br>✅ मांगलिक गहरा विश्लेषण<br>📥 मिलान PDF डाउनलोड</p>
+            <a href="{% url 'milan_payment' %}?pack=MILAN_51" style="display: block; margin-top: 20px; padding: 12px; background: #334155; color: white; border-radius: 8px; text-decoration: none; font-weight: bold;">अभी खरीदें</a>
+        </div>
+
+        <div style="background: #1c2833; border: 2px solid #f39c12; border-radius: 16px; padding: 25px; text-align: center; position: relative; transform: scale(1.02); box-shadow: 0 8px 25px rgba(243,156,18,0.2);">
+            <span style="position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(45deg, #f39c12, #e67e22); color: white; padding: 4px 15px; border-radius: 20px; font-size: 12px; font-weight: bold;">Best Value 🚀</span>
+            <div style="font-size: 35px; margin-bottom: 10px;">🔥</div>
+            <h3 style="color: #f1c40f; margin: 0 0 10px 0;">महा-कॉम्बो पैक</h3>
+            <div style="font-size: 28px; font-weight: bold; color: #ffffff;">₹101</div>
+            <hr style="border-top: 1px solid #f39c12; opacity: 0.3; margin: 15px 0;">
+            <p style="color: #cbd5e1; font-size: 14px; text-align: left; line-height: 1.8;">✨ <strong style="color: #f1c40f;">5 कुंडली + 5 मिलान क्रेडिट्स</strong><br>✅ सम्पूर्ण पोर्टल का एक्सेस<br>✅ दोनों PDF रिपोर्ट्स<br>✅ सभी दोष और उपाय</p>
+            <a href="{% url 'milan_payment' %}?pack=COMBO_101" style="display: block; margin-top: 20px; padding: 14px; background: linear-gradient(135deg, #f39c12, #e67e22); color: white; border-radius: 8px; text-decoration: none; font-weight: bold; box-shadow: 0 4px 15px rgba(230,126,34,0.3);">कॉम्बो चुनें</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

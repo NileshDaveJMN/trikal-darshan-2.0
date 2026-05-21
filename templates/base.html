@@ -2,6 +2,8 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+
     <meta name="google-site-verification" content="-hKZRFClyJV_1GWOTzAG1OqL7Obr3HsZlh_tapXG4fk" />
     <meta charset="UTF-8">
     
@@ -21,6 +23,15 @@
     <link rel="icon" type="image/png" href="{% static 'logo.png' %}">
 
     <title>{% block title %}त्रिकाल दर्शन - AI कुंडली और दैनिक पंचांग{% endblock %}</title>
+    <meta name="description" content="त्रिकाल दर्शन - अपनी सटीक वैदिक जन्म कुंडली, पंचांग, और ज्योतिषीय विश्लेषण ऑनलाइन प्राप्त करें।">
+    <meta name="keywords" content="Trikal Darshan, Kundali, Vedic Astrology, Panchang, Online Kundali, Free Astrology, Nilesh Dave">
+    <meta name="author" content="Nilesh Dave">
+
+    <meta property="og:title" content="त्रिकाल दर्शन - ऑनलाइन वैदिक कुंडली">
+    <meta property="og:description" content="अपनी सटीक जन्म कुंडली, पंचांग और ज्योतिषीय विश्लेषण प्राप्त करें।">
+    <meta property="og:url" content="https://trikaldarshan.pythonanywhere.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://trikaldarshan.pythonanywhere.com{% static 'logo.png' %}">
 
     <link rel="stylesheet" href="{% static 'css/style.css' %}?v=1">
     <div id="TabDownload" class="tab-content" style="display: none;">
@@ -48,7 +59,7 @@
 <body>
     
 
-    <div style="position: absolute; top: 15px; right: 15px; z-index: 1000;">
+    <div style="position: absolute; top: 15px; right: 130px; z-index: 1000;">
         <a href="/static/trikaldarshan.apk" onclick="return confirmDownload(event)" style="text-decoration: none;">
             <button class="top-action-btn btn-app">
                 <span style="margin-right: 4px;">📲</span> App
@@ -58,13 +69,33 @@
 
     <div class="header"><h1>🔮 त्रिकाल दर्शन</h1></div>
     
-    <nav>
-        <div class="nav-links">
-            <a href="/">🏠 कुंडली</a>
-            <a href="/panchang">📅 दैनिक पंचांग</a>
-            <a href="/contact">📞 संपर्क</a>
+    <nav style="background: #1e293b; padding: 12px 20px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.4);">
+        
+        <div class="nav-links" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+            <a href="/" style="color: #cbd5e1; text-decoration: none; font-weight: bold; font-size: 15px; padding: 5px 10px; border-radius: 8px; transition: 0.3s;">🏠 कुंडली</a>
+            <a href="/milan" style="color: #cbd5e1; text-decoration: none; font-weight: bold; font-size: 15px; padding: 5px 10px; border-radius: 8px; transition: 0.3s;">💑 गुण मिलान</a>
+            <a href="/panchang" style="color: #cbd5e1; text-decoration: none; font-weight: bold; font-size: 15px; padding: 5px 10px; border-radius: 8px; transition: 0.3s;">📅 पंचांग</a>
+            <a href="https://mera-mandir-live.onrender.com" target="_blank" style="background-color: #c0392b; color: white; padding: 6px 12px; border-radius: 20px; text-decoration: none; font-size: 13px; font-weight: bold; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">🔴 लाइव दर्शन</a>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            {% if user.is_authenticated %}
+                <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #f1c40f; padding: 6px 14px; border-radius: 30px; display: flex; align-items: center; gap: 8px; box-shadow: 0 0 10px rgba(241, 196, 15, 0.15);">
+                    <span style="font-size: 13px; color: #f1c40f; font-weight: bold; font-family: monospace;">
+                        🪙 K: {{ user.userprofile.kundali_credits|default:0 }} | M: {{ user.userprofile.milan_credits|default:0 }}
+                    </span>
+                </div>
+                <a href="/profile/" style="color: white; background: #2c3e50; padding: 6px 14px; border-radius: 20px; text-decoration: none; font-size: 13px; font-weight: bold; border: 1px solid #34495e;">
+                    👤 {{ user.username }}
+                </a>
+                <a href="{% url 'logout' %}" style="color: #e74c3c; font-size: 13px; font-weight: bold; text-decoration: none; margin-left: 5px;">लॉगआउट</a>
+            {% else %}
+                <a href="{% url 'login' %}" style="background: linear-gradient(135deg, #e67e22, #d35400); color: white; padding: 6px 18px; border-radius: 20px; text-decoration: none; font-size: 13px; font-weight: bold; box-shadow: 0 4px 10px rgba(230,126,34,0.3);">लॉगिन</a>
+                <a href="{% url 'register' %}" style="background: #2980b9; color: white; padding: 6px 18px; border-radius: 20px; text-decoration: none; font-size: 13px; font-weight: bold;">साइन-अप</a>
+            {% endif %}
         </div>
     </nav>
+
 
     <div class="container">
         {% block content %}{% endblock %}

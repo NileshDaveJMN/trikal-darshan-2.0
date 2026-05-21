@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        /* 🌟 हमारा पुराना और भरोसेमंद Mangal फोंट 🌟 */
+        @font-face {
+            font-family: 'HindiFont';
+            src: url('file:///home/Trikaldarshan/Trikaldarshan/static/fonts/Mangal.ttf');
+        }
+
+        @page { size: A4; margin: 1cm; }
+
+        /* पूरे डॉक्यूमेंट पर फोंट लागू करना और आधे अक्षरों (त्र, ग्र) को जोड़ना */
+        * {
+            font-family: 'HindiFont', sans-serif !important;
+            font-variant-ligatures: common-ligatures !important;
+            font-feature-settings: "kern", "liga", "clig" !important;
+        }
+
+        body {
+            color: #333;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #e67e22;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 { color: #e67e22; font-size: 28px; margin: 0; }
+
+        .section-title {
+            background-color: #34495e;
+            color: #ffffff;
+            padding: 8px 12px;
+            margin-top: 20px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 5px; }
+        
+        th, td {
+            border: 1px solid #dee2e6 !important;
+            padding: 8px;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th { background-color: #f8f9fa; color: #2c3e50; }
+        
+        .label { font-weight: bold; color: #2c3e50; background-color: #fcfcfc; }
+    </style>
+
+</head>
+<body>
+    <div class="header">
+        <h1>त्रिकाल दर्शन - जन्म कुंडली</h1>
+        <p>जातक का नाम: <strong>{{ name }}</strong></p>
+    </div>
+    
+{% if include_charts and chart_image %}
+    <div style="text-align: center; margin-top: 20px;">
+        <h3>लग्न कुंडली</h3>
+        <img src="{{ chart_image }}" style="width: 100%; max-width: 500px; border: 1px solid #ccc;">
+    </div>
+{% endif %}
+
+
+    <div class="section-title">जन्म विवरण</div>
+    <table>
+        <tr>
+            <td class="label">जन्म स्थान</td><td>{{ city }}</td>
+            <td class="label">जन्म तिथि</td><td>{{ day }}-{{ month }}-{{ year }}</td>
+        </tr>
+        <tr>
+            <td class="label">नक्षत्र</td><td>{{ nakshatra }}</td>
+            <td class="label">तिथि</td><td>{{ tithi }}, {{ paksha }} पक्ष, संवत {{ samvat }} ({{ hindu_maas }})</td>
+
+        </tr>
+        <tr>
+            <td class="label">चन्द्र राशि</td><td>{{ chandra_rashi }}</td>
+            <td class="label">लग्न</td><td>{{ lagna }}</td>
+        </tr>
+    </table>
+
+    {% if include_charts %}
+    <div class="section-title">कुंडली भाव विवरण</div>
+    <table>
+        <thead>
+            <tr><th>भाव (House)</th><th>राशि (Sign)</th><th>ग्रह (Planets)</th></tr>
+        </thead>
+        <tbody>
+            {% for house in houses %}
+            <tr><td>भाव {{ house.num }}</td><td>{{ house.rashi }}</td><td>{{ house.planets_full }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if include_planets %}
+    <div class="section-title">ग्रहों की स्पष्ट स्थिति</div>
+    <table>
+        <thead>
+            <tr><th>ग्रह</th><th>राशि</th><th>अंश (Degree)</th></tr>
+        </thead>
+        <tbody>
+            {% for planet in planet_details %}
+            <tr><td>{{ planet.name }}</td><td>{{ planet.rashi }}</td><td>{{ planet.degree }}</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    {% if include_ai and ai_history %}
+    <div class="section-title">AI फलित (भविष्यवाणियां)</div>
+    <div style="margin-top: 10px;">
+        {% for item in ai_history %}
+        <div style="border: 1px solid #ccc; padding: 12px; border-radius: 5px; margin-bottom: 15px; background-color: #fcfcfc; page-break-inside: avoid;">
+            <p style="color: #c0392b; font-weight: bold; margin-top: 0;">प्रश्न: {{ item.question }}</p>
+            <p style="font-size: 13px; line-height: 1.6; margin-bottom: 0;">{{ item.answer|safe }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</body>
+</html>

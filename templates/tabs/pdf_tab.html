@@ -1,0 +1,14 @@
+{% if not user.is_authenticated %}
+    <div style="text-align: center; padding: 40px 20px; background: #1c2833; border-radius: 12px; border: 1px dashed #e74c3c;">
+        <p style="color: #bdc3c7; margin-bottom: 25px; font-size: 16px;">PDF डाउनलोड करने के लिए कृपया साइन-इन या साइन-अप करें।</p>
+        <div style="display: flex; justify-content: center; gap: 15px;">
+            <a href="{% url 'login' %}" style="background: #e67e22; color: white; padding: 10px 30px; border-radius: 25px; text-decoration: none; font-weight: bold;">साइन-इन</a>
+            <a href="{% url 'register' %}" style="background: #2980b9; color: white; padding: 10px 30px; border-radius: 25px; text-decoration: none; font-weight: bold;">साइन-अप</a>
+        </div>
+    </div>
+{% elif tabs.is_pdf_paid and not user.is_staff %}
+    <div style="text-align: center; padding: 40px 20px; background: #1c2833; border-radius: 12px; border: 1px dashed #f1c40f;">
+        <h3 style="color: #f1c40f;">💎 प्रीमियम फीचर</h3>
+        <p style="color: #bdc3c7;">PDF रिपोर्ट डाउनलोड केवल प्रीमियम यूज़र्स के लिए उपलब्ध है।</p>
+    </div>
+{% endif %}

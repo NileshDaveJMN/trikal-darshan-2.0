@@ -1,46 +1,391 @@
-<div style="margin-top: 10px; margin-bottom: 40px;">
-    <div style="background: #ffffff; border: 1px solid #a5d6a7; border-radius: 12px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow-x: auto;">
-        <table style="width: 100%; border-collapse: collapse; min-width: 300px;">
-            <thead><tr style="background: #c62828; color: white;"><th style="padding: 10px; border: 1px solid #ddd;">महादशा</th><th style="padding: 10px; border: 1px solid #ddd;">आरंभ</th><th style="padding: 10px; border: 1px solid #ddd;">समाप्ति</th></tr></thead>
+<div class="card" style="padding: 15px; margin-bottom: 20px;">
+
+    <h4 style="
+        color: #ffca28;
+        border-bottom: 1px solid #ffca28;
+        padding-bottom: 12px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 22px;
+        text-shadow: 0 0 8px rgba(255,202,40,0.4);
+    ">
+        <span style="font-size: 24px;">⏳</span>
+        विंशोत्तरी महादशा विवरण
+    </h4>
+
+    <div style="
+        background: #0f172a;
+        border: 1px solid #ffca28;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow:
+            0 0 15px rgba(255,202,40,0.18),
+            0 0 35px rgba(255,202,40,0.08);
+    ">
+
+        <table style="
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            table-layout: fixed;
+        ">
+
+            <thead>
+
+                <tr style="
+                    background: linear-gradient(90deg,#ffca28,#f4b400);
+                    color: #0f172a;
+                ">
+
+                    <th style="
+                        padding: 14px 4px;
+                        border-bottom: 1px solid #8f6a00;
+                        font-size: 15px;
+                        width: 30%;
+                        font-weight: bold;
+                    ">
+                        महादशा
+                    </th>
+
+                    <th style="
+                        padding: 14px 4px;
+                        border-bottom: 1px solid #8f6a00;
+                        font-size: 15px;
+                        width: 35%;
+                        font-weight: bold;
+                    ">
+                        आरंभ
+                    </th>
+
+                    <th style="
+                        padding: 14px 4px;
+                        border-bottom: 1px solid #8f6a00;
+                        font-size: 15px;
+                        width: 35%;
+                        font-weight: bold;
+                    ">
+                        समाप्ति
+                    </th>
+
+                </tr>
+
+            </thead>
+
             <tbody>
-                {% for d in res.dasha %}
-                <tr style="background: {% if d.is_current %}#e8f5e9{% elif forloop.counter|divisibleby:2 %}#f9f9f9{% else %}#ffffff{% endif %}; border: {% if d.is_current %}2px solid #2e7d32{% else %}none{% endif %};">
-                    <td style="padding: 10px; border: 1px solid #ddd; text-align: center;">
-                        <div style="font-weight: bold; color: {% if d.is_current %}#2e7d32{% else %}#d35400{% endif %};">{{ d.planet }}{% if d.is_current %}<br><span style="background: #2e7d32; color: white; font-size: 10px; padding: 2px 5px; border-radius: 4px; display:inline-block; margin-top:3px;">वर्तमान</span>{% endif %}</div>
-                        <button onclick="toggleAntardasha({{ forloop.counter }})" id="btn-md-{{ forloop.counter }}" style="background: #fdf2e9; border: 1px solid #e59866; border-radius: 4px; font-size: 11px; padding: 2px 6px; color: #c0392b; margin-top: 5px; cursor: pointer;">{% if d.is_current %}➖{% else %}➕{% endif %}</button>
-                    </td>
-                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; font-size: 13px; color: #2c3e50;">{{ d.start }}</td>
-                    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; font-size: 13px; color: #2c3e50;">{{ d.end }}</td>
-                </tr>
-                <tr id="ad-row-{{ forloop.counter }}" style="display: {% if d.is_current %}table-row{% else %}none{% endif %}; background: #2c3e50;">
-                    <td colspan="3" style="padding: 0;">
-                        <table style="width: 100%; font-size: 13px; color: white; border-collapse: collapse;">
-                            <tr style="background: #1a252f; text-align: left;"><th style="padding: 8px 10px 8px 40px; color: #bdc3c7;">अंतर्दशा</th><th style="padding: 8px 10px; color: #bdc3c7;">आरंभ</th><th style="padding: 8px 10px; color: #bdc3c7;">समाप्ति</th></tr>
-                            {% for ad in d.antardashas %}
-                            <tr style="border-bottom: 1px solid #34495e; background: {% if ad.is_current %}#1e8449{% else %}transparent{% endif %};">
-                                <td style="padding: 6px 10px 6px 40px; color: {% if ad.is_current %}#ffffff{% else %}#f1c40f{% endif %};">{{ ad.planet }}</td>
-                                <td style="padding: 6px 10px; color: #ecf0f1;">{{ ad.start }}</td><td style="padding: 6px 10px; color: #ecf0f1;">{{ ad.end }}</td>
-                            </tr>
-                            {% endfor %}
-                        </table>
-                    </td>
-                </tr>
-                {% endfor %}
+
+                {% if res.dasha %}
+
+                    {% for d in res.dasha %}
+
+                    <tr style="
+                        background:
+                        {% if d.is_current %}
+                            rgba(255,202,40,0.08)
+                        {% else %}
+                            #0f172a
+                        {% endif %};
+
+                        border-bottom: 1px solid #334155;
+                        transition: 0.3s;
+                    ">
+
+                        <td style="
+                            padding: 12px 4px;
+                            border-right: 1px solid #334155;
+                        ">
+
+                            <div style="
+                                display: flex;
+                                flex-direction: column;
+                                align-items: center;
+                                gap: 8px;
+                            ">
+
+                                <div style="
+                                    font-weight: bold;
+                                    font-size: 16px;
+
+                                    color:
+                                    {% if d.is_current %}
+                                        #ffca28
+                                    {% else %}
+                                        #e2e8f0
+                                    {% endif %};
+
+                                    text-shadow:
+                                    {% if d.is_current %}
+                                        0 0 8px rgba(255,202,40,0.4)
+                                    {% else %}
+                                        none
+                                    {% endif %};
+                                ">
+                                    {{ d.planet }}
+                                </div>
+
+                                <button
+                                    onclick="toggleAntardasha({{ forloop.counter }})"
+                                    id="btn-md-{{ forloop.counter }}"
+
+                                    style="
+                                        background:
+                                        {% if d.is_current %}
+                                            rgba(255,202,40,0.12)
+                                        {% else %}
+                                            transparent
+                                        {% endif %};
+
+                                        border: 1px solid #ffca28;
+                                        border-radius: 6px;
+                                        font-size: 14px;
+                                        padding: 4px 14px;
+                                        color: #ffca28;
+                                        cursor: pointer;
+                                        transition: 0.25s;
+                                        box-shadow: 0 0 8px rgba(255,202,40,0.15);
+                                    "
+                                >
+
+                                    {% if d.is_current %}
+                                        ➖
+                                    {% else %}
+                                        ➕
+                                    {% endif %}
+
+                                </button>
+
+                            </div>
+
+                        </td>
+
+                        <td style="
+                            padding: 12px 4px;
+                            font-family: monospace;
+                            font-size: 13px;
+                            color: #e2e8f0;
+                            border-right: 1px solid #334155;
+                            letter-spacing: -0.3px;
+                        ">
+                            {{ d.start }}
+                        </td>
+
+                        <td style="
+                            padding: 12px 4px;
+                            font-family: monospace;
+                            font-size: 13px;
+                            color: #e2e8f0;
+                            letter-spacing: -0.3px;
+                        ">
+                            {{ d.end }}
+                        </td>
+
+                    </tr>
+
+
+                    <!-- ANTARDASHA -->
+
+                    <tr
+                        id="ad-row-{{ forloop.counter }}"
+
+                        style="
+                            display:
+                            {% if d.is_current %}
+                                table-row
+                            {% else %}
+                                none
+                            {% endif %};
+
+                            background: #111827;
+                        "
+                    >
+
+                        <td colspan="3" style="
+                            padding: 0;
+                            border-bottom: 2px solid #ffca28;
+                        ">
+
+                            <table style="
+                                width: 100%;
+                                font-size: 12px;
+                                color: #cbd5e1;
+                                border-collapse: collapse;
+                                table-layout: fixed;
+                            ">
+
+                                <tr style="
+                                    background: rgba(255,202,40,0.08);
+                                    text-align: center;
+                                ">
+
+                                    <th style="
+                                        padding: 10px 2px;
+                                        color: #ffca28;
+                                        font-weight: bold;
+                                        font-size: 12px;
+                                        width: 30%;
+                                    ">
+                                        अंतर्दशा
+                                    </th>
+
+                                    <th style="
+                                        padding: 10px 2px;
+                                        color: #ffca28;
+                                        font-weight: bold;
+                                        font-size: 12px;
+                                        width: 35%;
+                                    ">
+                                        आरंभ
+                                    </th>
+
+                                    <th style="
+                                        padding: 10px 2px;
+                                        color: #ffca28;
+                                        font-weight: bold;
+                                        font-size: 12px;
+                                        width: 35%;
+                                    ">
+                                        समाप्ति
+                                    </th>
+
+                                </tr>
+
+                                {% for ad in d.antardashas %}
+
+                                <tr style="
+                                    border-bottom: 1px dashed #334155;
+
+                                    background:
+                                    {% if ad.is_current %}
+                                        rgba(255,202,40,0.08)
+                                    {% else %}
+                                        transparent
+                                    {% endif %};
+                                ">
+
+                                    <td style="
+                                        padding: 10px 2px;
+
+                                        font-weight:
+                                        {% if ad.is_current %}
+                                            bold
+                                        {% else %}
+                                            normal
+                                        {% endif %};
+
+                                        color:
+                                        {% if ad.is_current %}
+                                            #ffca28
+                                        {% else %}
+                                            #e2e8f0
+                                        {% endif %};
+
+                                        text-align: center;
+                                    ">
+
+                                        {{ ad.planet }}
+
+                                    </td>
+
+                                    <td style="
+                                        padding: 10px 2px;
+                                        color: #cbd5e1;
+                                        font-family: monospace;
+                                        font-size: 11px;
+                                    ">
+
+                                        {{ ad.start }}
+
+                                    </td>
+
+                                    <td style="
+                                        padding: 10px 2px;
+                                        color: #cbd5e1;
+                                        font-family: monospace;
+                                        font-size: 11px;
+                                    ">
+
+                                        {{ ad.end }}
+
+                                    </td>
+
+                                </tr>
+
+                                {% endfor %}
+
+                            </table>
+
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                {% else %}
+
+                    <tr>
+
+                        <td colspan="3" style="
+                            padding: 30px;
+                            color: #ffca28;
+                            text-align: center;
+                            font-size: 15px;
+                        ">
+
+                            दशा डेटा उपलब्ध नहीं है।
+
+                        </td>
+
+                    </tr>
+
+                {% endif %}
+
             </tbody>
+
         </table>
+
     </div>
+
 </div>
+
+
+
 <script>
-    function toggleAntardasha(id) {
-        var row = document.getElementById('ad-row-' + id);
-        var btn = document.getElementById('btn-md-' + id);
-        
-        if (row.style.display === 'none' || row.style.display === '') {
-            row.style.display = 'table-row';
-            btn.innerHTML = '➖'; // खुलने पर माइनस का निशान
-        } else {
-            row.style.display = 'none';
-            btn.innerHTML = '➕'; // बंद होने पर वापस प्लस का निशान
-        }
+
+function toggleAntardasha(id) {
+
+    var row = document.getElementById('ad-row-' + id);
+
+    var btn = document.getElementById('btn-md-' + id);
+
+    if (row.style.display === 'none' || row.style.display === '') {
+
+        row.style.display = 'table-row';
+
+        btn.innerHTML = '➖';
+
+        btn.style.borderColor = '#ffca28';
+
+        btn.style.color = '#ffca28';
+
+        btn.style.background = 'rgba(255,202,40,0.12)';
+
+        btn.style.boxShadow = '0 0 10px rgba(255,202,40,0.2)';
+
+    } else {
+
+        row.style.display = 'none';
+
+        btn.innerHTML = '➕';
+
+        btn.style.borderColor = '#ffca28';
+
+        btn.style.color = '#ffca28';
+
+        btn.style.background = 'transparent';
+
+        btn.style.boxShadow = 'none';
     }
+}
+
 </script>

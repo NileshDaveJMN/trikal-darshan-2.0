@@ -1,8 +1,119 @@
-<div class="chart-wrapper" style="margin-bottom: 20px;">
-    {% for h in res.houses %}
-    <div class="house-box h{{ forloop.counter }}">
-        <span class="p-text">{{ h.planets }}</span>
-        <span class="r-num">{{ h.r_num }}</span>
-    </div>
-    {% endfor %}
+<div class="card" style="padding: 20px; margin-bottom: 20px;">
+    
+    {% if res %}
+        <div style="position: relative; width: 100%; max-width: 350px; margin: 0 auto; aspect-ratio: 1/1; background: #0f172a; border-radius: 4px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); overflow: hidden; border: 2px solid #ffca28;">
+            
+            <svg viewBox="0 0 400 400" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                <rect x="0" y="0" width="400" height="400" fill="none" stroke="#ffca28" stroke-width="4"/>
+                <line x1="0" y1="0" x2="400" y2="400" stroke="#ffca28" stroke-width="2"/>
+                <line x1="0" y1="400" x2="400" y2="0" stroke="#ffca28" stroke-width="2"/>
+                <polygon points="200,0 400,200 200,400 0,200" fill="none" stroke="#ffca28" stroke-width="2"/>
+            </svg>
+
+            {% if res.houses %}
+                {% for h in res.houses %}
+                    {% if h.num == 1 %}<div style="position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); text-align: center;"><strong style="color: #ffffff; font-size: 15px;">{{ h.planets }}</strong><div style="color: #ffca28; font-size: 11px; margin-top: 2px;">{{ h.r_num }}</div></div>
+                    {% elif h.num == 2 %}<div style="position: absolute; top: 12%; left: 25%; transform: translate(-50%, -50%); text-align: center;"><strong style="color: #ffffff; font-size: 15px;">{{ h.planets }}</strong><div style="color: #ffca28; font-size: 11px; margin-top: 2px;">{{ h.r_num }}</div></div>
+                    {% elif h.num == 3 %}<div style="position: absolute; top: 25%; left: 12%; transform: translate(-50%, -50%); text-align: center;"><strong style="color: #ffffff; font-size: 15px;">{{ h.planets }}</strong><div style="color: #ffca28; font-size: 11px; margin-top: 2px;">{{ h.r_num }}</div></div>
+                    {% elif h.num == 4 %}<div style="position: absolute; top: 50%; left: 20%; transform: translate(-50%, -50%); text-align: center;"><strong style="color: #ffffff; font-size: 15px;">{{ h.planets }}</strong><div style="color: #ffca28; font-size: 11px; margin-top: 2px;">{{ h.r_num }}</div></div>
+                    {% elif h.num == 5 %}<div style="position: absolute; top: 75%; left: 12%; transform: translate(-50%, -50%); text-align: center;"><strong style="color: #ffffff; font-size: 15px;">{{ h.planets }}</strong><div style="color: #ffca28; font-size: 11px; margin-top: 2px;">{{ h.r_num }}</div></div>
+                    {% elif h.num == 6 %}<div style="position: absolute; top: 88%; left: 25%; transform: translate(-50%, -50%); text-align: center;"><strong style="color: #ffffff; font-size: 15px;">{{ h.planets }}</strong><div style="color: #ffca28; font-size: 11px; margin-top: 2px;">{{ h.r_num }}</div></div>
+                    {% elif h.num == 7 %}<div style="position: absolute; top: 80%; left: 50%; transform: translate(-50%, -50%); text-align: center;"><strong style="color: #ffffff; font-size: 15px;">{{ h.planets }}</strong><div style="color: #ffca28; font-size: 11px; margin-top: 2px;">{{ h.r_num }}</div></div>
+                    {% elif h.num == 8 %}<div style="position: absolute; top: 88%; left: 75%; transform: translate(-50%, -50%); text-align: center;"><strong style="color: #ffffff; font-size: 15px;">{{ h.planets }}</strong><div style="color: #ffca28; font-size: 11px; margin-top: 2px;">{{ h.r_num }}</div></div>
+                    {% elif h.num == 9 %}<div style="position: absolute; top: 75%; left: 88%; transform: translate(-50%, -50%); text-align: center;"><strong style="color: #ffffff; font-size: 15px;">{{ h.planets }}</strong><div style="color: #ffca28; font-size: 11px; margin-top: 2px;">{{ h.r_num }}</div></div>
+                    {% elif h.num == 10 %}<div style="position: absolute; top: 50%; left: 80%; transform: translate(-50%, -50%); text-align: center;"><strong style="color: #ffffff; font-size: 15px;">{{ h.planets }}</strong><div style="color: #ffca28; font-size: 11px; margin-top: 2px;">{{ h.r_num }}</div></div>
+                    {% elif h.num == 11 %}<div style="position: absolute; top: 25%; left: 88%; transform: translate(-50%, -50%); text-align: center;"><strong style="color: #ffffff; font-size: 15px;">{{ h.planets }}</strong><div style="color: #ffca28; font-size: 11px; margin-top: 2px;">{{ h.r_num }}</div></div>
+                    {% elif h.num == 12 %}<div style="position: absolute; top: 12%; left: 75%; transform: translate(-50%, -50%); text-align: center;"><strong style="color: #ffffff; font-size: 15px;">{{ h.planets }}</strong><div style="color: #ffca28; font-size: 11px; margin-top: 2px;">{{ h.r_num }}</div></div>
+                    {% endif %}
+                {% endfor %}
+            {% else %}
+                <p style="text-align:center; padding-top: 45%; color: #ffca28;">चार्ट डेटा उपलब्ध नहीं है</p>
+            {% endif %}
+        </div>
+
+        <div style="margin-top: 30px; border-top: 1px solid #334155; padding-top: 20px;">
+            <h4 style="color: #ffca28; margin-bottom: 15px; text-align: center; font-size: 16px;">
+                📜 जन्म विवरण एवं पंचांग
+            </h4>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                
+                <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
+                    <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">नाम</div>
+                    <div style="color: #ffffff; font-weight: bold; font-size: 13px;">{{ res.name|default:"-" }}</div>
+                </div>
+                
+                <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
+                    <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">जन्म स्थान</div>
+                    <div style="color: #ffffff; font-weight: bold; font-size: 13px;">{{ res.city|default:"-" }}</div>
+                </div>
+
+                <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
+                    <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">जन्म तारीख / वार</div>
+                    <div style="color: #ffffff; font-weight: bold; font-size: 13px;">
+                        {{ res.day|default:"-" }}/{{ res.month|default:"-" }}/{{ res.year|default:"-" }}
+                        <br><span style="font-weight:normal; font-size:11px;">
+                            ({% if res.p_extra %}{{ res.p_extra.day|default:"-" }}{% else %}-{% endif %})
+                        </span>
+                    </div>
+                </div>
+
+                <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
+                    <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">जन्म समय</div>
+                    <div style="color: #ffffff; font-weight: bold; font-size: 13px;">
+                        {{ res.hour|default:"00" }}:{{ res.minute|default:"00" }}
+                    </div>
+                </div>
+
+                <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
+                    <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">लग्न</div>
+                    <div style="color: #ffca28; font-weight: bold; font-size: 13px;">{{ res.lagna|default:"-" }}</div>
+                </div>
+
+                <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
+                    <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">राशि (चन्द्र)</div>
+                    <div style="color: #ffca28; font-weight: bold; font-size: 13px;">
+                        {% if res.p_extra %}{{ res.p_extra.moon_rashi|default:"-" }}{% else %}-{% endif %}
+                    </div>
+                </div>
+
+                <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
+                    <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">नक्षत्र</div>
+                    <div style="color: #ffffff; font-weight: bold; font-size: 13px;">
+                        {% if res.p_extra %}{{ res.p_extra.nakshatra|default:"-" }}{% else %}-{% endif %}
+                    </div>
+                </div>
+
+                <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
+                    <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">तिथि / पक्ष</div>
+                    <div style="color: #ffffff; font-weight: bold; font-size: 13px;">
+                        {% if res.p_extra %}{{ res.p_extra.tithi|default:"-" }}, {{ res.p_extra.paksha|default:"-" }}{% else %}-, -{% endif %}
+                    </div>
+                </div>
+
+                <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
+                    <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">संवत / माह</div>
+                    <div style="color: #ffffff; font-weight: bold; font-size: 13px;">
+                        {% if res.p_extra %}{{ res.p_extra.samvat|default:"-" }} ({{ res.p_extra.hindu_maas|default:"-" }}){% else %}- (-){% endif %}
+                    </div>
+                </div>
+
+                <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
+                    <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">योग / करण</div>
+                    <div style="color: #ffffff; font-weight: bold; font-size: 13px;">
+                        {% if res.p_extra %}{{ res.p_extra.yoga|default:"-" }} / {{ res.p_extra.karana|default:"-" }}{% else %}- / -{% endif %}
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    {% else %}
+        <div style="text-align:center; padding: 40px 10px;">
+            <div style="font-size: 40px; margin-bottom: 15px;">📜</div>
+            <h3 style="color: #ffca28; margin-bottom: 10px; font-size: 18px;">कुंडली चार्ट और पंचांग</h3>
+            <p style="color: #94a3b8; font-size: 14px; line-height: 1.6;">
+                अपनी कुंडली का विस्तृत चार्ट, पंचांग, लग्न और राशि विवरण देखने के लिए कृपया फॉर्म भरकर नई कुंडली बनाएं या सेव की गई लिस्ट में से कोई कुंडली चुनें।
+            </p>
+        </div>
+    {% endif %}
 </div>

@@ -24,11 +24,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-_(1@ran2op0v^mhq@2zun67n$3&*9+t8gfvv(ayi_5%(q4%*yi'
 
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['trikaldarshan.pythonanywhere.com', 'www.trikaldarshan.com', '127.0.0.1']
 
 # Application definition
 INSTALLED_APPS = [
@@ -120,4 +117,11 @@ STATIC_URL = 'static/'
 
 # 🚀 यह नई लाइन जोड़नी है ताकि जांगो को CSS मिल जाए
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
-
+# Email Configuration for Live Alerts
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 465
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'nileshdave1511@gmail.com'  # 👈 आपका असली Gmail
+EMAIL_HOST_PASSWORD = 'wqqy hqwd vwnz thby'  # 👈 स्क्रीनशॉट वाला 16-अक्षरों का सीक्रेट कोड
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

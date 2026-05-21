@@ -1,0 +1,71 @@
+<div class="card">
+{% if not user.is_authenticated %}
+    <div style="text-align: center; padding: 40px 20px; background: #0f172a; border-radius: 8px; border: 1px dashed #ffca28;">
+        <p style="color: #cbd5e1; margin-bottom: 25px; font-size: 14px;">इस सुविधा का उपयोग करने के लिए कृपया साइन-इन या साइन-अप करें।</p>
+        <div style="display: flex; justify-content: center; gap: 15px;">
+            <a href="{% url 'login' %}" style="background: #ffca28; color: #0f172a; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px;">साइन-इन</a>
+            <a href="{% url 'register' %}" style="background: transparent; color: #ffca28; border: 1px solid #ffca28; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px;">साइन-अप</a>
+        </div>
+    </div>
+
+{% elif tabs.is_dosha_paid and not user.is_staff %}
+    <div style="text-align: center; padding: 40px 20px; background: #0f172a; border-radius: 8px; border: 1px solid #ffca28;">
+        <h3 style="color: #ffca28; margin-bottom: 10px;">प्रीमियम फीचर</h3>
+        <p style="color: #94a3b8; font-size: 13px;">दोष विश्लेषण और रत्न सुझाव देखने के लिए अपनी कुंडली को प्रीमियम में अपग्रेड करें।</p>
+    </div>
+
+{% else %}
+    <h4 style="color: #ffca28; border-bottom: 1px solid #334155; padding-bottom: 12px; margin-bottom: 20px;">दोष विश्लेषण एवं उपाय</h4>
+    
+    {% if res.detected_doshas %}
+        {% for d in res.detected_doshas %}
+            <div style="background: #0f172a; padding: 18px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #334155; position: relative; overflow: hidden;">
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #ffca28;"></div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; margin-top: 5px;">
+                    <h5 style="color: #ffca28; font-size: 16px; margin: 0; font-weight: bold;">{{ d.name }}</h5>
+                    {% if d.status %}
+                        <span style="font-size:11px; background: rgba(255, 202, 40, 0.1); border: 1px solid #ffca28; color: #ffca28; padding: 4px 10px; border-radius: 20px; font-weight: bold;">स्थिति: {{ d.status }}</span>
+                    {% endif %}
+                </div>
+                
+                <p style="font-size: 13.5px; line-height: 1.6; color: #cbd5e1; margin-bottom: 15px;">{{ d.description }}</p>
+                
+                <div style="background: #1e293b; padding: 15px; border-radius: 8px; border: 1px solid #334155; margin-bottom: 15px;">
+                    <div style="color: #ffca28; font-size: 13px; margin-bottom: 5px;"><strong>वैदिक उपाय:</strong></div> 
+                    <div style="color: #cbd5e1; font-size: 13px; line-height: 1.5;">{{ d.remedy }}</div>
+                </div>
+                
+                {% if d.booking_url %}
+                    <a href="{{ d.booking_url }}" target="_blank" style="background: #ffca28; color: #0f172a; padding: 12px 20px; border-radius: 8px; text-decoration: none; display: block; text-align: center; font-weight: bold; font-size: 13px;">
+                        मन्दिर विवरण एवं विशेष पूजा ➔
+                    </a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    {% else %}
+        <div style="background: #0f172a; padding: 25px 20px; border-radius: 8px; border: 1px solid #334155; text-align: center;">
+            <p style="color: #ffca28; font-weight: bold; margin:0; font-size: 15px;">आपकी कुंडली में कोई मुख्य दोष नहीं मिला!</p>
+            <p style="color: #94a3b8; font-size: 12px; margin-top: 8px;">ग्रहों की स्थिति आपके अनुकूल है।</p>
+        </div>
+    {% endif %}
+
+    {% if res.gemstone %}
+    <h4 style="color: #ffca28; border-bottom: 1px solid #334155; padding-bottom: 12px; margin-top: 35px; margin-bottom: 20px;">आपका भाग्य रत्न (Life Stone)</h4>
+    
+    <div style="background: #0f172a; border-radius: 8px; text-align: center; border: 1px solid #334155; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: #ffca28;"></div>
+        
+        <div style="padding: 25px 20px;">
+            <p style="color: #94a3b8; font-size: 13px; margin-bottom: 12px;">आपके लग्नेश <strong>({{ res.gemstone.planet }})</strong> को बलवान करने के लिए अनुशंसित रत्न:</p>
+            <h3 style="color: #ffca28; margin: 0 0 15px 0; font-size: 26px;">{{ res.gemstone.stone }}</h3>
+            
+            <a href="{{ res.gemstone.booking_url|default:'https://mera-mandir-live.onrender.com/store' }}" target="_blank" style="background: transparent; color: #ffca28; border: 1px solid #ffca28; padding: 10px 20px; border-radius: 8px; text-decoration: none; display: inline-block; font-weight: bold; font-size: 13px;">
+                वैदिक स्टोर पर देखें ➔
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+{% endif %}
+</div>
