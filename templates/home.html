@@ -82,12 +82,46 @@
 
     
 
-    <div class="primary-tabs">
-        <button class="p-tab-btn" onclick="showView(event, 'view-user')">👤 प्रोफाइल</button>
-        <button class="p-tab-btn active" onclick="showView(event, 'view-kundali')">📜 कुंडली</button>
-        <button class="p-tab-btn" onclick="showView(event, 'view-milan')">💑 मिलान</button>
-        <button class="p-tab-btn" onclick="showView(event, 'view-panchang')">📅 पंचांग</button>
-    </div>
+        {% if user.is_authenticated and not user.userprofile.primary_focus %}
+        <div class="card" style="margin: 20px; background: #1e293b; border: 1px solid #ffca28; border-radius: 12px; padding: 25px;">
+            <h3 style="text-align:center; color:#ffca28; margin-top:0;">👋 स्वागत है! कृपया अपनी जानकारी पूरी करें</h3>
+            <p style="text-align:center; color:#cbd5e1; font-size:14px; margin-bottom: 25px;">सटीक AI भविष्यवाणी के लिए हमें आपके बारे में थोड़ा और जानना है।</p>
+            
+            <form method="POST" action="{% url 'save_onboarding' %}">
+                {% csrf_token %}
+                
+                <label style="color: #94a3b8; font-size: 13px; font-weight:bold;">आपका मुख्य लक्ष्य (Primary Focus)</label>
+                <select name="primary_focus" style="width: 100%; padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 8px; margin-bottom: 15px;" required>
+                    <option value="">चुनें...</option>
+                    <option value="Career">करियर / नौकरी</option>
+                    <option value="Marriage">विवाह / प्रेम</option>
+                    <option value="Wealth">धन / व्यापार</option>
+                    <option value="Health">स्वास्थ्य</option>
+                </select>
+
+                <label style="color: #94a3b8; font-size: 13px; font-weight:bold;">वर्तमान चुनौती (Current Challenge)</label>
+                <input type="text" name="current_challenge" placeholder="उदा: नौकरी नहीं मिल रही..." style="width: 100%; padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 8px; margin-bottom: 15px;" required>
+                
+                <label style="color: #94a3b8; font-size: 13px; font-weight:bold;">आपका पेशा (Profession)</label>
+                <input type="text" name="profession" placeholder="उदा: बिज़नेस, प्राइवेट जॉब, छात्र..." style="width: 100%; padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 8px; margin-bottom: 20px;" required>
+
+                <button type="submit" class="primary-btn" style="width: 100%; font-size: 16px; padding: 12px;">जानकारी सेव करें ➔</button>
+            </form>
+        </div>
+
+    {% else %}
+    
+        <div class="primary-tabs">
+            <button class="p-tab-btn" onclick="showView(event, 'view-user')">👤 प्रोफाइल</button>
+            <button class="p-tab-btn active" onclick="showView(event, 'view-kundali')">📜 कुंडली</button>
+            <button class="p-tab-btn" onclick="showView(event, 'view-milan')">💑 मिलान</button>
+            <button class="p-tab-btn" onclick="showView(event, 'view-panchang')">📅 पंचांग</button>
+        </div>
+
+        {% endif %} ```
+
+**संक्षेप में:** आपको `kundali_views.py` को छूना भी नहीं है। आपको सिर्फ अपनी `home.html` में ऊपर दी गई `if-else` कंडीशन लगानी है। जैसे ही यूज़र फॉर्म सबमिट करेगा, वह आपकी `urls.py` में सेट `save_onboarding` लिंक पर जाएगा, डेटा सेव होगा और होम पेज वापस खुल जाएगा! 🚀✨
+
 
     <div class="sub-tabs-bar" id="sub-tabs-bar" style="display:none;">
         <button class="sub-tab active" onclick="switchSubTab(this, 'panel-lagna')">लग्न कुंडली</button>
