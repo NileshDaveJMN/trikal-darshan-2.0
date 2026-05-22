@@ -40,6 +40,8 @@ def update_analytics(page_type):
         json.dump(stats, f, indent=4)
 
 def home(request, k_id=None):
+    if request.user.is_authenticated and not request.user.userprofile.primary_focus:
+        return redirect('save_onboarding')
     tab_settings = TabSettings.objects.first() or TabSettings.objects.create()
 
     if request.method == 'GET':
