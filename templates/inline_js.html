@@ -254,5 +254,26 @@ function loadSavedMilanFull(historyId) {
     })
     .catch(err => console.error("Error loading full milan:", err));
 }
+// 🌟 CHART IMAGE CAPTURE AND PDF EXPORT FUNCTION 🌟
+function captureChartAndDownload() {
+    const chartDiv = document.getElementById('kundali_chart_div');
+    const hiddenInput = document.getElementById('chart_image_data');
+    const form = document.getElementById('pdfDownloadForm');
+    
+    if (chartDiv) {
+        chartDiv.classList.add('pdf-export-mode');
+        html2canvas(chartDiv, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
+            hiddenInput.value = canvas.toDataURL("image/png");
+            chartDiv.classList.remove('pdf-export-mode');
+            form.submit();
+        }).catch(err => {
+            console.error("Chart capture error:", err);
+            chartDiv.classList.remove('pdf-export-mode');
+            form.submit(); 
+        });
+    } else {
+        form.submit();
+    }
+}
 
 </script>

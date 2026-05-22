@@ -2,90 +2,6 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-    <style>
-        .main-viewport, .view-panel {
-            overflow-y: auto !important;
-            -webkit-overflow-scrolling: touch !important; 
-        }
-        #view-milan {
-            padding-bottom: 100px !important; 
-        }
-        
-        /* 🌟 1. Collapsible Box (Accordion) Design 🌟 */
-        .premium-accordion {
-            background: #1e293b;
-            border: 1px solid rgba(255, 202, 40, 0.4);
-            border-radius: 12px;
-            margin-bottom: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-        }
-        .premium-accordion summary {
-            padding: 16px;
-            background: rgba(255, 202, 40, 0.08);
-            color: #ffca28;
-            font-weight: bold;
-            cursor: pointer;
-            list-style: none; 
-            text-align: center;
-            font-size: 16px;
-            transition: 0.3s;
-        }
-        .premium-accordion summary::-webkit-details-marker { display: none; }
-        .premium-accordion summary::after { content: ' ▼'; font-size: 14px; margin-left: 5px; }
-        .premium-accordion[open] summary::after { content: ' ▲'; }
-        .premium-accordion[open] summary { border-bottom: 1px dashed rgba(255, 202, 40, 0.3); }
-        .accordion-content { padding: 16px; }
-
-        /* 🌟 2. Floating PDF Button (FAB) - Fixed for Clicks 🌟 */
-        .pdf-floating-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 25px;
-            background: linear-gradient(135deg, #f1c40f, #f39c12);
-            color: #0f172a;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 5px 20px rgba(243, 156, 18, 0.5);
-            z-index: 9999;
-            border: 2px solid #ffffff;
-            cursor: pointer;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            pointer-events: auto;
-        }
-        .pdf-floating-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.8);
-        }
-        .pdf-floating-btn svg { width: 28px; height: 28px; stroke: #0f172a; }
-
-        /* 🌟 3. Onboarding Chips Design 🌟 */
-        .chip-box { display: none; }
-        .chip-label {
-            display: inline-block;
-            padding: 10px 18px;
-            margin: 5px 5px 10px 0;
-            border-radius: 25px;
-            background: #0f172a;
-            border: 1px solid #334155;
-            color: #cbd5e1;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .chip-box:checked + .chip-label {
-            background: rgba(243, 156, 18, 0.15);
-            border-color: #ffca28;
-            color: #ffca28;
-            font-weight: bold;
-            box-shadow: 0 0 10px rgba(255, 202, 40, 0.2);
-        }
-        .form-section-title { color: #94a3b8; font-size: 14px; margin-top: 15px; margin-bottom: 8px; font-weight: bold; }
-    </style>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>त्रिकाल दर्शन</title>
@@ -103,393 +19,263 @@
         {% endif %}
     </div>
 
-        {% if user.is_authenticated and not user.userprofile.primary_focus %}
-        <style>
-            /* 🌟 नया हॉरिजॉन्टल स्क्रॉलिंग कंटेनर 🌟 */
-            .chip-container {
-                display: flex;
-                overflow-x: auto;
-                gap: 10px;
-                padding-bottom: 12px; /* Scrollbar ke liye jagah */
-                -webkit-overflow-scrolling: touch; /* Mobile par smooth scroll */
-                scrollbar-width: none; /* Firefox me scrollbar chupane ke liye */
-            }
-            .chip-container::-webkit-scrollbar {
-                display: none; /* Chrome/Safari me scrollbar chupane ke liye */
-            }
+    <div class="primary-tabs">
+        <button class="p-tab-btn active" onclick="showView(event, 'view-user')">👤 प्रोफाइल</button>
+        <button class="p-tab-btn" onclick="showView(event, 'view-kundali')">📜 कुंडली</button>
+        <button class="p-tab-btn" onclick="showView(event, 'view-milan')">💑 मिलान</button>
+        <button class="p-tab-btn" onclick="showView(event, 'view-panchang')">📅 पंचांग</button>
+    </div>
 
-            .chip-box { display: none; }
-            .chip-label {
-                display: inline-block;
-                white-space: nowrap; /* टेक्स्ट को टूटने से रोकेगा */
-                flex-shrink: 0; /* चिप्स को सिकुड़ने से रोकेगा */
-                padding: 10px 18px;
-                border-radius: 25px;
-                background: #0f172a;
-                border: 1px solid #334155;
-                color: #cbd5e1;
-                font-size: 14px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            }
-            .chip-box:checked + .chip-label {
-                background: rgba(243, 156, 18, 0.15);
-                border-color: #ffca28;
-                color: #ffca28;
-                font-weight: bold;
-                box-shadow: 0 0 10px rgba(255, 202, 40, 0.2);
-            }
-            .form-section-title { color: #94a3b8; font-size: 14px; margin-top: 15px; margin-bottom: 10px; font-weight: bold; }
-        </style>
+    <div class="sub-tabs-bar" id="sub-tabs-bar" style="display:none;">
+        <button class="sub-tab active" onclick="switchSubTab(this, 'panel-lagna')">लग्न कुंडली</button>
+        <button class="sub-tab" onclick="switchSubTab(this, 'panel-planets')">ग्रह स्थिति</button>
+        <button class="sub-tab" onclick="switchSubTab(this, 'panel-dasha')">दशा</button>
+        <button class="sub-tab" onclick="switchSubTab(this, 'panel-dosh')">दोष</button>
+        <button class="sub-tab" onclick="switchSubTab(this, 'panel-ai')">AI फलित</button>
+    </div>
 
-        <div class="card" style="margin: 20px; background: #1e293b; border: 1px solid #ffca28; border-radius: 12px; padding: 25px;">
-            <h3 style="text-align:center; color:#ffca28; margin-top:0;">👋 स्वागत है! अपनी प्राथमिकताएं चुनें</h3>
-            <p style="text-align:center; color:#cbd5e1; font-size:14px; margin-bottom: 25px;">(आप एक से ज़्यादा भी चुन सकते हैं)</p>
-            
-            <form method="POST" action="{% url 'save_onboarding' %}">
-                {% csrf_token %}
+    <div class="main-viewport">
+        
+        <div id="view-user" class="view-panel active">
+            <div class="card" style="text-align:center;">
+                <h3 style="margin-bottom: 25px;">👤 यूज़र प्रोफाइल</h3>
                 
-                <div class="form-section-title">🎯 आपका मुख्य लक्ष्य क्या है?</div>
-                <div class="chip-container">
-                    <input type="checkbox" id="f_career" name="primary_focus" value="करियर/जॉब" class="chip-box">
-                    <label for="f_career" class="chip-label">💼 करियर / जॉब</label>
-                    <input type="checkbox" id="f_business" name="primary_focus" value="व्यापार/धन" class="chip-box">
-                    <label for="f_business" class="chip-label">💰 व्यापार / धन</label>
-                    <input type="checkbox" id="f_marriage" name="primary_focus" value="विवाह/प्रेम" class="chip-box">
-                    <label for="f_marriage" class="chip-label">❤️ विवाह / प्रेम</label>
-                    <input type="checkbox" id="f_health" name="primary_focus" value="स्वास्थ्य" class="chip-box">
-                    <label for="f_health" class="chip-label">🏥 स्वास्थ्य</label>
-                </div>
+                {% if user.is_authenticated %}
+                    <div style="background: #131c2c; border: 1px solid #334155; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
+                        <p style="color: #cbd5e1; font-size: 15px; margin-bottom: 10px;">
+                            <span style="color: #94a3b8;">नाम:</span> 
+                            <strong style="color: #fff; font-size: 17px; margin-left: 5px;">{{ user.first_name|default:user.username }}</strong>
+                        </p>
+                        <p style="color: #cbd5e1; font-size: 15px; margin-bottom: 0;">
+                            <span style="color: #94a3b8;">ईमेल:</span> 
+                            <strong style="color: #fff; margin-left: 5px;">{{ user.email|default:"उपलब्ध नहीं" }}</strong>
+                        </p>
+                    </div>
 
-                <div class="form-section-title">🚧 वर्तमान में मुख्य चुनौती?</div>
-                <div class="chip-container">
-                    <input type="checkbox" id="c_job" name="current_challenge" value="नौकरी नहीं मिल रही" class="chip-box">
-                    <label for="c_job" class="chip-label">नौकरी नहीं मिल रही</label>
-                    <input type="checkbox" id="c_debt" name="current_challenge" value="कर्ज/आर्थिक समस्या" class="chip-box">
-                    <label for="c_debt" class="chip-label">कर्ज / आर्थिक समस्या</label>
-                    <input type="checkbox" id="c_delay" name="current_challenge" value="विवाह में देरी" class="chip-box">
-                    <label for="c_delay" class="chip-label">विवाह में देरी</label>
-                    <input type="checkbox" id="c_stress" name="current_challenge" value="मानसिक तनाव" class="chip-box">
-                    <label for="c_stress" class="chip-label">मानसिक तनाव</label>
-                </div>
+                    <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                        <div style="flex: 1; background: #0f172a; padding: 15px; border-radius: 10px; border: 1px solid #334155; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                            <h4 style="color: #94a3b8; margin: 0 0 5px 0; font-size: 14px;">📜 कुंडली क्रेडिट्स</h4>
+                            <span style="font-size: 26px; font-weight: bold; color: #ffca28;">{{ user.userprofile.kundali_credits|default:"0" }}</span>
+                        </div>
+                        <div style="flex: 1; background: #0f172a; padding: 15px; border-radius: 10px; border: 1px solid #334155; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
+                            <h4 style="color: #94a3b8; margin: 0 0 5px 0; font-size: 14px;">💑 मिलान क्रेडिट्स</h4>
+                            <span style="font-size: 26px; font-weight: bold; color: #ffca28;">{{ user.userprofile.milan_credits|default:"0" }}</span>
+                        </div>
+                    </div>
 
-                <div class="form-section-title">👨‍💻 आपका पेशा क्या है?</div>
-                <div class="chip-container">
-                    <input type="checkbox" id="p_pvt" name="profession" value="प्राइवेट जॉब" class="chip-box">
-                    <label for="p_pvt" class="chip-label">प्राइवेट जॉब</label>
-                    <input type="checkbox" id="p_govt" name="profession" value="सरकारी नौकरी" class="chip-box">
-                    <label for="p_govt" class="chip-label">सरकारी नौकरी</label>
-                    <input type="checkbox" id="p_biz" name="profession" value="खुद का व्यापार" class="chip-box">
-                    <label for="p_biz" class="chip-label">खुद का व्यापार</label>
-                    <input type="checkbox" id="p_student" name="profession" value="छात्र/तैयारी" class="chip-box">
-                    <label for="p_student" class="chip-label">छात्र / तैयारी</label>
-                </div>
-
-                <div class="form-section-title">💍 वैवाहिक स्थिति (कोई एक चुनें)</div>
-                <div class="chip-container">
-                    <input type="radio" id="r_single" name="relationship_status" value="अविवाहित" class="chip-box" required>
-                    <label for="r_single" class="chip-label">अविवाहित</label>
-                    <input type="radio" id="r_married" name="relationship_status" value="विवाहित" class="chip-box">
-                    <label for="r_married" class="chip-label">विवाहित</label>
-                    <input type="radio" id="r_other" name="relationship_status" value="अन्य" class="chip-box">
-                    <label for="r_other" class="chip-label">अन्य</label>
-                </div>
-
-                <button type="submit" class="primary-btn" style="width: 100%; font-size: 16px; padding: 14px; margin-top: 20px;">जानकारी सेव करें ➔</button>
-            </form>
-        </div>
-{% else %}
-        <div class="primary-tabs">
-            <button class="p-tab-btn active" onclick="showView(event, 'view-user')">👤 प्रोफाइल</button>
-            <button class="p-tab-btn" onclick="showView(event, 'view-kundali')">📜 कुंडली</button>
-            <button class="p-tab-btn" onclick="showView(event, 'view-milan')">💑 मिलान</button>
-            <button class="p-tab-btn" onclick="showView(event, 'view-panchang')">📅 पंचांग</button>
-        </div>
-
-        <div class="sub-tabs-bar" id="sub-tabs-bar" style="display:none;">
-            <button class="sub-tab active" onclick="switchSubTab(this, 'panel-lagna')">लग्न कुंडली</button>
-            <button class="sub-tab" onclick="switchSubTab(this, 'panel-planets')">ग्रह स्थिति</button>
-            <button class="sub-tab" onclick="switchSubTab(this, 'panel-dasha')">दशा</button>
-            <button class="sub-tab" onclick="switchSubTab(this, 'panel-dosh')">दोष</button>
-            <button class="sub-tab" onclick="switchSubTab(this, 'panel-ai')">AI फलित</button>
-        </div>
-
-        <div class="main-viewport">
-            
-            <div id="view-user" class="view-panel active">
-                <div class="card" style="text-align:center;">
-                    <h3 style="margin-bottom: 25px;">👤 यूज़र प्रोफाइल</h3>
-                    
-                    {% if user.is_authenticated %}
+                    <div style="background: #131c2c; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 25px; text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                        <h4 style="color: #ffca28; margin-top: 0; margin-bottom: 15px; text-align: center;">💎 क्रेडिट्स रिचार्ज करें</h4>
                         
-                        <div style="background: #131c2c; border: 1px solid #334155; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
-                            <p style="color: #cbd5e1; font-size: 15px; margin-bottom: 10px;">
-                                <span style="color: #94a3b8;">नाम:</span> 
-                                <strong style="color: #fff; font-size: 17px; margin-left: 5px;">{{ user.first_name|default:user.username }}</strong>
-                            </p>
-                            <p style="color: #cbd5e1; font-size: 15px; margin-bottom: 0;">
-                                <span style="color: #94a3b8;">ईमेल:</span> 
-                                <strong style="color: #fff; margin-left: 5px;">{{ user.email|default:"उपलब्ध नहीं" }}</strong>
-                            </p>
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <img src="{% static 'images/my_qr.jpg' %}" alt="UPI QR" style="width: 160px; border: 2px solid #ffca28; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 0 15px rgba(255, 202, 40, 0.1);">
+                            <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 5px;">UPI ID: <strong style="color: #ffca28; letter-spacing: 0.5px;">nileshdave1511-2@oksbi</strong></p>
                         </div>
 
-                        <div style="display: flex; gap: 15px; margin-bottom: 25px;">
-                            <div style="flex: 1; background: #0f172a; padding: 15px; border-radius: 10px; border: 1px solid #334155; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
-                                <h4 style="color: #94a3b8; margin: 0 0 5px 0; font-size: 14px;">📜 कुंडली क्रेडिट्स</h4>
-                                <span style="font-size: 26px; font-weight: bold; color: #ffca28;">{{ user.userprofile.kundali_credits|default:"0" }}</span>
-                            </div>
-                            <div style="flex: 1; background: #0f172a; padding: 15px; border-radius: 10px; border: 1px solid #334155; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
-                                <h4 style="color: #94a3b8; margin: 0 0 5px 0; font-size: 14px;">💑 मिलान क्रेडिट्स</h4>
-                                <span style="font-size: 26px; font-weight: bold; color: #ffca28;">{{ user.userprofile.milan_credits|default:"0" }}</span>
-                            </div>
-                        </div>
+                        <form id="rechargeForm" method="POST" action="{% url 'submit_payment' %}">
+                            {% csrf_token %}
+                            <label style="color: #94a3b8; font-size: 13px; margin-bottom: 5px; display: block;">पैकेज चुनें:</label>
+                            <select id="package_type" name="package_type" style="width: 100%; padding: 12px; background: #0f172a; color: #ffca28; border: 1px solid #334155; border-radius: 8px; margin-bottom: 15px; font-weight: bold; outline: none;" required>
+                                <option value="KUNDALI_51">📜 3 कुंडली क्रेडिट्स - ₹51</option>
+                                <option value="MILAN_51">💑 3 मिलान क्रेडिट्स - ₹51</option>
+                                <option value="COMBO_101">🔥 कॉम्बो (5 कुंडली + 5 मिलान) - ₹101</option>
+                            </select>
 
-                        <div style="background: #131c2c; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 25px; text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-                            <h4 style="color: #ffca28; margin-top: 0; margin-bottom: 15px; text-align: center;">💎 क्रेडिट्स रिचार्ज करें</h4>
+                            <label style="color: #94a3b8; font-size: 13px; margin-bottom: 5px; display: block;">UTR / रेफरेंस नंबर:</label>
+                            <input type="text" id="reference" name="reference" placeholder="पेमेंट का 12 अंकों का UTR डालें..." style="width: 100%; padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 8px; margin-bottom: 20px; outline: none;" required>
                             
-                            <div style="text-align: center; margin-bottom: 20px;">
-                                <img src="{% static 'images/my_qr.jpg' %}" alt="UPI QR" style="width: 160px; border: 2px solid #ffca28; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 0 15px rgba(255, 202, 40, 0.1);">
-                                <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 5px;">UPI ID: <strong style="color: #ffca28; letter-spacing: 0.5px;">nileshdave1511-2@oksbi</strong></p>
-                            </div>
+                            <button type="submit" style="width: 100%; background: #ffca28; color: #0f172a; border: none; padding: 14px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 202, 40, 0.4); text-transform: uppercase; letter-spacing: 0.5px;">✅ पेमेंट कन्फर्म करें</button>
+                        </form>
+                    </div>
+                    <a href="{% url 'logout' %}" style="text-decoration:none;">
+                        <button class="primary-btn" style="background: transparent; color: #ff4757; border: 1px solid #ff4757;">🚪 लॉगआऊट</button>
+                    </a>
+                {% else %}
+                    <div style="padding: 30px 10px;">
+                        <p style="margin-bottom: 25px; color: #94a3b8; font-size: 15px; line-height: 1.6;">
+                            अपनी प्रोफाइल, सेव की गई कुंडलियां और क्रेडिट्स देखने के लिए कृपया अपने अकाउंट में लॉगिन करें।
+                        </p>
+                        <a href="{% url 'login' %}" style="text-decoration:none;">
+                            <button class="primary-btn">लॉगइन / साइन-अप</button>
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
 
-                            <form id="rechargeForm" method="POST" action="{% url 'submit_payment' %}">
+        <div id="view-kundali" class="view-panel">
+            {% if user.is_authenticated and user.userprofile.daily_horoscope_text %}
+            <div class="card" style="background: linear-gradient(135deg, #1e293b, #131c2c); border: 1px solid #ffca28; box-shadow: 0 0 15px rgba(255, 202, 40, 0.15); margin-bottom: 16px; padding: 20px; border-radius: 12px;">
+                <h3 style="color: #ffca28; margin-top: 0; display: flex; align-items: center; gap: 8px; font-size: 17px;">
+                    ✨ आपका आज का व्यक्तिगत AI राशिफल
+                </h3>
+                <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6; margin-bottom: 0; text-align: left;">
+                    {{ user.userprofile.daily_horoscope_text }}
+                </p>
+            </div>
+            {% endif %}
+
+            {% if user.is_authenticated and not user.userprofile.telegram_chat_id %}
+            <div class="card" style="background: #131c2c; border: 1px dashed #24a1de; margin-bottom: 16px; text-align: center; padding: 16px; border-radius: 12px;">
+                <p style="color: #cbd5e1; font-size: 14px; margin-top: 0; margin-bottom: 12px; line-height: 1.4;">
+                    🌅 रोज़ सुबह सीधे अपने <strong>Telegram</strong> पर अपना पर्सनल सटीक राशिफल पाना चाहते हैं?
+                </p>
+                <a href="https://t.me/Trikal_darshan_bot?start={{ user.username }}" target="_blank" style="text-decoration: none;">
+                    <button type="button" class="primary-btn" style="background: #24a1de; color: #fff; border: none; width: auto; padding: 10px 24px; font-size: 14px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(36, 161, 222, 0.4); cursor: pointer;">
+                        ✈️ Telegram Bot से जुड़ें (FREE)
+                    </button>
+                </a>
+            </div>
+            {% endif %}
+
+            {% if user.is_authenticated and saved_kundalis %}
+            <details class="premium-accordion" {% if not res %}open{% endif %}>
+                <summary>📂 सेव की गई कुंडलियां</summary>
+                <div class="accordion-content">
+                    <div style="display:flex; flex-direction:column; gap:10px;">
+                        {% for k in saved_kundalis %}
+                        <div style="display:flex; align-items:center; justify-content:space-between; background:{% if current_k_id == k.id %}#1a3a5c{% else %}#131c2c{% endif %}; border:1px solid {% if current_k_id == k.id %}#f0a500{% else %}#2e3f52{% endif %}; border-radius:8px; padding:12px 14px;">
+                            <a href="{% url 'view_specific_kundali' k.id %}" style="text-decoration:none; color:#f0f0f0; flex:1;">
+                                <strong style="font-size:15px; color:#ffffff;">{{ k.name }}</strong>
+                                <span style="font-size:12px; color:#aab4be; display:block; margin-top:2px;">{{ k.day }}/{{ k.month }}/{{ k.year }} &bull; {{ k.city }}</span>
+                            </a>
+                            <form method="POST" action="{% url 'home' %}" onsubmit="return confirm('हटाएं?')" style="margin:0; padding:0;">
                                 {% csrf_token %}
-                                
-                                <label style="color: #94a3b8; font-size: 13px; margin-bottom: 5px; display: block;">पैकेज चुनें:</label>
-                                <select id="package_type" name="package_type" style="width: 100%; padding: 12px; background: #0f172a; color: #ffca28; border: 1px solid #334155; border-radius: 8px; margin-bottom: 15px; font-weight: bold; outline: none;" required>
-                                    <option value="KUNDALI_51">📜 3 कुंडली क्रेडिट्स - ₹51</option>
-                                    <option value="MILAN_51">💑 3 मिलान क्रेडिट्स - ₹51</option>
-                                    <option value="COMBO_101">🔥 कॉम्बो (5 कुंडली + 5 मिलान) - ₹101</option>
-                                </select>
-
-                                <label style="color: #94a3b8; font-size: 13px; margin-bottom: 5px; display: block;">UTR / रेफरेंस नंबर:</label>
-                                <input type="text" id="reference" name="reference" placeholder="पेमेंट का 12 अंकों का UTR डालें..." style="width: 100%; padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 8px; margin-bottom: 20px; outline: none;" required>
-                                
-                                <button type="submit" style="width: 100%; background: #ffca28; color: #0f172a; border: none; padding: 14px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 202, 40, 0.4); text-transform: uppercase; letter-spacing: 0.5px;">✅ पेमेंट कन्फर्म करें</button>
+                                <input type="hidden" name="action" value="delete_kundali">
+                                <input type="hidden" name="kundali_id" value="{{ k.id }}">
+                                <button type="submit" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0;">🗑️</button>
                             </form>
                         </div>
-                        <a href="{% url 'logout' %}" style="text-decoration:none;">
-                            <button class="primary-btn" style="background: transparent; color: #ff4757; border: 1px solid #ff4757;">🚪 लॉगआऊट</button>
-                        </a>
-                        
+                        {% endfor %}
+                    </div>
+                    <button onclick="document.getElementById('kundali-input-section').style.display='block'; this.closest('details').removeAttribute('open');" class="primary-btn" style="margin-top:14px; width:100%; background: transparent; border: 1px dashed #ffca28; color: #ffca28;">➕ नई कुंडली बनाएं</button>
+                </div>
+            </details>
+            {% endif %}
+
+            <div id="kundali-input-section" class="card" {% if res or saved_kundalis %}style="display:none;"{% endif %}>
+                <h3>विवरण दर्ज करें</h3>
+                <form method="POST" action="{% url 'home' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="calc">
+                    <label>पूरा नाम</label><input type="text" name="name" required>
+                    <label>लिंग</label>
+                    <select name="gender"><option value="Male">पुरुष</option><option value="Female">महिला</option></select>
+                    
+                    <label>जन्म तिथि</label>
+                    <div class="form-row">
+                        <div><select name="dd" required><option value="">दिन</option>{% for d in days %}<option value="{{ d }}">{{ d }}</option>{% endfor %}</select></div>
+                        <div><select name="mm" required><option value="">महीना</option>{% for m in month_choices %}<option value="{{ m.val }}">{{ m.name }}</option>{% endfor %}</select></div>
+                        <div><select name="yyyy" required><option value="">वर्ष</option>{% for y in years %}<option value="{{ y }}">{{ y }}</option>{% endfor %}</select></div>
+                    </div>
+
+                    <label>जन्म समय</label>
+                    <div class="form-row">
+                        <div><select name="hh" required><option value="0">00</option>{% for h in hours %}{% if h > 0 %}<option value="{{ h }}">{{ h|stringformat:"02d" }}</option>{% endif %}{% endfor %}</select></div>
+                        <div><select name="min" required>{% for m in minutes %}<option value="{{ m }}">{{ m|stringformat:"02d" }}</option>{% endfor %}</select></div>
+                        <div><select name="sec">{% for s in seconds %}<option value="{{ s }}">{{ s|stringformat:"02d" }}</option>{% endfor %}</select></div>
+                    </div>
+
+                    <label>जन्म स्थान</label>
+                    <div style="position:relative;">
+                        <input type="text" name="city_name" id="city_input" autocomplete="off" placeholder="शहर का नाम लिखें..." required>
+                        <div id="city_suggestions"></div>
+                    </div>
+                    <input type="hidden" name="lat" id="lat_input"><input type="hidden" name="lon" id="lon_input">
+                    <small id="city_status"></small>
+                    <button type="submit" class="primary-btn" style="margin-top:20px;">कुंडली बनाएं ➔</button>
+                </form>
+            </div>
+
+            {% if res %}<script>document.addEventListener('DOMContentLoaded',function(){document.getElementById('sub-tabs-bar').style.display='flex';});</script>{% endif %}
+            
+            <div id="kundali-result-section" {% if res %}style="display:block;"{% else %}style="display:none;"{% endif %}>
+                {% if res %}
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <span style="background: rgba(243, 156, 18, 0.1); color: #ffca28; padding: 6px 15px; border-radius: 20px; font-size: 14px; border: 1px solid rgba(243, 156, 18, 0.3); display: inline-block;">
+                        ✨ <strong>{{ res.name|default:"-" }}</strong> की कुंडली
+                    </span>
+                </div>
+                {% endif %}
+
+                <div id="panel-lagna" class="sub-panel active" style="display:block;">
+                    {% include 'tabs/chart_tab.html' %}
+                </div>
+
+                <div id="panel-planets" class="sub-panel">
+                    {% if user.is_authenticated %}
+                        {% include 'tabs/planets_tab.html' %}
                     {% else %}
-                        <div style="padding: 30px 10px;">
-                            <p style="margin-bottom: 25px; color: #94a3b8; font-size: 15px; line-height: 1.6;">
-                                अपनी प्रोफाइल, सेव की गई कुंडलियां और क्रेडिट्स देखने के लिए कृपया अपने अकाउंट में लॉगिन करें।
-                            </p>
-                            <a href="{% url 'login' %}" style="text-decoration:none;">
-                                <button class="primary-btn">लॉगइन / साइन-अप</button>
-                            </a>
+                        <div class="card" style="text-align:center; padding: 35px 15px; margin-top: 15px; background: #1e293b; border: 1px solid #334155; border-radius: 10px;">
+                            <p style="color: #94a3b8; font-size: 15px; margin-bottom: 20px;">🔒 विस्तृत ग्रह स्पष्टीकरण और स्पष्टांश देखने के लिए कृपया लॉगिन करें।</p>
+                            <a href="{% url 'login' %}" style="text-decoration:none;"><button class="primary-btn" style="width: auto; padding: 10px 25px;">लॉगइन / साइन-अप</button></a>
                         </div>
                     {% endif %}
-                    
-                </div>
-            </div>
-
-            <div id="view-kundali" class="view-panel">
-                {% if user.is_authenticated and user.userprofile.daily_horoscope_text %}
-                <div class="card" style="background: linear-gradient(135deg, #1e293b, #131c2c); border: 1px solid #ffca28; box-shadow: 0 0 15px rgba(255, 202, 40, 0.15); margin-bottom: 16px; padding: 20px; border-radius: 12px;">
-                    <h3 style="color: #ffca28; margin-top: 0; display: flex; align-items: center; gap: 8px; font-size: 17px;">
-                        ✨ आपका आज का व्यक्तिगत AI राशिफल
-                    </h3>
-                    <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6; margin-bottom: 0; text-align: left;">
-                        {{ user.userprofile.daily_horoscope_text }}
-                    </p>
-                </div>
-                {% endif %}
-
-                {% if user.is_authenticated and not user.userprofile.telegram_chat_id %}
-                <div class="card" style="background: #131c2c; border: 1px dashed #24a1de; margin-bottom: 16px; text-align: center; padding: 16px; border-radius: 12px;">
-                    <p style="color: #cbd5e1; font-size: 14px; margin-top: 0; margin-bottom: 12px; line-height: 1.4;">
-                        🌅 रोज़ सुबह सीधे अपने <strong>Telegram</strong> पर अपना पर्सनल सटीक राशिफल पाना चाहते हैं?
-                    </p>
-                    <a href="https://t.me/Trikal_darshan_bot?start={{ user.username }}" target="_blank" style="text-decoration: none;">
-                        <button type="button" class="primary-btn" style="background: #24a1de; color: #fff; border: none; width: auto; padding: 10px 24px; font-size: 14px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(36, 161, 222, 0.4); cursor: pointer;">
-                            ✈️ Telegram Bot से जुड़ें (FREE)
-                        </button>
-                    </a>
-                </div>
-                {% endif %}
- {% if user.is_authenticated and saved_kundalis %}
-                <details class="premium-accordion" {% if not res %}open{% endif %}>
-                    <summary>📂 सेव की गई कुंडलियां</summary>
-                    <div class="accordion-content">
-                        <div style="display:flex; flex-direction:column; gap:10px;">
-                            {% for k in saved_kundalis %}
-                            <div style="display:flex; align-items:center; justify-content:space-between; background:{% if current_k_id == k.id %}#1a3a5c{% else %}#131c2c{% endif %}; border:1px solid {% if current_k_id == k.id %}#f0a500{% else %}#2e3f52{% endif %}; border-radius:8px; padding:12px 14px;">
-                                <a href="{% url 'view_specific_kundali' k.id %}" style="text-decoration:none; color:#f0f0f0; flex:1;">
-                                    <strong style="font-size:15px; color:#ffffff;">{{ k.name }}</strong>
-                                    <span style="font-size:12px; color:#aab4be; display:block; margin-top:2px;">{{ k.day }}/{{ k.month }}/{{ k.year }} &bull; {{ k.city }}</span>
-                                </a>
-                                
-                                <form method="POST" action="{% url 'home' %}" onsubmit="return confirm('हटाएं?')" style="margin:0; padding:0;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="action" value="delete_kundali">
-                                    <input type="hidden" name="kundali_id" value="{{ k.id }}">
-                                    <button type="submit" style="background:none; border:none; cursor:pointer; font-size:18px; padding:0;">🗑️</button>
-                                </form>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        <button onclick="document.getElementById('kundali-input-section').style.display='block'; this.closest('details').removeAttribute('open');" class="primary-btn" style="margin-top:14px; width:100%; background: transparent; border: 1px dashed #ffca28; color: #ffca28;">➕ नई कुंडली बनाएं</button>
-                    </div>
-                </details>
-                {% endif %}
-
-                <div id="kundali-input-section" class="card" {% if res or saved_kundalis %}style="display:none;"{% endif %}>
-                    <h3>विवरण दर्ज करें</h3>
-                    <form method="POST" action="{% url 'home' %}">
-                        {% csrf_token %}
-                        <input type="hidden" name="action" value="calc">
-                        <label>पूरा नाम</label><input type="text" name="name" required>
-                        <label>लिंग</label>
-                        <select name="gender"><option value="Male">पुरुष</option><option value="Female">महिला</option></select>
-                        
-                        <label>जन्म तिथि</label>
-                        <div class="form-row">
-                            <div><select name="dd" required><option value="">दिन</option>{% for d in days %}<option value="{{ d }}">{{ d }}</option>{% endfor %}</select></div>
-                            <div><select name="mm" required><option value="">महीना</option>{% for m in month_choices %}<option value="{{ m.val }}">{{ m.name }}</option>{% endfor %}</select></div>
-                            <div><select name="yyyy" required><option value="">वर्ष</option>{% for y in years %}<option value="{{ y }}">{{ y }}</option>{% endfor %}</select></div>
-                        </div>
-
-                        <label>जन्म समय</label>
-                        <div class="form-row">
-                            <div><select name="hh" required><option value="0">00</option>{% for h in hours %}{% if h > 0 %}<option value="{{ h }}">{{ h|stringformat:"02d" }}</option>{% endif %}{% endfor %}</select></div>
-                            <div><select name="min" required>{% for m in minutes %}<option value="{{ m }}">{{ m|stringformat:"02d" }}</option>{% endfor %}</select></div>
-                            <div><select name="sec">{% for s in seconds %}<option value="{{ s }}">{{ s|stringformat:"02d" }}</option>{% endfor %}</select></div>
-                        </div>
-
-                        <label>जन्म स्थान</label>
-                        <div style="position:relative;">
-                            <input type="text" name="city_name" id="city_input" autocomplete="off" placeholder="शहर का नाम लिखें..." required>
-                            <div id="city_suggestions"></div>
-                        </div>
-                        <input type="hidden" name="lat" id="lat_input"><input type="hidden" name="lon" id="lon_input">
-                        <small id="city_status"></small>
-                        <button type="submit" class="primary-btn" style="margin-top:20px;">कुंडली बनाएं ➔</button>
-                    </form>
                 </div>
 
-                {% if res %}<script>document.addEventListener('DOMContentLoaded',function(){document.getElementById('sub-tabs-bar').style.display='flex';});</script>{% endif %}
+                <div id="panel-dasha" class="sub-panel">
+                    {% if user.is_authenticated %}
+                        {% include 'tabs/dasha_tab.html' %}
+                    {% else %}
+                        <div class="card" style="text-align:center; padding: 35px 15px; margin-top: 15px; background: #1e293b; border: 1px solid #334155; border-radius: 10px;">
+                            <p style="color: #94a3b8; font-size: 15px; margin-bottom: 20px;">🔒 विंशोत्तरी महादशा और अंतर्दशा चक्र विश्लेषण के लिए कृपया लॉगिन करें।</p>
+                            <a href="{% url 'login' %}" style="text-decoration:none;"><button class="primary-btn" style="width: auto; padding: 10px 25px;">लॉगइन / साइन-अप</button></a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div id="panel-dosh" class="sub-panel">
+                    {% if user.is_authenticated %}
+                        {% include 'tabs/dosha_tab.html' %}
+                    {% else %}
+                        <div class="card" style="text-align:center; padding: 35px 15px; margin-top: 15px; background: #1e293b; border: 1px solid #334155; border-radius: 10px;">
+                            <p style="color: #94a3b8; font-size: 15px; margin-bottom: 20px;">🔒 कुंडली के मुख्य दोष (कालसर्प, मांगलिक) और उनके वैदिक उपाय जानने के लिए लॉगिन करें।</p>
+                            <a href="{% url 'login' %}" style="text-decoration:none;"><button class="primary-btn" style="width: auto; padding: 10px 25px;">लॉगइन / साइन-अप</button></a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div id="panel-ai" class="sub-panel">
+                    {% if user.is_authenticated %}
+                        {% include 'tabs/ai_tab.html' %}
+                    {% else %}
+                        <div class="card" style="text-align:center; padding: 35px 15px; margin-top: 15px; background: #1e293b; border: 1px solid #334155; border-radius: 10px;">
+                            <p style="color: #94a3b8; font-size: 15px; margin-bottom: 20px;">🔒 आर्टिफिशियल इंटेलिजेंस (AI) द्वारा सविस्तार जीवन फलित विश्लेषण के लिए लॉगिन करें।</p>
+                            <a href="{% url 'login' %}" style="text-decoration:none;"><button class="primary-btn" style="width: auto; padding: 10px 25px;">लॉगइन / साइन-अप</button></a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="document.getElementById('kundali-result-section').style.display='none'; document.getElementById('kundali-input-section').style.display='block'; window.scrollTo(0,0);" class="primary-btn" style="background: transparent; border: 1px solid #ffca28; color: #ffca28; margin-bottom:20px; width: auto; padding: 10px 20px;">← अन्य कुंडली खोजें</button>
+                </div>
                 
-                <div id="kundali-result-section" {% if res %}style="display:block;"{% else %}style="display:none;"{% endif %}>
+                {% if res %}
+                <form id="pdfDownloadForm" method="POST" action="{% url 'download_kundali_pdf' %}" target="_blank" style="margin:0; padding:0; pointer-events: none;">
+                    {% csrf_token %}
+                    <input type="hidden" name="include_charts" value="yes">
+                    <input type="hidden" name="include_planets" value="yes">
+                    <input type="hidden" name="include_ai" value="yes">
+                    <input type="hidden" name="include_dosha" value="yes">
+                    <input type="hidden" name="chart_image_data" id="chart_image_data">
                     
-                    {% if res %}
-                    <div style="text-align: center; margin-bottom: 15px;">
-                        <span style="background: rgba(243, 156, 18, 0.1); color: #ffca28; padding: 6px 15px; border-radius: 20px; font-size: 14px; border: 1px solid rgba(243, 156, 18, 0.3); display: inline-block;">
-                            ✨ <strong>{{ res.name|default:"-" }}</strong> की कुंडली
-                        </span>
-                    </div>
-                    {% endif %}
-
-                    <div id="panel-lagna" class="sub-panel active" style="display:block;">
-                        {% include 'tabs/chart_tab.html' %}
-                    </div>
-
-                    <div id="panel-planets" class="sub-panel">
-                        {% if user.is_authenticated %}
-                            {% include 'tabs/planets_tab.html' %}
-                        {% else %}
-                            <div class="card" style="text-align:center; padding: 35px 15px; margin-top: 15px; background: #1e293b; border: 1px solid #334155; border-radius: 10px;">
-                                <p style="color: #94a3b8; font-size: 15px; margin-bottom: 20px;">🔒 विस्तृत ग्रह स्पष्टीकरण और स्पष्टांश देखने के लिए कृपया लॉगिन करें।</p>
-                                <a href="{% url 'login' %}" style="text-decoration:none;"><button class="primary-btn" style="width: auto; padding: 10px 25px;">लॉगइन / साइन-अप</button></a>
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <div id="panel-dasha" class="sub-panel">
-                        {% if user.is_authenticated %}
-                            {% include 'tabs/dasha_tab.html' %}
-                        {% else %}
-                            <div class="card" style="text-align:center; padding: 35px 15px; margin-top: 15px; background: #1e293b; border: 1px solid #334155; border-radius: 10px;">
-                                <p style="color: #94a3b8; font-size: 15px; margin-bottom: 20px;">🔒 विंशोत्तरी महादशा और अंतर्दशा चक्र विश्लेषण के लिए कृपया लॉगिन करें।</p>
-                                <a href="{% url 'login' %}" style="text-decoration:none;"><button class="primary-btn" style="width: auto; padding: 10px 25px;">लॉगइन / साइन-अप</button></a>
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <div id="panel-dosh" class="sub-panel">
-                        {% if user.is_authenticated %}
-                            {% include 'tabs/dosha_tab.html' %}
-                        {% else %}
-                            <div class="card" style="text-align:center; padding: 35px 15px; margin-top: 15px; background: #1e293b; border: 1px solid #334155; border-radius: 10px;">
-                                <p style="color: #94a3b8; font-size: 15px; margin-bottom: 20px;">🔒 कुंडली के मुख्य दोष (कालसर्प, मांगलिक) और उनके वैदिक उपाय जानने के लिए लॉगिन करें।</p>
-                                <a href="{% url 'login' %}" style="text-decoration:none;"><button class="primary-btn" style="width: auto; padding: 10px 25px;">लॉगइन / साइन-अप</button></a>
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <div id="panel-ai" class="sub-panel">
-                        {% if user.is_authenticated %}
-                            {% include 'tabs/ai_tab.html' %}
-                        {% else %}
-                            <div class="card" style="text-align:center; padding: 35px 15px; margin-top: 15px; background: #1e293b; border: 1px solid #334155; border-radius: 10px;">
-                                <p style="color: #94a3b8; font-size: 15px; margin-bottom: 20px;">🔒 आर्टिफिशियल इंटेलिजेंस (AI) द्वारा सविस्तार जीवन फलित विश्लेषण के लिए लॉगिन करें।</p>
-                                <a href="{% url 'login' %}" style="text-decoration:none;"><button class="primary-btn" style="width: auto; padding: 10px 25px;">लॉगइन / साइन-अप</button></a>
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <div style="text-align: center; margin-top: 20px;">
-                        <button onclick="document.getElementById('kundali-result-section').style.display='none'; document.getElementById('kundali-input-section').style.display='block'; window.scrollTo(0,0);" class="primary-btn" style="background: transparent; border: 1px solid #ffca28; color: #ffca28; margin-bottom:20px; width: auto; padding: 10px 20px;">← अन्य कुंडली खोजें</button>
-                    </div>
-                    
-                    {% if res %}
-                    <form id="pdfDownloadForm" method="POST" action="{% url 'download_kundali_pdf' %}" target="_blank" style="margin:0; padding:0; pointer-events: none;">
-                        {% csrf_token %}
-                        <input type="hidden" name="include_charts" value="yes">
-                        <input type="hidden" name="include_planets" value="yes">
-                        <input type="hidden" name="include_ai" value="yes">
-                        <input type="hidden" name="include_dosha" value="yes">
-                        <input type="hidden" name="chart_image_data" id="chart_image_data">
-                        
-                        <button type="button" class="pdf-floating-btn" onclick="captureChartAndDownload()" title="PDF रिपोर्ट डाउनलोड करें">
-                            <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="7 10 12 15 17 10"></polyline>
-                                <line x1="12" y1="15" x2="12" y2="3"></line>
-                            </svg>
-                        </button>
-                    </form>
-                    {% endif %}
-
-                </div>
+                    <button type="button" class="pdf-floating-btn" onclick="captureChartAndDownload()" title="PDF रिपोर्ट डाउनलोड करें">
+                        <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </button>
+                </form>
+                {% endif %}
             </div>
-
-            <div id="view-milan" class="view-panel">{% include 'milan.html' %}</div>
-            <div id="view-panchang" class="view-panel">{% include 'panchang.html' %}</div>
         </div>
-    {% endif %} </div>
+
+          <div id="view-milan" class="view-panel">{% include 'milan.html' %}</div>
+        <div id="view-panchang" class="view-panel">{% include 'panchang.html' %}</div>
+    </div>
+</div>
 
 {% include 'inline_js.html' %}
-<style>
-.pdf-export-mode { background: #ffffff !important; border-color: #000000 !important; }
-.pdf-export-mode svg rect, .pdf-export-mode svg line, .pdf-export-mode svg polygon { stroke: #000000 !important; }
-.pdf-export-mode strong, .pdf-export-mode div { color: #000000 !important; }
-</style>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script>
-function captureChartAndDownload() {
-    const chartDiv = document.getElementById('kundali_chart_div');
-    const hiddenInput = document.getElementById('chart_image_data');
-    const form = document.getElementById('pdfDownloadForm');
-    
-    if (chartDiv) {
-        chartDiv.classList.add('pdf-export-mode');
-        html2canvas(chartDiv, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
-            hiddenInput.value = canvas.toDataURL("image/png");
-            chartDiv.classList.remove('pdf-export-mode');
-            form.submit();
-        }).catch(err => {
-            console.error("Chart capture error:", err);
-            chartDiv.classList.remove('pdf-export-mode');
-            form.submit(); 
-        });
-    } else {
-        form.submit();
-    }
-}
-</script>
 </body>
 </html>
