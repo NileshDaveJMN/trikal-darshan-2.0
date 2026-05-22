@@ -46,8 +46,8 @@ import swisseph as swe
 import pytz
 
 # ── API Keys ─────────────────────────────────────────────────
-raw_keys = os.getenv("GEMINI_API_KEYS", "")
-GEMINI_API_KEYS = [k.strip() for k in raw_keys.split(",") if k.strip()]
+keys_from_env = os.getenv("GEMINI_API_KEYS")
+GEMINI_API_KEYS = keys_from_env.split(',') if keys_from_env else []
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 GEMINI_MODEL = "gemini-3-flash-preview"   # stable और fast
 
