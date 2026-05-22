@@ -1,67 +1,116 @@
 <style>
-.main-viewport, .view-panel {
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important; 
-}
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+    body, html { height: 100%; overflow: hidden; background-color: #0f172a; color: #cbd5e1; }
+    .app-container { display: flex; flex-direction: column; height: 100vh; }
+    .app-header { padding: 15px 20px; background: #1e293b; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+    .brand { font-size: 20px; font-weight: bold; color: #ffca28; }
+    .user-badge { background: #2c3e50; padding: 6px 14px; border-radius: 20px; font-size: 12px; border: 1px solid #ffca28; color: #ffca28; }
+    .primary-tabs { display: flex; background: #1e293b; border-bottom: 1px solid #334155; position: relative; z-index: 100; flex-shrink: 0; }
+    .p-tab-btn { flex: 1; padding: 14px 0; background: transparent; color: #94a3b8; border: none; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.3s; text-align: center; }
+    .p-tab-btn.active { color: #ffca28; background: rgba(255, 202, 40, 0.05); border-bottom: 3px solid #ffca28; }
+    .main-viewport { flex: 1; overflow-y: auto; padding: 20px; position: relative; z-index: 1; }
+    .view-panel { display: none; }
+    .view-panel.active { display: block; }
+    .sub-tabs-bar { 
+        display: none;
+        gap: 8px; 
+        margin: 0;
+        padding: 10px 15px; 
+        overflow-x: auto; 
+        flex-shrink: 0;
+        background-color: #0f172a;
+        border-bottom: 1px solid #334155; 
+        width: 100%;
+    }
 
-#view-milan {
-    padding-bottom: 100px !important; 
-}
+    /* यह कुंडलियों वाले एरिया के लिए है ताकि वे इसके नीचे छुप जाएं */
+    .sub-panel {
+        background-color: #0f172a; /* पैनल का कलर बैकग्राउंड से मैच करें */
+        padding-top: 10px;
+    }
 
-/* 📂 Premium Accordion (Saved Kundalis Box) */
-.premium-accordion {
-    background: #1e293b;
-    border: 1px solid rgba(255, 202, 40, 0.4);
-    border-radius: 12px;
-    margin-bottom: 16px;
-    overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-}
-.premium-accordion summary {
-    padding: 16px;
-    background: rgba(255, 202, 40, 0.08);
-    color: #ffca28;
-    font-weight: bold;
-    cursor: pointer;
-    list-style: none; 
-    text-align: center;
-    font-size: 16px;
-    transition: 0.3s;
-}
-.premium-accordion summary::-webkit-details-marker { display: none; }
-.premium-accordion summary::after { content: ' ▼'; font-size: 14px; margin-left: 5px; }
-.premium-accordion[open] summary::after { content: ' ▲'; }
-.premium-accordion[open] summary { border-bottom: 1px dashed rgba(255, 202, 40, 0.3); }
-.accordion-content { padding: 16px; }
+    .sub-tab { background: #1e293b; color: #94a3b8; padding: 8px 16px; border-radius: 20px; font-size: 11px; white-space: nowrap; border: 1px solid #334155; cursor: pointer; }
+    .sub-tab.active { background: #ffca28; color: #0f172a; font-weight: bold; border-color: #ffca28; }
+    .card { background: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155; margin-bottom: 20px; }
+    h3, h4 { color: #ffca28; margin-bottom: 15px; }
+    label { display: block; margin-bottom: 6px; font-size: 12px; color: #ffca28; font-weight: 600; }
+    input, select { width: 100%; padding: 14px; margin-bottom: 15px; border-radius: 8px; border: 1px solid #475569; background: #0f172a; color: white; font-size: 15px; }
+    input:focus, select:focus { outline: none; border-color: #ffca28; }
+    .form-row { display: flex; gap: 8px; }
+    .form-row > div { flex: 1; }
+    .primary-btn { width: 100%; padding: 15px; background: #ffca28; color: #0f172a; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; }
+    .primary-btn:active { background: #e0b320; }
+    .pdf-btn { width: 100%; padding: 15px; background: transparent; color: #ffca28; border: 1px solid #ffca28; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; margin-top: 20px; text-align: center; }
+    .chart-box { aspect-ratio: 1/1; background: #ffffff; border-radius: 8px; display: flex; justify-content: center; align-items: center; color: #000; font-weight: bold; margin-bottom: 15px; border: 2px solid #334155; overflow: hidden; }
+    .chart-box svg { width: 100%; height: 100%; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; color: #cbd5e1; }
+    .data-table th { text-align: left; padding: 10px 5px; color: #ffca28; border-bottom: 1px solid #334155; }
+    .data-table td { padding: 10px 5px; border-bottom: 1px dashed #334155; }
 
-/* 🖨️ Floating PDF Button (FAB) */
-.pdf-floating-btn {
-    position: fixed;
-    bottom: 30px;
-    right: 25px;
-    background: linear-gradient(135deg, #f1c40f, #f39c12);
-    color: #0f172a;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 5px 20px rgba(243, 156, 18, 0.5);
-    z-index: 9999;
-    border: 2px solid #ffffff;
-    cursor: pointer;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    pointer-events: auto;
-}
-.pdf-floating-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 8px 25px rgba(243, 156, 18, 0.8);
-}
-.pdf-floating-btn svg { width: 28px; height: 28px; stroke: #0f172a; }
+    /* --- 🌟 NEW ADDITIONS (ACCORDION, LAYOUT & FAB STYLES) 🌟 --- */
+    .main-viewport, .view-panel {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important; 
+    }
 
-/* 📑 PDF Download Export Modes */
-.pdf-export-mode { background: #ffffff !important; border-color: #000000 !important; }
-.pdf-export-mode svg rect, .pdf-export-mode svg line, .pdf-export-mode svg polygon { stroke: #000000 !important; }
-.pdf-export-mode strong, .pdf-export-mode div { color: #000000 !important; }
+    #view-milan {
+        padding-bottom: 100px !important; 
+    }
+
+    /* 📂 Premium Accordion (Saved Kundalis Box) */
+    .premium-accordion {
+        background: #1e293b;
+        border: 1px solid rgba(255, 202, 40, 0.4);
+        border-radius: 12px;
+        margin-bottom: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .premium-accordion summary {
+        padding: 16px;
+        background: rgba(255, 202, 40, 0.08);
+        color: #ffca28;
+        font-weight: bold;
+        cursor: pointer;
+        list-style: none; 
+        text-align: center;
+        font-size: 16px;
+        transition: 0.3s;
+    }
+    .premium-accordion summary::-webkit-details-marker { display: none; }
+    .premium-accordion summary::after { content: ' ▼'; font-size: 14px; margin-left: 5px; }
+    .premium-accordion[open] summary::after { content: ' ▲'; }
+    .premium-accordion[open] summary { border-bottom: 1px dashed rgba(255, 202, 40, 0.3); }
+    .accordion-content { padding: 16px; }
+
+    /* 🖨️ Floating PDF Button (FAB) */
+    .pdf-floating-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 25px;
+        background: linear-gradient(135deg, #f1c40f, #f39c12);
+        color: #0f172a;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 5px 20px rgba(243, 156, 18, 0.5);
+        z-index: 9999;
+        border: 2px solid #ffffff;
+        cursor: pointer;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        pointer-events: auto;
+    }
+    .pdf-floating-btn:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 25px rgba(243, 156, 18, 0.8);
+    }
+    .pdf-floating-btn svg { width: 28px; height: 28px; stroke: #0f172a; }
+
+    /* 📑 PDF Download Export Modes */
+    .pdf-export-mode { background: #ffffff !important; border-color: #000000 !important; }
+    .pdf-export-mode svg rect, .pdf-export-mode svg line, .pdf-export-mode svg polygon { stroke: #000000 !important; }
+    .pdf-export-mode strong, .pdf-export-mode div { color: #000000 !important; }
 </style>
