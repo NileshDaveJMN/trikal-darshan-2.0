@@ -103,7 +103,45 @@
         {% endif %}
     </div>
 
-    {% if user.is_authenticated and not user.userprofile.primary_focus %}
+        {% if user.is_authenticated and not user.userprofile.primary_focus %}
+        <style>
+            /* 🌟 नया हॉरिजॉन्टल स्क्रॉलिंग कंटेनर 🌟 */
+            .chip-container {
+                display: flex;
+                overflow-x: auto;
+                gap: 10px;
+                padding-bottom: 12px; /* Scrollbar ke liye jagah */
+                -webkit-overflow-scrolling: touch; /* Mobile par smooth scroll */
+                scrollbar-width: none; /* Firefox me scrollbar chupane ke liye */
+            }
+            .chip-container::-webkit-scrollbar {
+                display: none; /* Chrome/Safari me scrollbar chupane ke liye */
+            }
+
+            .chip-box { display: none; }
+            .chip-label {
+                display: inline-block;
+                white-space: nowrap; /* टेक्स्ट को टूटने से रोकेगा */
+                flex-shrink: 0; /* चिप्स को सिकुड़ने से रोकेगा */
+                padding: 10px 18px;
+                border-radius: 25px;
+                background: #0f172a;
+                border: 1px solid #334155;
+                color: #cbd5e1;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            .chip-box:checked + .chip-label {
+                background: rgba(243, 156, 18, 0.15);
+                border-color: #ffca28;
+                color: #ffca28;
+                font-weight: bold;
+                box-shadow: 0 0 10px rgba(255, 202, 40, 0.2);
+            }
+            .form-section-title { color: #94a3b8; font-size: 14px; margin-top: 15px; margin-bottom: 10px; font-weight: bold; }
+        </style>
+
         <div class="card" style="margin: 20px; background: #1e293b; border: 1px solid #ffca28; border-radius: 12px; padding: 25px;">
             <h3 style="text-align:center; color:#ffca28; margin-top:0;">👋 स्वागत है! अपनी प्राथमिकताएं चुनें</h3>
             <p style="text-align:center; color:#cbd5e1; font-size:14px; margin-bottom: 25px;">(आप एक से ज़्यादा भी चुन सकते हैं)</p>
@@ -112,7 +150,7 @@
                 {% csrf_token %}
                 
                 <div class="form-section-title">🎯 आपका मुख्य लक्ष्य क्या है?</div>
-                <div>
+                <div class="chip-container">
                     <input type="checkbox" id="f_career" name="primary_focus" value="करियर/जॉब" class="chip-box">
                     <label for="f_career" class="chip-label">💼 करियर / जॉब</label>
                     <input type="checkbox" id="f_business" name="primary_focus" value="व्यापार/धन" class="chip-box">
@@ -124,7 +162,7 @@
                 </div>
 
                 <div class="form-section-title">🚧 वर्तमान में मुख्य चुनौती?</div>
-                <div>
+                <div class="chip-container">
                     <input type="checkbox" id="c_job" name="current_challenge" value="नौकरी नहीं मिल रही" class="chip-box">
                     <label for="c_job" class="chip-label">नौकरी नहीं मिल रही</label>
                     <input type="checkbox" id="c_debt" name="current_challenge" value="कर्ज/आर्थिक समस्या" class="chip-box">
@@ -136,7 +174,7 @@
                 </div>
 
                 <div class="form-section-title">👨‍💻 आपका पेशा क्या है?</div>
-                <div>
+                <div class="chip-container">
                     <input type="checkbox" id="p_pvt" name="profession" value="प्राइवेट जॉब" class="chip-box">
                     <label for="p_pvt" class="chip-label">प्राइवेट जॉब</label>
                     <input type="checkbox" id="p_govt" name="profession" value="सरकारी नौकरी" class="chip-box">
@@ -148,7 +186,7 @@
                 </div>
 
                 <div class="form-section-title">💍 वैवाहिक स्थिति (कोई एक चुनें)</div>
-                <div>
+                <div class="chip-container">
                     <input type="radio" id="r_single" name="relationship_status" value="अविवाहित" class="chip-box" required>
                     <label for="r_single" class="chip-label">अविवाहित</label>
                     <input type="radio" id="r_married" name="relationship_status" value="विवाहित" class="chip-box">
@@ -160,8 +198,7 @@
                 <button type="submit" class="primary-btn" style="width: 100%; font-size: 16px; padding: 14px; margin-top: 20px;">जानकारी सेव करें ➔</button>
             </form>
         </div>
- {% else %}
-    
+
         <div class="primary-tabs">
             <button class="p-tab-btn active" onclick="showView(event, 'view-user')">👤 प्रोफाइल</button>
             <button class="p-tab-btn" onclick="showView(event, 'view-kundali')">📜 कुंडली</button>
