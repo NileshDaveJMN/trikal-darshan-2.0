@@ -501,7 +501,10 @@ def build_horoscope_prompt(
 #  SECTION 5 — GEMINI API CALL (Multi-key Rotation + Retry)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-def call_gemini(prompt: str, max_retries: int = 3) -> str | None:
+from typing import Optional
+
+def call_gemini(prompt: str, max_retries: int = 3) -> Optional[str]:
+
     """
     सभी API keys को rotate करते हुए Gemini call करें।
     Returns: response text or None
