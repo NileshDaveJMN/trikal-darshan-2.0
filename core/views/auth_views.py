@@ -13,7 +13,7 @@ def register_view(request):
         u, p, e = request.POST.get('username'), request.POST.get('password'), request.POST.get('email')
         if not User.objects.filter(username=u).exists():
             user = User.objects.create_user(username=u, email=e, password=p)
-            UserProfile.objects.create(user=user)
+            UserProfile.objects.get_or_create(user=user)
             
             # 🌟 PRO UPDATE: अकाउंट बनते ही यूज़र को तुरंत ऑटो-लॉगिन करें
             login(request, user)
