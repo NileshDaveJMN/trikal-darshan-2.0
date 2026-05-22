@@ -134,72 +134,120 @@
         <div id="view-user" class="view-panel">
             <div class="card" style="text-align:center;">
                 <h3 style="margin-bottom: 25px;">👤 यूज़र प्रोफाइल</h3>
+                    {% if user.is_authenticated and not user.userprofile.primary_focus %}
+        <style>
+            /* चिप्स का सुंदर डिज़ाइन */
+            .chip-box { display: none; }
+            .chip-label {
+                display: inline-block;
+                padding: 10px 18px;
+                margin: 5px 5px 10px 0;
+                border-radius: 25px;
+                background: #0f172a;
+                border: 1px solid #334155;
+                color: #cbd5e1;
+                font-size: 14px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            }
+            /* जब चिप सेलेक्ट हो जाए */
+            .chip-box:checked + .chip-label {
+                background: rgba(243, 156, 18, 0.15);
+                border-color: #ffca28;
+                color: #ffca28;
+                font-weight: bold;
+                box-shadow: 0 0 10px rgba(255, 202, 40, 0.2);
+            }
+            .form-section-title { color: #94a3b8; font-size: 14px; margin-top: 15px; margin-bottom: 8px; font-weight: bold; }
+        </style>
+
+        <div class="card" style="margin: 20px; background: #1e293b; border: 1px solid #ffca28; border-radius: 12px; padding: 25px;">
+            <h3 style="text-align:center; color:#ffca28; margin-top:0;">👋 स्वागत है! अपनी प्राथमिकताएं चुनें</h3>
+            <p style="text-align:center; color:#cbd5e1; font-size:14px; margin-bottom: 25px;">(आप एक से ज़्यादा भी चुन सकते हैं)</p>
+            
+            <form method="POST" action="{% url 'save_onboarding' %}">
+                {% csrf_token %}
                 
-                {% if user.is_authenticated %}
+                <div class="form-section-title">🎯 आपका मुख्य लक्ष्य क्या है?</div>
+                <div>
+                    <input type="checkbox" id="f_career" name="primary_focus" value="करियर/जॉब" class="chip-box">
+                    <label for="f_career" class="chip-label">💼 करियर / जॉब</label>
                     
-                    <div style="background: #131c2c; border: 1px solid #334155; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
-                        <p style="color: #cbd5e1; font-size: 15px; margin-bottom: 10px;">
-                            <span style="color: #94a3b8;">नाम:</span> 
-                            <strong style="color: #fff; font-size: 17px; margin-left: 5px;">{{ user.first_name|default:user.username }}</strong>
-                        </p>
-                        <p style="color: #cbd5e1; font-size: 15px; margin-bottom: 0;">
-                            <span style="color: #94a3b8;">ईमेल:</span> 
-                            <strong style="color: #fff; margin-left: 5px;">{{ user.email|default:"उपलब्ध नहीं" }}</strong>
-                        </p>
-                    </div>
-
-                    <div style="display: flex; gap: 15px; margin-bottom: 25px;">
-                        
-                        <div style="flex: 1; background: #0f172a; padding: 15px; border-radius: 10px; border: 1px solid #334155; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
-                            <h4 style="color: #94a3b8; margin: 0 0 5px 0; font-size: 14px;">📜 कुंडली क्रेडिट्स</h4>
-                            <span style="font-size: 26px; font-weight: bold; color: #ffca28;">{{ user.userprofile.kundali_credits|default:"0" }}</span>
-                        </div>
-                        
-                        <div style="flex: 1; background: #0f172a; padding: 15px; border-radius: 10px; border: 1px solid #334155; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);">
-                            <h4 style="color: #94a3b8; margin: 0 0 5px 0; font-size: 14px;">💑 मिलान क्रेडिट्स</h4>
-                            <span style="font-size: 26px; font-weight: bold; color: #ffca28;">{{ user.userprofile.milan_credits|default:"0" }}</span>
-                        </div>
-                    </div>
-
-                    <div style="background: #131c2c; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 25px; text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-                        <h4 style="color: #ffca28; margin-top: 0; margin-bottom: 15px; text-align: center;">💎 क्रेडिट्स रिचार्ज करें</h4>
-                        
-                        <div style="text-align: center; margin-bottom: 20px;">
-                            <img src="{% static 'images/my_qr.jpg' %}" alt="UPI QR" style="width: 160px; border: 2px solid #ffca28; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 0 15px rgba(255, 202, 40, 0.1);">
-                            <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 5px;">UPI ID: <strong style="color: #ffca28; letter-spacing: 0.5px;">nileshdave1511-2@oksbi</strong></p>
-                        </div>
-
-                        <form id="rechargeForm" method="POST" action="{% url 'submit_payment' %}">
-                            {% csrf_token %}
-                            
-                            <label style="color: #94a3b8; font-size: 13px; margin-bottom: 5px; display: block;">पैकेज चुनें:</label>
-                            <select id="package_type" name="package_type" style="width: 100%; padding: 12px; background: #0f172a; color: #ffca28; border: 1px solid #334155; border-radius: 8px; margin-bottom: 15px; font-weight: bold; outline: none;" required>
-                                <option value="KUNDALI_51">📜 3 कुंडली क्रेडिट्स - ₹51</option>
-                                <option value="MILAN_51">💑 3 मिलान क्रेडिट्स - ₹51</option>
-                                <option value="COMBO_101">🔥 कॉम्बो (5 कुंडली + 5 मिलान) - ₹101</option>
-                            </select>
-
-                            <label style="color: #94a3b8; font-size: 13px; margin-bottom: 5px; display: block;">UTR / रेफरेंस नंबर:</label>
-                            <input type="text" id="reference" name="reference" placeholder="पेमेंट का 12 अंकों का UTR डालें..." style="width: 100%; padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 8px; margin-bottom: 20px; outline: none;" required>
-                            
-                            <button type="submit" style="width: 100%; background: #ffca28; color: #0f172a; border: none; padding: 14px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 202, 40, 0.4); text-transform: uppercase; letter-spacing: 0.5px;">✅ पेमेंट कन्फर्म करें</button>
-                        </form>
-                    </div>
-                    <a href="{% url 'logout' %}" style="text-decoration:none;">
-                        <button class="primary-btn" style="background: transparent; color: #ff4757; border: 1px solid #ff4757;">🚪 लॉगआऊट</button>
-                    </a>
+                    <input type="checkbox" id="f_business" name="primary_focus" value="व्यापार/धन" class="chip-box">
+                    <label for="f_business" class="chip-label">💰 व्यापार / धन</label>
                     
-                {% else %}
-                    <div style="padding: 30px 10px;">
-                        <p style="margin-bottom: 25px; color: #94a3b8; font-size: 15px; line-height: 1.6;">
-                            अपनी प्रोफाइल, सेव की गई कुंडलियां और क्रेडिट्स देखने के लिए कृपया अपने अकाउंट में लॉगिन करें।
-                        </p>
-                        <a href="{% url 'login' %}" style="text-decoration:none;">
-                            <button class="primary-btn">लॉगइन / साइन-अप</button>
-                        </a>
-                    </div>
-                {% endif %}
-                
+                    <input type="checkbox" id="f_marriage" name="primary_focus" value="विवाह/प्रेम" class="chip-box">
+                    <label for="f_marriage" class="chip-label">❤️ विवाह / प्रेम</label>
+                    
+                    <input type="checkbox" id="f_health" name="primary_focus" value="स्वास्थ्य" class="chip-box">
+                    <label for="f_health" class="chip-label">🏥 स्वास्थ्य</label>
+                </div>
+
+                <div class="form-section-title">🚧 वर्तमान में मुख्य चुनौती?</div>
+                <div>
+                    <input type="checkbox" id="c_job" name="current_challenge" value="नौकरी नहीं मिल रही" class="chip-box">
+                    <label for="c_job" class="chip-label">नौकरी नहीं मिल रही</label>
+                    
+                    <input type="checkbox" id="c_debt" name="current_challenge" value="कर्ज/आर्थिक समस्या" class="chip-box">
+                    <label for="c_debt" class="chip-label">कर्ज / आर्थिक समस्या</label>
+                    
+                    <input type="checkbox" id="c_delay" name="current_challenge" value="विवाह में देरी" class="chip-box">
+                    <label for="c_delay" class="chip-label">विवाह में देरी</label>
+                    
+                    <input type="checkbox" id="c_stress" name="current_challenge" value="मानसिक तनाव" class="chip-box">
+                    <label for="c_stress" class="chip-label">मानसिक तनाव</label>
+                </div>
+
+                <div class="form-section-title">👨‍💻 आपका पेशा क्या है?</div>
+                <div>
+                    <input type="checkbox" id="p_pvt" name="profession" value="प्राइवेट जॉब" class="chip-box">
+                    <label for="p_pvt" class="chip-label">प्राइवेट जॉब</label>
+                    
+                    <input type="checkbox" id="p_govt" name="profession" value="सरकारी नौकरी" class="chip-box">
+                    <label for="p_govt" class="chip-label">सरकारी नौकरी</label>
+                    
+                    <input type="checkbox" id="p_biz" name="profession" value="खुद का व्यापार" class="chip-box">
+                    <label for="p_biz" class="chip-label">खुद का व्यापार</label>
+                    
+                    <input type="checkbox" id="p_student" name="profession" value="छात्र/तैयारी" class="chip-box">
+                    <label for="p_student" class="chip-label">छात्र / तैयारी</label>
+                </div>
+
+                <div class="form-section-title">💍 वैवाहिक स्थिति (कोई एक चुनें)</div>
+                <div>
+                    <input type="radio" id="r_single" name="relationship_status" value="अविवाहित" class="chip-box" required>
+                    <label for="r_single" class="chip-label">अविवाहित</label>
+                    
+                    <input type="radio" id="r_married" name="relationship_status" value="विवाहित" class="chip-box">
+                    <label for="r_married" class="chip-label">विवाहित</label>
+                    
+                    <input type="radio" id="r_other" name="relationship_status" value="अन्य" class="chip-box">
+                    <label for="r_other" class="chip-label">अन्य</label>
+                </div>
+
+                <button type="submit" class="primary-btn" style="width: 100%; font-size: 16px; padding: 14px; margin-top: 20px;">जानकारी सेव करें ➔</button>
+            </form>
+        </div>
+
+    {% else %}
+    
+        <div class="primary-tabs">
+            <button class="p-tab-btn" onclick="showView(event, 'view-user')">👤 प्रोफाइल</button>
+            <button class="p-tab-btn active" onclick="showView(event, 'view-kundali')">📜 कुंडली</button>
+            <button class="p-tab-btn" onclick="showView(event, 'view-milan')">💑 मिलान</button>
+            <button class="p-tab-btn" onclick="showView(event, 'view-panchang')">📅 पंचांग</button>
+        </div>
+
+        <div class="sub-tabs-bar" id="sub-tabs-bar" style="display:none;">
+            <button class="sub-tab active" onclick="switchSubTab(this, 'panel-lagna')">लग्न कुंडली</button>
+            <button class="sub-tab" onclick="switchSubTab(this, 'panel-planets')">ग्रह स्थिति</button>
+            <button class="sub-tab" onclick="switchSubTab(this, 'panel-dasha')">दशा</button>
+            <button class="sub-tab" onclick="switchSubTab(this, 'panel-dosh')">दोष</button>
+            <button class="sub-tab" onclick="switchSubTab(this, 'panel-ai')">AI फलित</button>
+        </div>
+
+        <div class="main-viewport">
+        {% endif %}               
             </div>
         </div>
 
