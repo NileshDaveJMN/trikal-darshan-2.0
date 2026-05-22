@@ -38,6 +38,16 @@ class UserProfile(models.Model):
     # --- 🌟 Naya Credit System 🌟 ---
     kundali_credits = models.IntegerField("Kundali Credits", default=1)
     milan_credits = models.IntegerField("Milan Credits", default=1)
+    primary_focus = models.CharField(max_length=100, blank=True, null=True)
+    current_challenge = models.CharField(max_length=100, blank=True, null=True)
+    relationship_status = models.CharField(max_length=100, blank=True, null=True)
+    profession = models.CharField(max_length=100, blank=True, null=True)
+    finance_focus = models.CharField(max_length=100, blank=True, null=True)
+    activity_level = models.CharField(max_length=100, blank=True, null=True)
+    travel_habit = models.CharField(max_length=100, blank=True, null=True)
+    telegram_chat_id = models.CharField(max_length=100, blank=True, null=True)
+    daily_horoscope_text = models.TextField(blank=True, null=True)
+    horoscope_date = models.DateField(blank=True, null=True)
     
     def __str__(self):
         return f"{self.user.username} (K: {self.kundali_credits}, M: {self.milan_credits})"

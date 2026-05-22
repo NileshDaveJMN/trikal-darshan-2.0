@@ -3,9 +3,8 @@ from django.contrib import messages # 🌟 इसे सबसे ऊपर इ�
 from django.shortcuts import render, redirect
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
-from core.models import UserProfile 
-from core.models import ManualPayment
 from django.contrib.auth.decorators import login_required
+from core.models import UserProfile, ManualPayment
 import urllib.request
 import urllib.parse
 
@@ -15,7 +14,13 @@ def register_view(request):
         if not User.objects.filter(username=u).exists():
             user = User.objects.create_user(username=u, email=e, password=p)
             UserProfile.objects.create(user=user)
-            return redirect('login')
+            
+            # 🌟 PRO UPDATE: अकाउंट बनते ही यूज़र को तुरंत ऑटो-लॉगिन करें
+            login(request, user)
+            
+            # 🌟 PRO UPDATE: लॉगिन होते ही सीधा Onboarding (चिप्स वाले) पेज पर भेजें
+            return redirect('save_onboarding')
+            
     return render(request, 'register.html')
 
 def login_view(request):
@@ -34,10 +39,6 @@ def login_view(request):
 def user_logout(request):
     logout(request)
     return redirect('/?tab=view-user')
-from django.shortcuts import redirect
-from django.contrib import messages
-from core.models import ManualPayment
-from django.contrib.auth.decorators import login_required
 
 @login_required(login_url='/login/')
 def submit_payment(request):

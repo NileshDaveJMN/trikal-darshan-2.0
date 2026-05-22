@@ -1,6 +1,4 @@
 # views/kundali_views.py
-from django.http import HttpResponse
-
 import os
 import json
 from datetime import datetime
@@ -9,6 +7,8 @@ from django.http import JsonResponse, HttpResponse
 from django.conf import settings
 from django.contrib import messages
 from django.template.loader import get_template
+from django.contrib.auth.decorators import login_required
+
 # WeasyPrint को Try-Except में डालना ताकि Pydroid पर सर्वर क्रैश ना हो
 try:
     from weasyprint import HTML
@@ -17,12 +17,10 @@ except (ImportError, OSError):
     HTML = None
     WEASYPRINT_AVAILABLE = False
 
-
-from core.models import SavedKundali, TabSettings, AIQuestionHistory
+from core.models import SavedKundali, TabSettings, AIQuestionHistory, KundaliMilanHistory, UserProfile
 from engines.dosha_analyzer import analyze_doshas, recommend_gemstone
 from engines.kundali_engine import get_kundali_data
 from engines.panchang_engine import get_panchang_data
-from core.models import KundaliMilanHistory
 
 MONTHS = ["जनवरी", "फरवरी", "मार्च", "अप्रैल", "मई", "जून", "जुलाई", "अगस्त", "सितंबर", "अक्टूबर", "नवंबर", "दिसंबर"]
 ANALYTICS_FILE = os.path.join(settings.BASE_DIR, 'analytics.json')
@@ -175,19 +173,13 @@ def home(request, k_id=None):
             if request.user.is_authenticated:
                 user_profile = request.user.userprofile
                 
-                # 🌟 क्रेडिट चेकिंग लॉजिक
                 if user_profile.kundali_credits > 0:
-                    # कुंडली सेव करें
                     new_k = SavedKundali.objects.create(user=request.user, name=n, gender=g, day=d, month=m, year=y, hour=h, minute=min_m, second=s, city=c, lat=lat, lon=lon)
-                    
-                    # सफलतापूर्वक सेव होने के बाद ही 1 क्रेडिट काटें
                     user_profile.kundali_credits -= 1
                     user_profile.save()
-                    
                     messages.success(request, f"✅ {n} की कुंडली सफलतापूर्वक बन गई है! (बाकी क्रेडिट: {user_profile.kundali_credits})")
                     return redirect('view_specific_kundali', k_id=new_k.id)
                 else:
-                    # 🌟 क्रेडिट खत्म हो गए! लाल एरर दिखाएं और प्रोफाइल पर भेजें
                     messages.error(request, "⚠️ आपके कुंडली क्रेडिट्स खत्म हो गए हैं! नई कुंडली बनाने के लिए कृपया रिचार्ज करें।")
                     return redirect('/?tab=view-user')
             else:
@@ -236,6 +228,7 @@ def home(request, k_id=None):
     p_data = get_panchang_data(target_dt, True)
     current_date_value = target_dt.strftime("%Y-%m-%d")
     saved_milans = []
+    
     if request.user.is_authenticated:
         saved_milans = KundaliMilanHistory.objects.filter(user=request.user).order_by('-created_at')
 
@@ -257,21 +250,12 @@ def home(request, k_id=None):
         'current_date_value': current_date_value
     }
             
-    target_dt = datetime.now()
-    # इससे पंचांग का डेटा आ जाएगा
-    context['p_data'] = get_panchang_data(target_dt, True)
-    # इससे कैलेंडर बॉक्स में आज की डेट सेट हो जाएगी
-    context['current_date_value'] = target_dt.strftime("%Y-%m-%d")
-
     return render(request, 'home.html', context)
-
 
 def download_kundali_pdf(request):
     if not WEASYPRINT_AVAILABLE:
-        
         return HttpResponse("लोकल मोबाइल सर्वर पर PDF डाउनलोड सपोर्ट नहीं करता। कृपया इसे लाइव सर्वर (PythonAnywhere) पर टेस्ट करें।", status=501)
         
-    
     data = request.session.get('kundali_data')
     if not data: 
         return HttpResponse("डेटा नहीं मिला।")
@@ -286,11 +270,8 @@ def download_kundali_pdf(request):
         birth_dt = datetime(b_year, b_month, b_day, b_hour, b_min, b_sec)
         p_extra = get_panchang_data(birth_dt, False)
         
-        # डेटा डिक्शनरी में सीधे वैल्यूज डालें ताकि HTML उसे पढ़ सके
         data['samvat'] = p_extra.get('samvat', '')
         data['hindu_maas'] = p_extra.get('hindu_maas', '')
-        
-        # अगर पुरानी तिथि या पक्ष गलत आ रहा हो, तो पंचांग इंजन का सटीक डेटा यूज़ करें
         data['tithi'] = p_extra.get('tithi', data.get('tithi', ''))
         data['paksha'] = p_extra.get('paksha', data.get('paksha', ''))
     except Exception as e:
@@ -389,17 +370,36 @@ def api_get_ai_analysis(request):
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)})
     return JsonResponse({"status": "error", "message": "Invalid request"})
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
 
-# यह सुनिश्चित करेगा कि सिर्फ लॉगिन यूज़र ही इसे देख पाएं
 @login_required(login_url='/login/')
 def user_profile_view(request):
     return render(request, 'user_profile.html')
-# core/views/kundali_views.py के नीचे इसे जोड़ें
-
-from django.http import HttpResponse
 
 def kundali_calculation(request):
     """नकली कैलकुलेशन फंक्शन (सिर्फ UI टेस्ट करने के लिए)"""
     return HttpResponse("कैलकुलेशन इंजन अभी जोड़ा नहीं गया है। हम अभी सिर्फ डिज़ाइन टेस्ट कर रहे हैं।")
+
+# ==========================================
+# 🌟 ONBOARDING (CHIPS) SAVE LOGIC 🌟
+# ==========================================
+@login_required(login_url='/login/')
+def save_onboarding(request):
+    if request.method == 'POST':
+        user_profile = request.user.userprofile
+        
+        # 🌟 मल्टी-सिलेक्ट चिप्स (Chips) का डेटा कॉमा (,) के साथ जोड़कर सेव करना
+        user_profile.primary_focus = ", ".join(request.POST.getlist('primary_focus'))
+        user_profile.current_challenge = ", ".join(request.POST.getlist('current_challenge'))
+        user_profile.profession = ", ".join(request.POST.getlist('profession'))
+        user_profile.travel_habit = ", ".join(request.POST.getlist('travel_habit'))
+        
+        # रिलेशनशिप सिंगल सिलेक्शन (Radio) है, इसलिए सीधा get()
+        user_profile.relationship_status = request.POST.get('relationship_status', '')
+        
+        user_profile.save()
+        print(f"✅ USER SAVED: Profession: {user_profile.profession} | Focus: {user_profile.primary_focus}")
+        
+        # सेव होने के बाद सीधा होम पेज पर भेजें
+        return redirect('home') 
+        
+    return render(request, 'onboarding.html')

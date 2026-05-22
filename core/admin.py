@@ -11,16 +11,21 @@ admin.site.site_title = "त्रिकाल दर्शन पोर्ट�
 admin.site.index_title = "डैशबोर्ड में आपका स्वागत है"
 
 # ==========================================
-# 1. USER PROFILE (CREDIT MANAGEMENT)
+# 1. USER PROFILE (CREDIT MANAGEMENT & AI DATA)
 # ==========================================
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    # बाहर लिस्ट में ही यूज़र का नाम, प्रीमियम स्टेटस और दोनों क्रेडिट्स दिखेंगे
-    list_display = ('user', 'phone_number', 'is_premium', 'kundali_credits', 'milan_credits')
-    # बाहर से ही क्रेडिट्स या प्रीमियम स्टेटस बदलने की सुविधा (One-click edit)
+    # 🌟 बाहर लिस्ट में नए ऑनबोर्डिंग फील्ड्स (Profession, Focus) भी दिखेंगे
+    list_display = ('user', 'phone_number', 'is_premium', 'kundali_credits', 'milan_credits', 'profession', 'primary_focus')
+    
+    # बाहर से ही क्रेडिट्स या प्रीमियम स्टेटस बदलने की सुविधा
     list_editable = ('is_premium', 'kundali_credits', 'milan_credits')
-    search_fields = ('user__username', 'user__email', 'phone_number')
-    list_filter = ('is_premium',)
+    
+    # सर्च में प्रोफेशन और फोकस भी जोड़ दिया
+    search_fields = ('user__username', 'user__email', 'phone_number', 'profession', 'primary_focus')
+    
+    # 🌟 साइडबार में फिल्टर करने की सुविधा (ताकि आप देख सकें कितने यूज़र्स IT में हैं या कितने शादीशुदा हैं)
+    list_filter = ('is_premium', 'profession', 'relationship_status')
 
 # ==========================================
 # 2. MANUAL PAYMENT (AUTO-CREDIT LOGIC)

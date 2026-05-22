@@ -7,6 +7,8 @@ from core.views.auth_views import login_view, register_view, user_logout, submit
 from core.views.admin_views import admin_view, admin_leads, contact, logout_view
 from django.urls import path, include
 from core.views import master_views, auth_views, kundali_views 
+from core.views.kundali_views import save_onboarding
+
 
 urlpatterns = [
     # जांगो का अपना डिफ़ॉल्ट एडमिन पैनल
@@ -42,5 +44,6 @@ urlpatterns = [
     path('admin-panel/leads', admin_leads, name='admin_leads'),
     
     # पेमेंट राउट 
-    path('submit-payment/', submit_payment, name='submit_payment'),
+    path('submit-payment/', submit_payment, name='submit_payment'),path('onboarding/', save_onboarding, name='save_onboarding'),
+
 ]

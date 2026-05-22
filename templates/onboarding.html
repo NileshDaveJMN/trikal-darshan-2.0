@@ -1,0 +1,162 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>आपकी जानकारी - त्रिकाल दर्शन</title>
+    <style>
+        body { background-color: #0f172a; color: #ffffff; font-family: sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: #1e293b; padding: 25px; border-radius: 12px; border: 1px solid #334155; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        h2 { color: #ffca28; text-align: center; margin-top: 0; font-size: 24px; }
+        p.subtitle { color: #94a3b8; text-align: center; font-size: 14px; margin-bottom: 25px; line-height: 1.5; }
+        /* 🌟 हर सवाल का नया बॉक्स (Yellowish Border) 🌟 */
+        .question-group { 
+            margin-bottom: 25px; 
+            padding: 20px; 
+            border: 1px solid rgba(255, 202, 40, 0.4); /* हल्का पीला बॉर्डर */
+            border-radius: 12px; /* गोल किनारे */
+            background-color: rgba(255, 202, 40, 0.02); /* बॉक्स के अंदर बहुत हल्का पीला शेड */
+            transition: all 0.3s ease;
+        }
+        
+        /* जब यूज़र किसी बॉक्स पर माउस ले जाए (Hover इफ़ेक्ट) */
+        .question-group:hover {
+            border-color: rgba(255, 202, 40, 0.8);
+            background-color: rgba(255, 202, 40, 0.05);
+            box-shadow: 0 4px 15px rgba(255, 202, 40, 0.1);
+        }
+
+        .question-group label { 
+            display: block; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            color: #ffca28; /* सवाल का रंग भी पीला कर दिया ताकि मैच हो */
+            font-size: 16px; 
+            border-bottom: 1px dashed rgba(255, 202, 40, 0.3); /* सवाल के नीचे की लाइन */
+            padding-bottom: 10px;
+        }
+        
+
+        /* 🌟 मल्टी-सिलेक्ट चिप्स (Chips) का डिज़ाइन 🌟 */
+        .chip-container { display: flex; flex-wrap: wrap; gap: 10px; }
+        
+        .chip-checkbox { display: none; /* असली चेकबॉक्स को छुपाना */ }
+        
+        .chip-label {
+            background: #131c2c; border: 1px solid #334155; padding: 10px 16px;
+            border-radius: 25px; cursor: pointer; font-size: 13px; color: #94a3b8;
+            transition: all 0.3s ease; user-select: none;
+        }
+        
+        /* जब चिप सेलेक्ट हो जाए */
+        .chip-checkbox:checked + .chip-label {
+            background: rgba(243, 156, 18, 0.15);
+            border-color: #ffca28;
+            color: #ffca28;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(243, 156, 18, 0.2);
+        }
+
+        .chip-label:hover { border-color: #64748b; color: #cbd5e1; }
+
+        .submit-btn {
+            width: 100%; background: linear-gradient(135deg, #f1c40f, #f39c12); color: #0f172a; border: none;
+            padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4); margin-top: 15px; transition: 0.3s;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>✨ अपनी प्रोफाइल सेट करें</h2>
+    <p class="subtitle">अपने इंटरेस्ट के टैग्स (Chips) पर क्लिक करें। आप एक से ज़्यादा भी चुन सकते हैं:</p>
+
+    <form method="POST" action="{% url 'save_onboarding' %}">
+        {% csrf_token %}
+        
+        <div class="question-group">
+            <label>1. अभी आपका मुख्य फोकस क्या है?</label>
+            <div class="chip-container">
+                <input type="checkbox" id="f1" name="primary_focus" value="Career & Growth" class="chip-checkbox"><label for="f1" class="chip-label">💼 करियर और ग्रोथ</label>
+                <input type="checkbox" id="f2" name="primary_focus" value="Wealth & Investments" class="chip-checkbox"><label for="f2" class="chip-label">📈 वेल्थ और इन्वेस्टमेंट</label>
+                <input type="checkbox" id="f3" name="primary_focus" value="Health & Fitness" class="chip-checkbox"><label for="f3" class="chip-label">🏥 हेल्थ और फिटनेस</label>
+                <input type="checkbox" id="f4" name="primary_focus" value="Marriage & Relationships" class="chip-checkbox"><label for="f4" class="chip-label">❤️ शादी और रिश्ते</label>
+                <input type="checkbox" id="f5" name="primary_focus" value="Peace & Guidance" class="chip-checkbox"><label for="f5" class="chip-label">🕊️ मानसिक शांति</label>
+            </div>
+        </div>
+
+        <div class="question-group">
+            <label>2. आपकी वर्तमान सबसे बड़ी चुनौती?</label>
+            <div class="chip-container">
+                <input type="checkbox" id="c1" name="current_challenge" value="Work-Life Balance" class="chip-checkbox"><label for="c1" class="chip-label">⚖️ वर्क-लाइफ बैलेंस</label>
+                <input type="checkbox" id="c2" name="current_challenge" value="Overcoming Setback" class="chip-checkbox"><label for="c2" class="chip-label">🧗 असफलता से उबरना</label>
+                <input type="checkbox" id="c3" name="current_challenge" value="Career Confusion" class="chip-checkbox"><label for="c3" class="chip-label">🧠 करियर कन्फ्यूजन</label>
+                <input type="checkbox" id="c4" name="current_challenge" value="Financial Stress" class="chip-checkbox"><label for="c4" class="chip-label">💸 फाइनेंस/कर्ज की चिंता</label>
+                <input type="checkbox" id="c5" name="current_challenge" value="Health Issues" class="chip-checkbox"><label for="c5" class="chip-label">🏥 हेल्थ इश्यूज</label>
+            </div>
+        </div>
+
+        <div class="question-group">
+            <label>3. आपका रिलेशनशिप स्टेटस?</label>
+            <div class="chip-container">
+                <input type="radio" id="r1" name="relationship_status" value="Married" class="chip-checkbox"><label for="r1" class="chip-label">💍 शादीशुदा</label>
+                <input type="radio" id="r2" name="relationship_status" value="In a Relationship" class="chip-checkbox"><label for="r2" class="chip-label">💞 रिलेशनशिप में</label>
+                <input type="radio" id="r3" name="relationship_status" value="Single & Looking" class="chip-checkbox"><label for="r3" class="chip-label">🔍 सिंगल (तलाश में)</label>
+                <input type="radio" id="r4" name="relationship_status" value="Healing from Breakup" class="chip-checkbox"><label for="r4" class="chip-label">💔 ब्रेकअप से उबर रहे हैं</label>
+                <input type="radio" id="r5" name="relationship_status" value="Focusing on Myself" class="chip-checkbox"><label for="r5" class="chip-label">🧘 सिंगल (खुद पर फोकस)</label>
+            </div>
+        </div>
+        <div class="question-group">
+            <label>4. आपका प्रोफेशनल फील्ड क्या है?</label>
+            <div class="chip-container">
+                <input type="checkbox" id="p1" name="profession" value="Sales & Marketing" class="chip-checkbox"><label for="p1" class="chip-label">🤝 सेल्स और मार्केटिंग</label>
+                
+                <input type="checkbox" id="p2" name="profession" value="Healthcare & Pharma" class="chip-checkbox"><label for="p2" class="chip-label">🏥 हेल्थकेयर और फार्मा</label>
+                
+                <input type="checkbox" id="p3" name="profession" value="IT & Tech" class="chip-checkbox"><label for="p3" class="chip-label">💻 IT और सॉफ्टवेयर</label>
+                
+                <input type="checkbox" id="p4" name="profession" value="Govt & Admin" class="chip-checkbox"><label for="p4" class="chip-label">🏛️ सरकारी नौकरी और एडमिन</label>
+                
+                <input type="checkbox" id="p5" name="profession" value="Skilled Technician" class="chip-checkbox"><label for="p5" class="chip-label">🛠️ टेक्नीशियन / स्किल्ड वर्कर</label>
+                
+                <input type="checkbox" id="p6" name="profession" value="Business & Trade" class="chip-checkbox"><label for="p6" class="chip-label">🏪 बिज़नेस और व्यापार</label>
+                
+                <input type="checkbox" id="p7" name="profession" value="Education & Research" class="chip-checkbox"><label for="p7" class="chip-label">🎓 शिक्षा और रिसर्च</label>
+                
+                <input type="checkbox" id="p8" name="profession" value="Legal & Finance" class="chip-checkbox"><label for="p8" class="chip-label">⚖️ लीगल, CA और फाइनेंस</label>
+                
+                <input type="checkbox" id="p9" name="profession" value="Engineering & Real Estate" class="chip-checkbox"><label for="p9" class="chip-label">🏭 इंजीनियरिंग और रियल एस्टेट</label>
+                
+                <input type="checkbox" id="p10" name="profession" value="Creative & Media" class="chip-checkbox"><label for="p10" class="chip-label">🎨 क्रिएटिव और मीडिया</label>
+                
+                <input type="checkbox" id="p11" name="profession" value="Defense & Security" class="chip-checkbox"><label for="p11" class="chip-label">🛡️ पुलिस और डिफेन्स</label>
+                
+                <input type="checkbox" id="p12" name="profession" value="Agriculture" class="chip-checkbox"><label for="p12" class="chip-label">👨‍🌾 कृषि (Farming)</label>
+                
+                <input type="checkbox" id="p13" name="profession" value="Home Maker" class="chip-checkbox"><label for="p13" class="chip-label">🏠 होम मेकर (गृहिणी)</label>
+                
+                <input type="checkbox" id="p14" name="profession" value="Student" class="chip-checkbox"><label for="p14" class="chip-label">📚 छात्र (Student)</label>
+            </div>
+        </div>
+
+
+  
+
+        <div class="question-group">
+            <label>5. आप ट्रेवल (यात्रा) कितना करते हैं?</label>
+            <div class="chip-container">
+                <input type="checkbox" id="t1" name="travel_habit" value="Inter-city Travel" class="chip-checkbox"><label for="t1" class="chip-label">🚆 अक्सर इंटर-सिटी सफर</label>
+                <input type="checkbox" id="t2" name="travel_habit" value="Daily Local Traffic" class="chip-checkbox"><label for="t2" class="chip-label">🚗 डेली लोकल ट्रैफिक</label>
+                <input type="checkbox" id="t3" name="travel_habit" value="Frequent Flights" class="chip-checkbox"><label for="t3" class="chip-label">✈️ अक्सर फ्लाइट्स</label>
+                <input type="checkbox" id="t4" name="travel_habit" value="Work from Home" class="chip-checkbox"><label for="t4" class="chip-label">🏡 घर से काम (WFH)</label>
+            </div>
+        </div>
+
+        <button type="submit" class="submit-btn">🚀 मेरा पर्सनलाइज़्ड डैशबोर्ड बनाएं</button>
+    </form>
+</div>
+
+</body>
+</html>
