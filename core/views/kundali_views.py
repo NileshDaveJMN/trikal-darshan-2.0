@@ -40,8 +40,10 @@ def update_analytics(page_type):
         json.dump(stats, f, indent=4)
 
 def home(request, k_id=None):
-    if request.user.is_authenticated and not request.user.userprofile.primary_focus:
-        return redirect('save_onboarding')
+    if request.user.is_authenticated:
+        user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
+        if not user_profile.primary_focus:
+            return redirect('save_onboarding')
     tab_settings = TabSettings.objects.first() or TabSettings.objects.create()
 
     if request.method == 'GET':
@@ -173,7 +175,7 @@ def home(request, k_id=None):
             
         elif not action or action == 'calc':
             if request.user.is_authenticated:
-                user_profile = request.user.userprofile
+                user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
                 
                 if user_profile.kundali_credits > 0:
                     new_k = SavedKundali.objects.create(user=request.user, name=n, gender=g, day=d, month=m, year=y, hour=h, minute=min_m, second=s, city=c, lat=lat, lon=lon)
@@ -387,7 +389,7 @@ def kundali_calculation(request):
 @login_required(login_url='/login/')
 def save_onboarding(request):
     if request.method == 'POST':
-        user_profile = request.user.userprofile
+        user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
         
         # 🌟 मल्टी-सिलेक्ट चिप्स (Chips) का डेटा कॉमा (,) के साथ जोड़कर सेव करना
         user_profile.primary_focus = ", ".join(request.POST.getlist('primary_focus'))
