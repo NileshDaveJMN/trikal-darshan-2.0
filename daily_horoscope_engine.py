@@ -28,8 +28,18 @@ import re
 import time
 import requests
 import urllib3
+from pathlib import Path
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# ── .env Auto-Load (PythonAnywhere ke liye) ──────────────────
+_env_path = Path(__file__).parent / '.env'
+if _env_path.exists():
+    for _line in _env_path.read_text(encoding='utf-8').splitlines():
+        _line = _line.strip()
+        if _line and '=' in _line and not _line.startswith('#'):
+            _k, _v = _line.split('=', 1)
+            os.environ.setdefault(_k.strip(), _v.strip())
 
 # ── Django Setup ─────────────────────────────────────────────
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -45,14 +55,14 @@ from engines.utils import P_HINDI_FULL
 import swisseph as swe
 import pytz
 
-# ── API Keys ─────────────────────────────────────────────────
+# ── API Keys (GEMINI_API_KEYS1 to GEMINI_API_KEYS9 support) ──
 GEMINI_API_KEYS = []
-for i in range(1, 4):  # GEMINI_API_KEYS1 se GEMINI_API_KEYS9 tak
+for i in range(1, 10):  # GEMINI_API_KEYS1 se GEMINI_API_KEYS9 tak
     key = os.getenv(f"GEMINI_API_KEYS{i}", "").strip()
     if key:
         GEMINI_API_KEYS.append(key)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-GEMINI_MODEL = "gemini-3-flash-preview"   # stable और fast
+GEMINI_MODEL = "gemini-2.0-flash"  # stable और fast
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  SECTION 1 — VEDIC CONSTANTS

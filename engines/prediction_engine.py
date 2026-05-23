@@ -4,13 +4,26 @@ import datetime
 import random
 import re
 import urllib3
-import os # 🌟 नया इम्पोर्ट
+import os
+from pathlib import Path
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# 🌟 .env से कीज़ लोड करें
-keys_from_env = os.getenv("GEMINI_API_KEYS")
-GEMINI_API_KEYS = keys_from_env.split(',') if keys_from_env else []
+# 🌟 .env Auto-Load
+_env_path = Path(__file__).parent / '.env'
+if _env_path.exists():
+    for _line in _env_path.read_text(encoding='utf-8').splitlines():
+        _line = _line.strip()
+        if _line and '=' in _line and not _line.startswith('#'):
+            _k, _v = _line.split('=', 1)
+            os.environ.setdefault(_k.strip(), _v.strip())
+
+# 🌟 GEMINI_API_KEYS1, KEYS2... सभी load करें
+GEMINI_API_KEYS = []
+for _i in range(1, 10):
+    _key = os.getenv(f"GEMINI_API_KEYS{_i}", "").strip()
+    if _key:
+        GEMINI_API_KEYS.append(_key)
 
 current_time = datetime.datetime.now()
 month_year = current_time.strftime("%B %Y")
