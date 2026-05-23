@@ -17,7 +17,7 @@ gunicorn
 idna==3.15
 isort==6.0.1
 jedi==0.19.2
-lazy-object-proxy==0.0.0
+lazy-object-proxy
 mccabe==0.7.0
 packaging==25.0
 parso==0.8.4
