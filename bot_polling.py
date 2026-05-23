@@ -49,7 +49,7 @@ def handle_updates():
                         message = update["message"]
                         chat_id = message["chat"]["id"]
                         text = message["text"].strip()
-                        
+                        print(f"DEBUG: Message aaya hai: {text} - User ID: {chat_id}")
                         # 🌟 Check karein agar user ne /start dabaya hai aur sath me username hai
                         if text.startswith("/start"):
                             parts = text.split()
