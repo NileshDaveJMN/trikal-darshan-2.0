@@ -1,23 +1,16 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="hi">
 <head>
     <meta charset="UTF-8">
     <style>
-        /* 🌟 हमारा पुराना और भरोसेमंद Mangal फोंट 🌟 */
-        @font-face {
-    font-family: 'HindiFont';
-    src: url('{% static "fonts/Mangal.ttf" %}');
-}
+        /* Google Fonts का उपयोग करें - यह रेंडर पर 100% चलेगा */
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari&display=swap');
+
+        * {
+            font-family: 'Noto Sans Devanagari', sans-serif !important;
+        }
 
         @page { size: A4; margin: 1cm; }
-
-        /* पूरे डॉक्यूमेंट पर फोंट लागू करना और आधे अक्षरों (त्र, ग्र) को जोड़ना */
-        * {
-            font-family: 'HindiFont', sans-serif !important;
-            font-variant-ligatures: common-ligatures !important;
-            font-feature-settings: "kern", "liga", "clig" !important;
-        }
 
         body {
             color: #333;
@@ -56,7 +49,6 @@
         
         .label { font-weight: bold; color: #2c3e50; background-color: #fcfcfc; }
     </style>
-
 </head>
 <body>
     <div class="header">
@@ -64,13 +56,12 @@
         <p>जातक का नाम: <strong>{{ name }}</strong></p>
     </div>
     
-{% if include_charts and chart_image %}
+    {% if include_charts and chart_image %}
     <div style="text-align: center; margin-top: 20px;">
         <h3>लग्न कुंडली</h3>
         <img src="{{ chart_image }}" style="width: 100%; max-width: 500px; border: 1px solid #ccc;">
     </div>
-{% endif %}
-
+    {% endif %}
 
     <div class="section-title">जन्म विवरण</div>
     <table>
@@ -81,7 +72,6 @@
         <tr>
             <td class="label">नक्षत्र</td><td>{{ nakshatra }}</td>
             <td class="label">तिथि</td><td>{{ tithi }}, {{ paksha }} पक्ष, संवत {{ samvat }} ({{ hindu_maas }})</td>
-
         </tr>
         <tr>
             <td class="label">चन्द्र राशि</td><td>{{ chandra_rashi }}</td>
