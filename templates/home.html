@@ -86,7 +86,19 @@
                             <button type="submit" style="width: 100%; background: #ffca28; color: #0f172a; border: none; padding: 14px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 202, 40, 0.4); text-transform: uppercase; letter-spacing: 0.5px;">✅ पेमेंट कन्फर्म करें</button>
                         </form>
                     </div>
-                    <a href="{% url 'logout' %}" style="text-decoration:none;">
+                    {% if not user.userprofile.telegram_chat_id %}
+                    <div style="background: #131c2c; border: 1px dashed #24a1de; margin-bottom: 16px; text-align: center; padding: 16px; border-radius: 12px;">
+                        <p style="color: #cbd5e1; font-size: 14px; margin-top: 0; margin-bottom: 12px; line-height: 1.4;">
+                            🌅 रोज़ सुबह सीधे अपने <strong>Telegram</strong> पर पर्सनल राशिफल पाएं!
+                        </p>
+                        <a href="https://t.me/Trikal_darshan_bot?start={{ user.username }}" target="_blank" style="text-decoration: none;">
+                            <button type="button" class="primary-btn" style="background: #24a1de; color: #fff; border: none; width: auto; padding: 10px 24px; font-size: 14px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(36, 161, 222, 0.4); cursor: pointer; margin-bottom: 8px;">
+                                ✈️ Telegram Bot से जुड़ें (FREE)
+                            </button>
+                        </a>
+                    </div>
+                    {% endif %}
+                                        <a href="{% url 'logout' %}" style="text-decoration:none;">
                         <button class="primary-btn" style="background: transparent; color: #ff4757; border: 1px solid #ff4757;">🚪 लॉगआऊट</button>
                     </a>
                 {% else %}
