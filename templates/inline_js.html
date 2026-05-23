@@ -1,279 +1,87 @@
 <script>
-    // URL से एक्टिव टैब लोड करना (जैसे डिलीट होने के बाद मिलान टैब पर रुकना)
-    document.addEventListener("DOMContentLoaded", function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const activeTab = urlParams.get('tab');
-        if (activeTab) {
-            let tabBtn = document.querySelector(`button[onclick*="${activeTab}"]`);
-            if (tabBtn) tabBtn.click();
-        }
+// ==========================================
+// 1. मेन टैब (प्रोफाइल, कुंडली, मिलान) बदलने का कोड
+// ==========================================
+function showView(event, viewId) {
+    // सभी पैनल छुपाएं
+    var panels = document.querySelectorAll('.view-panel');
+    panels.forEach(function(panel) {
+        panel.classList.remove('active');
+        panel.style.display = 'none';
     });
-
-    // मुख्य मेन्यू टैब स्विच लॉजिक
-    function showView(event, viewId) {
-        document.querySelectorAll('.view-panel').forEach(panel => {
-            panel.style.display = 'none';
-            panel.classList.remove('active');
-        });
-        document.querySelectorAll('.p-tab-btn').forEach(btn => btn.classList.remove('active'));
-
-        const targetView = document.getElementById(viewId);
-        if (targetView) {
-            targetView.style.display = 'block';
-            targetView.classList.add('active');
-        }
+    
+    // सभी टैब बटन से एक्टिव क्लास हटाएं
+    var tabs = document.querySelectorAll('.p-tab-btn');
+    tabs.forEach(function(tab) {
+        tab.classList.remove('active');
+    });
+    
+    // जो पैनल चुना है उसे दिखाएं
+    var selectedPanel = document.getElementById(viewId);
+    if (selectedPanel) {
+        selectedPanel.classList.add('active');
+        selectedPanel.style.display = 'block';
+    }
+    
+    // बटन को एक्टिव दिखाएं
+    if (event && event.currentTarget) {
         event.currentTarget.classList.add('active');
-
-        // Sub-tabs bar sirf kundali result ke saath dikhao
-        const subTabsBar = document.getElementById('sub-tabs-bar');
-        if (subTabsBar) {
-            const resultSection = document.getElementById('kundali-result-section');
-            if (viewId === 'view-kundali' && resultSection && resultSection.style.display === 'block') {
-                subTabsBar.style.display = 'flex';
-            } else {
-                subTabsBar.style.display = 'none';
-            }
-        }
     }
 
-    // कुंडली के सब-टैब स्विच लॉजिक
-    function switchSubTab(btn, panelId) {
-        document.querySelectorAll('.sub-panel').forEach(panel => {
-            panel.style.display = 'none';
-            panel.classList.remove('active');
-        });
-        document.querySelectorAll('.sub-tab').forEach(tab => tab.classList.remove('active'));
-
-        const targetPanel = document.getElementById(panelId);
-        if (targetPanel) {
-            targetPanel.style.display = 'block';
-            targetPanel.classList.add('active');
-        }
-        btn.classList.add('active');
-    }
-
-    function backToForm() {
-        document.getElementById('kundali-input-section').style.display = 'none';
-        document.getElementById('kundali-result-section').style.display = 'none';
-        const subTabsBar = document.getElementById('sub-tabs-bar');
-        if (subTabsBar) subTabsBar.style.display = 'none';
-        // Saved kundali card show karo agar hai
-        const savedCard = document.querySelector('#view-kundali > .card');
-        if (savedCard) {
-            savedCard.style.display = 'block';
+    // सब-टैब बार (लग्न, दशा) को सिर्फ कुंडली पर दिखाएं
+    var subTabsBar = document.getElementById('sub-tabs-bar');
+    if (subTabsBar) {
+        var kundaliResult = document.getElementById('kundali-result-section');
+        if (viewId === 'view-kundali' && kundaliResult && kundaliResult.style.display !== 'none') {
+            subTabsBar.style.display = 'flex';
         } else {
-            document.getElementById('kundali-input-section').style.display = 'block';
+            subTabsBar.style.display = 'none';
         }
     }
+}
 
-    // शहर खोज और अक्षांश/देशांतर (Latitude/Longitude) ऑटो-कंप्लीट लॉजिक
-    document.addEventListener("DOMContentLoaded", function(){
-        const cityInput = document.getElementById("city_input");
-        if(!cityInput) return;
-        const suggestions = document.getElementById("city_suggestions");
-        const latInput = document.getElementById("lat_input");
-        const lonInput = document.getElementById("lon_input");
-        const status = document.getElementById("city_status");
-        let debounceTimer;
-
-        cityInput.addEventListener("input", function(){
-            clearTimeout(debounceTimer);
-            latInput.value = ""; lonInput.value = "";
-            status.textContent = "";
-            const q = this.value.trim();
-            if(q.length < 3){ suggestions.style.display="none"; return; }
-            debounceTimer = setTimeout(() => {
-                fetch("https://nominatim.openstreetmap.org/search?q=" + encodeURIComponent(q) + "&format=json&limit=5&accept-language=hi,en")
-                .then(r => r.json()).then(data => {
-                    suggestions.innerHTML = "";
-                    if(!data.length){ suggestions.style.display="none"; return; }
-                    data.forEach(place => {
-                        const div = document.createElement("div");
-                        div.textContent = place.display_name;
-                        div.style.cssText = "padding:10px 12px; cursor:pointer; font-size:13px; border-bottom:1px solid #2e3f52; color:#f0f0f0;";
-                        div.onmouseover = () => div.style.background = "#2a3f55";
-                        div.onmouseout = () => div.style.background = "#1e2a38";
-                        div.onclick = () => {
-                            cityInput.value = place.display_name.split(",")[0];
-                            latInput.value = place.lat;
-                            lonInput.value = place.lon;
-                            status.textContent = "✓ " + parseFloat(place.lat).toFixed(4) + ", " + parseFloat(place.lon).toFixed(4);
-                            status.style.color = "#27ae60";
-                            suggestions.style.display = "none";
-                        };
-                        suggestions.appendChild(div);
-                    });
-                    suggestions.style.display = "block";
-                });
-            }, 400);
-        });
-
-        document.addEventListener("click", e => {
-            if(suggestions && !suggestions.contains(e.target) && e.target !== cityInput)
-                suggestions.style.display="none";
-        });
-
-        cityInput.closest("form").addEventListener("submit", function(e){
-            if(!latInput.value || !lonInput.value){
-                e.preventDefault();
-                status.textContent = "कृपया ड्रॉपडाउन लिस्ट से सही शहर चुनें!";
-                status.style.color = "#e74c3c";
-            }
-        });
+// ==========================================
+// 2. कुंडली के अंदर वाले सब-टैब बदलने का कोड
+// ==========================================
+function switchSubTab(element, panelId) {
+    var panels = document.querySelectorAll('.sub-panel');
+    panels.forEach(function(panel) {
+        panel.classList.remove('active');
+        panel.style.display = 'none';
     });
-function showSavedMilanTop(boyName, girlName, score, manglik, boyNak, boyRashi, girlNak, girlRashi) {
-    let milanPanel = document.getElementById('view-milan');
-    let topResultDiv = document.getElementById('saved-milan-result-top');
     
-    // अगर टॉप बॉक्स पहले से नहीं बना है, तो उसे मिलान पैनल में सबसे ऊपर बनाएं
-    if (!topResultDiv) {
-        topResultDiv = document.createElement('div');
-        topResultDiv.id = 'saved-milan-result-top';
-        milanPanel.insertBefore(topResultDiv, milanPanel.firstChild);
+    var tabs = document.querySelectorAll('.sub-tab');
+    tabs.forEach(function(tab) {
+        tab.classList.remove('active');
+    });
+    
+    var selectedPanel = document.getElementById(panelId);
+    if (selectedPanel) {
+        selectedPanel.classList.add('active');
+        selectedPanel.style.display = 'block';
     }
     
-    // बॉक्स के अंदर प्रीमियम डार्क थीम में डेटा रेंडर करें
-    topResultDiv.innerHTML = `
-        <div class="card" style="background: #131c2c; border: 1px solid #ffca28; padding: 15px; margin-bottom: 20px; border-radius: 10px; text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.5);">
-            <h3 style="color: #ffca28; margin-bottom: 12px; font-size: 15px;">📂 सेव किया गया मिलान (फ्री व्यू)</h3>
-            <p style="font-size: 16px; margin-bottom: 12px; color:#fff;"><strong>${boyName}</strong> और <strong>${girlName}</strong></p>
-            
-            <div style="display: flex; gap: 12px; margin-bottom: 12px;">
-                <div style="flex: 1; background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #334155;">
-                    <span style="color: #94a3b8; font-size: 11px; display: block; margin-bottom:2px;">कुल गुण मिलान</span>
-                    <strong style="color: #ffca28; font-size: 18px;">${score} / 36</strong>
-                </div>
-                <div style="flex: 1; background: #0f172a; padding: 10px; border-radius: 8px; text-align: center; border: 1px solid #334155;">
-                    <span style="color: #94a3b8; font-size: 11px; display: block; margin-bottom:2px;">मांगलिक दोष</span>
-                    <strong style="color: #fff; font-size: 13px;">${manglik}</strong>
-                </div>
-            </div>
-            
-            <div style="font-size: 13px; color: #cbd5e1; background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #232d3f;">
-                <p style="margin-bottom: 4px;">👦 <strong>वर:</strong> ${boyNak} नक्षत्र (${boyRashi} राशि)</p>
-                <p style="margin: 0;">👧 <strong>कन्या:</strong> ${girlNak} नक्षत्र (${girlRashi} राशि)</p>
-            </div>
-        </div>
-    `;
-    
-    // स्क्रीन को ऑटो-स्क्रॉल करके ऊपर ले जाएं
-    document.querySelector('.main-viewport').scrollTop = 0;
+    if (element) {
+        element.classList.add('active');
+    }
 }
-function loadSavedMilanFull(historyId) {
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-    fetch('/api/calculate_milan/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: `history_id=${historyId}&csrfmiddlewaretoken=${csrfToken}`
-    })
-    .then(response => response.json())
-    .then(res => {
-        if (res.status === 'success') {
-            let milanPanel = document.getElementById('view-milan');
-            let topResultDiv = document.getElementById('saved-milan-full-result-top');
-            
-            if (!topResultDiv) {
-                topResultDiv = document.createElement('div');
-                topResultDiv.id = 'saved-milan-full-result-top';
-                milanPanel.insertBefore(topResultDiv, milanPanel.firstChild);
-            }
-            
-            let data = res.data;
-            let boyName = res.names.boy;
-            let girlName = res.names.girl;
-            
-            // 🌟 फिक्स: अष्टकूट का डेटा 'breakdown' के अंदर से उठाना
-            let kootas = data.breakdown || data.koota_details || data.ashtakoot;
-            let tableRows = '';
-            
-            if (kootas && typeof kootas === 'object') {
-                for (let k in kootas) {
-                    let maxPts = kootas[k].max_points || kootas[k].max || kootas[k].total_points || '-';
-                    let obnPts = kootas[k].obtained_points || kootas[k].score || kootas[k].points || kootas[k].obtained || '0';
-                    
-                    tableRows += `
-                        <tr style="border-bottom: 1px solid #1e293b;">
-                            <td style="padding: 12px 10px; color: #cbd5e1; text-align: left; text-transform: capitalize;">${k}</td>
-                            <td style="padding: 12px 10px; text-align: center; color: #94a3b8;">${maxPts}</td>
-                            <td style="padding: 12px 10px; text-align: center; color: #ffca28; font-weight: bold;">${obnPts}</td>
-                        </tr>
-                    `;
-                }
-            }
 
-            // कुल गुण और मांगलिक स्थिति का डेटा सुरक्षित तरीके से निकालना
-            let totalScore = data.total_points || data.total_score || data.score || '-';
-            
-            // अगर manglik_analysis एक ऑब्जेक्ट (डिक्शनरी) है, तो उसके अंदर से conclusion निकालना
-            let manglikText = "सामान्य";
-            if (typeof data.manglik_analysis === 'object' && data.manglik_analysis !== null) {
-                manglikText = data.manglik_analysis.conclusion || data.manglik_analysis.status || "सामान्य";
-            } else {
-                manglikText = data.manglik_analysis || data.manglik_status || "सामान्य";
-            }
-
-            topResultDiv.innerHTML = `
-                <div class="card" style="background: #131c2c; border: 1px solid #ffca28; padding: 20px; margin-bottom: 25px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
-                    <h3 style="color: #ffca28; margin-bottom: 15px; font-size: 15px; border-bottom: 1px solid #334155; padding-bottom: 8px;">📂 पूर्ण गुण मिलान विवरण (क्रेडिट फ्री व्यू)</h3>
-                    <p style="font-size: 18px; margin-bottom: 15px; color:#fff; text-align: center;">❤️ <strong>${boyName}</strong> और <strong>${girlName}</strong></p>
-                    
-                    <div style="display: flex; gap: 15px; margin-bottom: 20px;">
-                        <div style="flex: 1; background: #0f172a; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #334155;">
-                            <span style="color: #94a3b8; font-size: 12px; display: block; margin-bottom:4px;">कुल मिलान गुण</span>
-                            <strong style="color: #ffca28; font-size: 22px;">${totalScore} / 36</strong>
-                        </div>
-                        <div style="flex: 1; background: #0f172a; padding: 12px; border-radius: 8px; text-align: center; border: 1px solid #334155;">
-                            <span style="color: #94a3b8; font-size: 12px; display: block; margin-bottom:4px;">मांगलिक मिलान</span>
-                            <strong style="color: #fff; font-size: 13px;">${manglikText}</strong>
-                        </div>
-                    </div>
-
-                    <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;">
-                        <thead>
-                            <tr style="background: #0f172a; color: #94a3b8; border-bottom: 2px solid #334155;">
-                                <th style="padding: 10px; text-align: left;">कूट नाम</th>
-                                <th style="padding: 10px; text-align: center;">अधिकतम</th>
-                                <th style="padding: 10px; text-align: center;">प्राप्त</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${tableRows || '<tr><td colspan="3" style="text-align:center; padding:15px; color:#ff4757;">गणना उपलब्ध नहीं है</td></tr>'}
-                        </tbody>
-                    </table>
-                </div>
-            `;
-            
-            document.querySelector('.main-viewport').scrollTop = 0;
-        } else {
-            alert(res.message);
-        }
-    })
-    .catch(err => console.error("Error loading full milan:", err));
-}
-// 🌟 CHART IMAGE CAPTURE AND PDF EXPORT FUNCTION 🌟
+// ==========================================
+// 3. कुंडली PDF का चार्ट डाउनलोड करने का कोड
+// ==========================================
 function captureChartAndDownload() {
-    var chartPanel = document.getElementById('panel-lagna'); // पूरा लग्न पैनल
-    var chartElement = document.querySelector('.chart-box'); // सिर्फ चार्ट का बॉक्स
+    var chartPanel = document.getElementById('panel-lagna'); 
+    var chartElement = document.querySelector('.chart-box'); 
     
     if (!chartElement) {
         document.getElementById('pdfDownloadForm').submit();
         return;
     }
 
-    // 1. चेक करें कि अभी टैब दिख रहा है या छुपा हुआ है
     var originalDisplay = chartPanel.style.display;
-    
-    // 2. फोटो खींचने के लिए इसे ज़बरदस्ती दिखाएं (ताकि फोटो खाली न आए)
     chartPanel.style.display = 'block';
-
-    // 3. लाइनों को काला करने वाली क्लास लगाएं
     chartElement.classList.add('pdf-export-mode');
 
-    // 4. ब्राउज़र को रंग बदलने का समय दें (500ms)
     setTimeout(function() {
         html2canvas(chartElement, {
             scale: 2, 
@@ -281,30 +89,18 @@ function captureChartAndDownload() {
             useCORS: true,
             logging: false
         }).then(function(canvas) {
-            
-            // 5. फोटो खिंच गई! अब सब कुछ पहले जैसा कर दें
             chartElement.classList.remove('pdf-export-mode');
-            chartPanel.style.display = originalDisplay; // टैब वापस छुपा दें
+            chartPanel.style.display = originalDisplay; 
             
-            // 6. डेटा फॉर्म में डालें और डाउनलोड शुरू करें
             var imgData = canvas.toDataURL("image/png");
             document.getElementById('chart_image_data').value = imgData;
             document.getElementById('pdfDownloadForm').submit();
-            
         }).catch(function(err) {
             console.error("Chart capture error: ", err);
-            // एरर आए तो भी सब पहले जैसा कर दें
             chartElement.classList.remove('pdf-export-mode');
             chartPanel.style.display = originalDisplay;
             document.getElementById('pdfDownloadForm').submit();
         });
-    }, 500); // आधा सेकंड का समय
+    }, 500); 
 }
-
-
-    else {
-        form.submit();
-    }
-}
-
 </script>
