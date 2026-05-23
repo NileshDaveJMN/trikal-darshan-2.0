@@ -62,7 +62,7 @@ for i in range(1, 10):  # GEMINI_API_KEYS1 se GEMINI_API_KEYS9 tak
     if key:
         GEMINI_API_KEYS.append(key)
 BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-GEMINI_MODEL = "gemini-2.0-flash"  # stable और fast
+GEMINI_MODEL = "gemini-3-flash-preview"  # stable और fast
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  SECTION 1 — VEDIC CONSTANTS
