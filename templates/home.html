@@ -87,15 +87,15 @@
                         </form>
                     </div>
 
-                    <!-- टेलीग्राम बटन यूजर प्रोफाइल में -->
+                    <!-- टेलीग्राम बटन प्रोफाइल में सेट कर दिया गया है -->
                     {% if not user.userprofile.telegram_chat_id %}
                     <div style="background: #131c2c; border: 1px dashed #24a1de; margin-bottom: 16px; text-align: center; padding: 16px; border-radius: 12px;">
                         <p style="color: #cbd5e1; font-size: 14px; margin-top: 0; margin-bottom: 12px; line-height: 1.4;">
-                            🌅 रोज़ सुबह सीधे अपने <strong>Telegram</strong> पर पर्सनल राशिफल पाएं!
+                            🌅 रोज़ सुबह सीधे अपने <strong>Telegram</strong> पर अपना पर्सनल सटीक राशिफल पाना चाहते हैं?
                         </p>
                         <a href="https://t.me/Trikal_darshan_bot?start={{ user.username }}" target="_blank" style="text-decoration: none;">
-                            <button type="button" class="primary-btn" style="background: #24a1de; color: #fff; border: none; width: auto; padding: 10px 24px; font-size: 14px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(36, 161, 222, 0.4); cursor: pointer; margin-bottom: 8px;">
-                                ✈️ Telegram Bot से जुड़ें (FREE)
+                            <button type="button" class="primary-btn" style="background: #24a1de; color: #fff; border: none; width: auto; padding: 10px 24px; font-size: 14px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(36, 161, 222, 0.4); cursor: pointer;">
+                                ✈️ Telegram Bot से जुड़ें (FREE)
                             </button>
                         </a>
                     </div>
@@ -268,16 +268,4 @@
                         </svg>
                     </button>
                 </form>
-                {% endif %}
-            </div>
-        </div>
-
-          <div id="view-milan" class="view-panel">{% include 'milan.html' %}</div>
-        <div id="view-panchang" class="view-panel">{% include 'panchang.html' %}</div>
-    </div>
-</div>
-
-{% include 'inline_js.html' %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-</body>
-</html>
+         
