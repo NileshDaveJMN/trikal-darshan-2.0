@@ -256,22 +256,43 @@ function loadSavedMilanFull(historyId) {
 }
 // 🌟 CHART IMAGE CAPTURE AND PDF EXPORT FUNCTION 🌟
 function captureChartAndDownload() {
-    const chartDiv = document.getElementById('kundali_chart_div');
-    const hiddenInput = document.getElementById('chart_image_data');
-    const form = document.getElementById('pdfDownloadForm');
+    // चार्ट वाले हिस्से को ढूंढें
+    var chartElement = document.querySelector('.chart-box'); 
     
-    if (chartDiv) {
-        chartDiv.classList.add('pdf-export-mode');
-        html2canvas(chartDiv, { backgroundColor: "#ffffff", scale: 2 }).then(canvas => {
-            hiddenInput.value = canvas.toDataURL("image/png");
-            chartDiv.classList.remove('pdf-export-mode');
-            form.submit();
-        }).catch(err => {
-            console.error("Chart capture error:", err);
-            chartDiv.classList.remove('pdf-export-mode');
-            form.submit(); 
+    if (!chartElement) {
+        // अगर चार्ट नहीं है, तो सीधा फॉर्म सबमिट कर दें
+        document.getElementById('pdfDownloadForm').submit();
+        return;
+    }
+
+    // 1. क्लास लगाएं (ताकि लाइन्स और टेक्स्ट काले हो जाएं)
+    chartElement.classList.add('pdf-export-mode');
+
+    // 2. ब्राउज़र को रंग बदलने के लिए 300 मिलीसेकंड (0.3s) का समय दें
+    setTimeout(function() {
+        html2canvas(chartElement, {
+            scale: 2, // क्वालिटी एकदम HD करने के लिए
+            backgroundColor: "#ffffff", // बैकग्राउंड पक्का सफेद रहे
+            useCORS: true,
+            logging: false
+        }).then(function(canvas) {
+            // 3. फोटो खींचने के बाद वापस डार्क मोड कर दें
+            chartElement.classList.remove('pdf-export-mode');
+            
+            // 4. इमेज का डेटा फॉर्म में डालें और सबमिट करें
+            var imgData = canvas.toDataURL("image/png");
+            document.getElementById('chart_image_data').value = imgData;
+            document.getElementById('pdfDownloadForm').submit();
+            
+        }).catch(function(err) {
+            console.error("Chart capture error: ", err);
+            chartElement.classList.remove('pdf-export-mode');
+            document.getElementById('pdfDownloadForm').submit();
         });
-    } else {
+    }, 300); // 300ms का डिले (Delay) - यह सबसे ज़रूरी है!
+}
+
+    else {
         form.submit();
     }
 }
