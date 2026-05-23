@@ -47,3 +47,6 @@ webencodings==0.5.1
 wheel==0.45.1
 wrapt==1.17.2
 zopfli==0.4.1
+dj-database-url
+psycopg2-binary
+
