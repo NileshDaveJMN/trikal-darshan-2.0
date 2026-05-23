@@ -25,7 +25,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-_(1@ran2op0v^mhq@2zun67n$3&*9+t8gfvv(ayi_5%(q4%*yi'
 
 DEBUG = True
-ALLOWED_HOSTS = ['trikaldarshan.pythonanywhere.com', 'www.trikaldarshan.com', '127.0.0.1']
+ALLOWED_HOSTS = ['trikal-darshan-2-0.onrender.com', 'localhost', '127.0.0.1']
+
 
 # Application definition
 INSTALLED_APPS = [
