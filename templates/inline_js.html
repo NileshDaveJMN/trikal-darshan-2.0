@@ -256,41 +256,51 @@ function loadSavedMilanFull(historyId) {
 }
 // 🌟 CHART IMAGE CAPTURE AND PDF EXPORT FUNCTION 🌟
 function captureChartAndDownload() {
-    // चार्ट वाले हिस्से को ढूंढें
-    var chartElement = document.querySelector('.chart-box'); 
+    var chartPanel = document.getElementById('panel-lagna'); // पूरा लग्न पैनल
+    var chartElement = document.querySelector('.chart-box'); // सिर्फ चार्ट का बॉक्स
     
     if (!chartElement) {
-        // अगर चार्ट नहीं है, तो सीधा फॉर्म सबमिट कर दें
         document.getElementById('pdfDownloadForm').submit();
         return;
     }
 
-    // 1. क्लास लगाएं (ताकि लाइन्स और टेक्स्ट काले हो जाएं)
+    // 1. चेक करें कि अभी टैब दिख रहा है या छुपा हुआ है
+    var originalDisplay = chartPanel.style.display;
+    
+    // 2. फोटो खींचने के लिए इसे ज़बरदस्ती दिखाएं (ताकि फोटो खाली न आए)
+    chartPanel.style.display = 'block';
+
+    // 3. लाइनों को काला करने वाली क्लास लगाएं
     chartElement.classList.add('pdf-export-mode');
 
-    // 2. ब्राउज़र को रंग बदलने के लिए 300 मिलीसेकंड (0.3s) का समय दें
+    // 4. ब्राउज़र को रंग बदलने का समय दें (500ms)
     setTimeout(function() {
         html2canvas(chartElement, {
-            scale: 2, // क्वालिटी एकदम HD करने के लिए
-            backgroundColor: "#ffffff", // बैकग्राउंड पक्का सफेद रहे
+            scale: 2, 
+            backgroundColor: "#ffffff", 
             useCORS: true,
             logging: false
         }).then(function(canvas) {
-            // 3. फोटो खींचने के बाद वापस डार्क मोड कर दें
-            chartElement.classList.remove('pdf-export-mode');
             
-            // 4. इमेज का डेटा फॉर्म में डालें और सबमिट करें
+            // 5. फोटो खिंच गई! अब सब कुछ पहले जैसा कर दें
+            chartElement.classList.remove('pdf-export-mode');
+            chartPanel.style.display = originalDisplay; // टैब वापस छुपा दें
+            
+            // 6. डेटा फॉर्म में डालें और डाउनलोड शुरू करें
             var imgData = canvas.toDataURL("image/png");
             document.getElementById('chart_image_data').value = imgData;
             document.getElementById('pdfDownloadForm').submit();
             
         }).catch(function(err) {
             console.error("Chart capture error: ", err);
+            // एरर आए तो भी सब पहले जैसा कर दें
             chartElement.classList.remove('pdf-export-mode');
+            chartPanel.style.display = originalDisplay;
             document.getElementById('pdfDownloadForm').submit();
         });
-    }, 300); // 300ms का डिले (Delay) - यह सबसे ज़रूरी है!
+    }, 500); // आधा सेकंड का समय
 }
+
 
     else {
         form.submit();
