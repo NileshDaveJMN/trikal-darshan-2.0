@@ -109,8 +109,32 @@
     }
     .pdf-floating-btn svg { width: 28px; height: 28px; stroke: #0f172a; }
 
-    /* 📑 PDF Download Export Modes */
-    .pdf-export-mode { background: #ffffff !important; border-color: #000000 !important; }
-    .pdf-export-mode svg rect, .pdf-export-mode svg line, .pdf-export-mode svg polygon { stroke: #000000 !important; }
-    .pdf-export-mode strong, .pdf-export-mode div { color: #000000 !important; }
+    /* ========================================================= */
+    /* 📑 PDF Download Export Modes (UPDATED FOR CHART FIX) */
+    /* ========================================================= */
+    .pdf-export-mode { 
+        background-color: #ffffff !important; 
+        border-color: #000000 !important; 
+        color: #000000 !important;
+    }
+
+    .pdf-export-mode * { 
+        color: #000000 !important; 
+    }
+
+    /* SVG चार्ट की लाइनों को काला करना */
+    .pdf-export-mode svg rect, 
+    .pdf-export-mode svg line, 
+    .pdf-export-mode svg polygon,
+    .pdf-export-mode svg path,
+    .pdf-export-mode svg circle { 
+        stroke: #000000 !important; 
+    }
+
+    /* 🌟 सबसे महत्वपूर्ण: SVG चार्ट के टेक्स्ट (ग्रहों के नाम/नंबर) को काला करना 🌟 */
+    .pdf-export-mode svg text {
+        fill: #000000 !important;
+        stroke: none !important;
+        font-weight: bold !important;
+    }
 </style>

@@ -37,6 +37,7 @@
 
     <div class="main-viewport">
         
+        <!-- ================= प्रोफाइल सेक्शन ================= -->
         <div id="view-user" class="view-panel active">
             <div class="card" style="text-align:center;">
                 <h3 style="margin-bottom: 25px;">👤 यूज़र प्रोफाइल</h3>
@@ -88,7 +89,6 @@
                         </form>
                     </div>
 
-                    <!-- टेलीग्राम बटन प्रोफाइल में सेट कर दिया गया है -->
                     {% if not user.userprofile.telegram_chat_id %}
                     <div style="background: #131c2c; border: 1px dashed #24a1de; margin-bottom: 16px; text-align: center; padding: 16px; border-radius: 12px;">
                         <p style="color: #cbd5e1; font-size: 14px; margin-top: 0; margin-bottom: 12px; line-height: 1.4;">
@@ -118,6 +118,7 @@
             </div>
         </div>
 
+        <!-- ================= कुंडली सेक्शन ================= -->
         <div id="view-kundali" class="view-panel">
             {% if user.is_authenticated and user.userprofile.daily_horoscope_text %}
             <div class="card" style="background: linear-gradient(135deg, #1e293b, #131c2c); border: 1px solid #ffca28; box-shadow: 0 0 15px rgba(255, 202, 40, 0.15); margin-bottom: 16px; padding: 20px; border-radius: 12px;">
@@ -269,10 +270,27 @@
                         </svg>
                     </button>
                 </form>
-          {% endif %}   </div> <!-- kundali-result-section बंद -->
-        </div> <!-- main-viewport बंद -->
-    </div> <!-- app-container बंद -->
+                {% endif %}
+            </div> <!-- kundali-result-section बंद -->
+        </div> <!-- view-kundali बंद -->
 
-    {% include 'inline_js.html' %}
+        <!-- ================= मिलान सेक्शन ================= -->
+        <div id="view-milan" class="view-panel" style="display:none;">
+            {% include 'milan.html' %} 
+        </div>
+
+        <!-- ================= पंचांग सेक्शन ================= -->
+        <div id="view-panchang" class="view-panel" style="display:none;">
+            <div class="card" style="text-align:center; padding: 50px 20px;">
+                <h3 style="color: #ffca28;">📅 पंचांग (Panchang)</h3>
+                <p style="color: #94a3b8;">यह फीचर जल्द ही उपलब्ध होगा...</p>
+            </div>
+        </div>
+
+    </div> <!-- main-viewport बंद -->
+</div> <!-- app-container बंद -->
+
+{% include 'inline_js.html' %}
+
 </body>
 </html>
