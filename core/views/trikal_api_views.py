@@ -179,7 +179,7 @@ def api_save_horoscope(request):
 
 @csrf_exempt
 def api_send_daily_horoscope(request):
-    if not _auth(request):
+    if not check_secret(request):
         return JsonResponse({"ok": False}, status=401)
     def run_horoscope():
         try:
