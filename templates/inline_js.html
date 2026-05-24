@@ -70,37 +70,46 @@ function switchSubTab(element, panelId) {
 // 3. कुंडली PDF का चार्ट डाउनलोड करने का कोड
 // ==========================================
 function captureChartAndDownload() {
-    var chartPanel = document.getElementById('panel-lagna'); 
-    var chartElement = document.querySelector('.chart-box'); 
-    
+    // Chart element dhundo — kisi bhi tab se PDF kaam kare
+    var chartElement = document.getElementById('kundali_chart_div');
+    var chartPanel = document.getElementById('panel-lagna');
+
     if (!chartElement) {
+        // Chart nahi mila — bina image ke PDF bhejo
         document.getElementById('pdfDownloadForm').submit();
         return;
     }
 
-    var originalDisplay = chartPanel.style.display;
-    chartPanel.style.display = 'block';
-    chartElement.classList.add('pdf-export-mode');
+    // Chart panel temporarily visible karo capture ke liye
+    var panelWasHidden = chartPanel && chartPanel.style.display === 'none';
+    if (panelWasHidden) {
+        chartPanel.style.display = 'block';
+        chartPanel.style.visibility = 'hidden'; // Visible but not shown
+    }
 
     setTimeout(function() {
         html2canvas(chartElement, {
-            scale: 2, 
-            backgroundColor: "#ffffff", 
+            scale: 2,
+            backgroundColor: "#0f172a",
             useCORS: true,
             logging: false
         }).then(function(canvas) {
-            chartElement.classList.remove('pdf-export-mode');
-            chartPanel.style.display = originalDisplay; 
-            
+            // Restore panel state
+            if (panelWasHidden) {
+                chartPanel.style.display = 'none';
+                chartPanel.style.visibility = '';
+            }
             var imgData = canvas.toDataURL("image/png");
             document.getElementById('chart_image_data').value = imgData;
             document.getElementById('pdfDownloadForm').submit();
         }).catch(function(err) {
             console.error("Chart capture error: ", err);
-            chartElement.classList.remove('pdf-export-mode');
-            chartPanel.style.display = originalDisplay;
+            if (panelWasHidden) {
+                chartPanel.style.display = 'none';
+                chartPanel.style.visibility = '';
+            }
             document.getElementById('pdfDownloadForm').submit();
         });
-    }, 500); 
+    }, 600);
 }
 </script>
