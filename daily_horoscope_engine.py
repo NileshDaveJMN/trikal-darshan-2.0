@@ -61,7 +61,7 @@ for i in range(1, 10):  # GEMINI_API_KEYS1 se GEMINI_API_KEYS9 tak
     key = os.getenv(f"GEMINI_API_KEYS{i}", "").strip()
     if key:
         GEMINI_API_KEYS.append(key)
-BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 GEMINI_MODEL = "gemini-3-flash-preview"  
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
