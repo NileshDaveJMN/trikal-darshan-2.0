@@ -538,7 +538,7 @@ def call_gemini(prompt: str, max_retries: int = 3) -> Optional[str]:
             "contents": [{"parts": [{"text": prompt}]}],
             "generationConfig": {
                 "temperature": 0.75,
-                "maxOutputTokens": 512,
+               # "maxOutputTokens": 512,
             }
         }
         try:
