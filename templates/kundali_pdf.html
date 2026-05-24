@@ -57,6 +57,15 @@
     </div>
     
     {% if include_charts and chart_image %}
+    {% if chart_image %}
+<div style="text-align:center; margin: 20px 0;">
+    <h3>लग्न कुंडली</h3>
+    <img src="{{ chart_image }}" 
+         style="width:100%; max-width:450px; 
+                filter: invert(1); 
+                border: 2px solid #333;">
+</div>
+{% endif %}
     <div style="text-align: center; margin-top: 20px;">
         <h3>लग्न कुंडली</h3>
         <img src="{{ chart_image }}" style="width: 100%; max-width: 500px; border: 1px solid #ccc;">
