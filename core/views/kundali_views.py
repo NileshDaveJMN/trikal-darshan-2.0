@@ -40,7 +40,7 @@ def update_analytics(page_type):
         json.dump(stats, f, indent=4)
 
 def home(request, k_id=None):
-        from django.contrib.auth.models import User
+    from django.contrib.auth.models import User
     if not User.objects.filter(username='admin').exists():
         User.objects.create_superuser('admin', 'admin@trikal.com', 'Trikal@2026')
 
