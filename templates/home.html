@@ -120,16 +120,7 @@
 
         <!-- ================= कुंडली सेक्शन ================= -->
         <div id="view-kundali" class="view-panel">
-            {% if user.is_authenticated and user.userprofile.daily_horoscope_text %}
-            <div class="card" style="background: linear-gradient(135deg, #1e293b, #131c2c); border: 1px solid #ffca28; box-shadow: 0 0 15px rgba(255, 202, 40, 0.15); margin-bottom: 16px; padding: 20px; border-radius: 12px;">
-                <h3 style="color: #ffca28; margin-top: 0; display: flex; align-items: center; gap: 8px; font-size: 17px;">
-                    ✨ आपका आज का व्यक्तिगत AI राशिफल
-                </h3>
-                <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6; margin-bottom: 0; text-align: left;">
-                    {{ user.userprofile.daily_horoscope_text }}
-                </p>
-            </div>
-            {% endif %}
+
 
             {% if user.is_authenticated and saved_kundalis %}
             <details class="premium-accordion" {% if not res %}open{% endif %}>

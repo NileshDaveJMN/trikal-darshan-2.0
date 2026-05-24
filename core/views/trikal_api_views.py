@@ -175,3 +175,22 @@ def api_save_horoscope(request):
         return JsonResponse({"ok": False, "error": "User nahi mila"}, status=404)
     except Exception as e:
         return JsonResponse({"ok": False, "error": str(e)}, status=500)
+
+@csrf_exempt
+def api_send_daily_horoscope(request):
+    if not _auth(request):
+        return JsonResponse({"ok": False}, status=401)
+    def run_horoscope():
+        try:
+            import sys, os, threading
+            root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            if root not in sys.path:
+                sys.path.insert(0, root)
+            from daily_horoscope_engine import generate_and_send_daily_horoscopes
+            generate_and_send_daily_horoscopes()
+        except Exception as e:
+            print(f"Horoscope error: {e}")
+            import traceback; traceback.print_exc()
+    import threading
+    threading.Thread(target=run_horoscope, daemon=True).start()
+    return JsonResponse({"ok": True})
