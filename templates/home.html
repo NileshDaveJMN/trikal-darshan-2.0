@@ -43,6 +43,17 @@
                 <h3 style="margin-bottom: 25px;">👤 यूज़र प्रोफाइल</h3>
                 
                 {% if user.is_authenticated %}
+                                    <!-- ======= दैनिक राशिफल सेक्शन ======= -->
+                    {% if user.userprofile.daily_horoscope_text %}
+                    <div style="background: #1e293b; border-left: 5px solid #ffca28; padding: 20px; border-radius: 10px; margin-bottom: 25px; text-align: left; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                        <h4 style="color: #ffca28; margin: 0 0 10px 0; font-size: 16px; border-bottom: 1px dashed #334155; padding-bottom: 8px;">
+                            🔮 आपका आज का राशिफल ({{ user.userprofile.horoscope_date|date:"d M Y" }})
+                        </h4>
+                        <div style="color: #f1f5f9; font-size: 15px; line-height: 1.6; white-space: pre-wrap;">{{ user.userprofile.daily_horoscope_text }}</div>
+                    </div>
+                    {% endif %}
+                    <!-- =================================== -->
+
                     <div style="background: #131c2c; border: 1px solid #334155; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
                         <p style="color: #cbd5e1; font-size: 15px; margin-bottom: 10px;">
                             <span style="color: #94a3b8;">नाम:</span> 
