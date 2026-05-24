@@ -742,9 +742,9 @@ def generate_and_send_daily_horoscopes():
 
     for profile in profiles:
         # Date guard: आज का rashifal पहले से बना हो तो skip
-        if profile.horoscope_date == today:
-            skipped += 1
-            continue
+       # if profile.horoscope_date == today:
+         #   skipped += 1
+          #  continue
 
         success = process_one_user(profile, today_transit, today_jd)
         if success:
