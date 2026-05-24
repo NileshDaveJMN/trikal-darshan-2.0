@@ -14,6 +14,7 @@ from core.views.trikal_api_views import api_save_chat_id, api_pending_horoscope,
 urlpatterns = [
     path('django-admin/', admin.site.urls),
     path('login/',    login_view,    name='login'),
+    path('api/bot/send-horoscope/', api_send_daily_horoscope, name='api_send_horoscope'),
     path('register/', register_view, name='register'),
     path('logout/',   user_logout,   name='logout'),
     path('profile/',  user_profile_view, name='user_profile'),

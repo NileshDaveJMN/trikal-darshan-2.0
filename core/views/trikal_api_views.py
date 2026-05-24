@@ -8,6 +8,25 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from core.models import UserProfile, SavedKundali
+from django.views.decorators.http import require_GET
+
+@csrf_exempt  
+def api_send_daily_horoscope(request):
+    """
+    cron-job.org se call hoga — daily horoscope bhejega
+    GET /api/bot/send-horoscope/
+    """
+    if not _auth(request):
+        return JsonResponse({"ok": False, "error": "Unauthorized"}, status=401)
+    
+    # Import bot functions
+    import threading
+    def run():
+        from trikal_bot import send_daily_horoscopes
+        send_daily_horoscopes()
+    
+    threading.Thread(target=run).start()
+    return JsonResponse({"ok": True, "message": "Horoscope sending started"})
 
 _env = Path(__file__).parent.parent.parent / '.env'
 if _env.exists():
