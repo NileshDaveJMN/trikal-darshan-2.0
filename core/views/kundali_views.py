@@ -40,10 +40,6 @@ def update_analytics(page_type):
         json.dump(stats, f, indent=4)
 
 def home(request, k_id=None):
-    from django.contrib.auth.models import User
-    if not User.objects.filter(username='admin').exists():
-        User.objects.create_superuser('admin', 'admin@trikal.com', 'Trikal@2026')
-
     if request.user.is_authenticated:
         user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
         if not user_profile.primary_focus:
