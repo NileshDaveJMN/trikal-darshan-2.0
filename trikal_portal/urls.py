@@ -9,7 +9,10 @@ from django.urls import path, include
 from core.views import master_views, auth_views, kundali_views
 from core.views.kundali_views import save_onboarding
 from core.views.telegram_webhook_view import telegram_webhook
-from core.views.trikal_api_views import api_save_chat_id, api_pending_horoscope, api_save_horoscope
+
+from core.views.trikal_api_views import api_send_daily_horoscope, api_save_chat_id, api_pending_horoscope, api_save_horoscope
+
+
 
 urlpatterns = [
     path('django-admin/', admin.site.urls),
