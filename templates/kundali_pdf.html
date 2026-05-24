@@ -3,20 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        /* Google Fonts का उपयोग करें - यह रेंडर पर 100% चलेगा */
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari&display=swap');
-
-        * {
-            font-family: 'Noto Sans Devanagari', sans-serif !important;
-        }
-
+        * { font-family: 'Noto Sans Devanagari', sans-serif !important; }
         @page { size: A4; margin: 1cm; }
-
-        body {
-            color: #333;
-            line-height: 1.5;
-            margin: 0;
-        }
+        body { color: #333; line-height: 1.5; margin: 0; background: #fff; }
 
         .header {
             text-align: center;
@@ -24,7 +14,6 @@
             padding-bottom: 10px;
             margin-bottom: 20px;
         }
-
         .header h1 { color: #e67e22; font-size: 28px; margin: 0; }
 
         .section-title {
@@ -37,17 +26,32 @@
         }
 
         table { width: 100%; border-collapse: collapse; margin-top: 5px; }
-        
-        th, td {
-            border: 1px solid #dee2e6 !important;
-            padding: 8px;
-            text-align: left;
-            font-size: 13px;
-        }
-
+        th, td { border: 1px solid #dee2e6 !important; padding: 8px; text-align: left; font-size: 13px; }
         th { background-color: #f8f9fa; color: #2c3e50; }
-        
         .label { font-weight: bold; color: #2c3e50; background-color: #fcfcfc; }
+
+        /* PDF Kundali Chart — white background, dark lines */
+        .pdf-kundali-chart {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin: 10px auto;
+            background: #ffffff;
+            border: 2px solid #333;
+        }
+        .pdf-kundali-chart svg {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+        }
+        .pdf-house {
+            position: absolute;
+            text-align: center;
+            font-size: 11px;
+            color: #000;
+        }
+        .pdf-house .planets { font-weight: bold; font-size: 12px; color: #c0392b; }
+        .pdf-house .rnum { color: #666; font-size: 10px; }
     </style>
 </head>
 <body>
@@ -55,20 +59,73 @@
         <h1>त्रिकाल दर्शन - जन्म कुंडली</h1>
         <p>जातक का नाम: <strong>{{ name }}</strong></p>
     </div>
-    
-    {% if include_charts and chart_image %}
-    {% if chart_image %}
-<div style="text-align:center; margin: 20px 0;">
-    <h3>लग्न कुंडली</h3>
-    <img src="{{ chart_image }}" 
-         style="width:100%; max-width:450px; 
-                filter: invert(1); 
-                border: 2px solid #333;">
-</div>
-{% endif %}
-    <div style="text-align: center; margin-top: 20px;">
-        <h3>लग्न कुंडली</h3>
-        <img src="{{ chart_image }}" style="width: 100%; max-width: 500px; border: 1px solid #ccc;">
+
+    {% if include_charts %}
+    <!-- PDF ke liye SVG se direct chart — koi image capture nahi -->
+    <div style="text-align:center; margin: 15px 0;">
+        <h3 style="color:#333; margin-bottom:10px;">लग्न कुंडली</h3>
+        <div class="pdf-kundali-chart">
+            <!-- SVG Lines — dark color for print -->
+            <svg viewBox="0 0 400 400">
+                <rect x="1" y="1" width="398" height="398" fill="none" stroke="#333" stroke-width="3"/>
+                <line x1="0" y1="0" x2="400" y2="400" stroke="#333" stroke-width="1.5"/>
+                <line x1="0" y1="400" x2="400" y2="0" stroke="#333" stroke-width="1.5"/>
+                <polygon points="200,0 400,200 200,400 0,200" fill="none" stroke="#333" stroke-width="1.5"/>
+            </svg>
+
+            <!-- Houses -->
+            {% for h in houses %}
+                {% if h.num == 1 %}
+                <div class="pdf-house" style="top:12%; left:50%; transform:translate(-50%,-50%);">
+                    <div class="planets">{{ h.planets_full }}</div><div class="rnum">{{ h.r_num }}</div>
+                </div>
+                {% elif h.num == 2 %}
+                <div class="pdf-house" style="top:10%; left:22%; transform:translate(-50%,-50%);">
+                    <div class="planets">{{ h.planets_full }}</div><div class="rnum">{{ h.r_num }}</div>
+                </div>
+                {% elif h.num == 3 %}
+                <div class="pdf-house" style="top:25%; left:10%; transform:translate(-50%,-50%);">
+                    <div class="planets">{{ h.planets_full }}</div><div class="rnum">{{ h.r_num }}</div>
+                </div>
+                {% elif h.num == 4 %}
+                <div class="pdf-house" style="top:50%; left:18%; transform:translate(-50%,-50%);">
+                    <div class="planets">{{ h.planets_full }}</div><div class="rnum">{{ h.r_num }}</div>
+                </div>
+                {% elif h.num == 5 %}
+                <div class="pdf-house" style="top:75%; left:10%; transform:translate(-50%,-50%);">
+                    <div class="planets">{{ h.planets_full }}</div><div class="rnum">{{ h.r_num }}</div>
+                </div>
+                {% elif h.num == 6 %}
+                <div class="pdf-house" style="top:90%; left:22%; transform:translate(-50%,-50%);">
+                    <div class="planets">{{ h.planets_full }}</div><div class="rnum">{{ h.r_num }}</div>
+                </div>
+                {% elif h.num == 7 %}
+                <div class="pdf-house" style="top:88%; left:50%; transform:translate(-50%,-50%);">
+                    <div class="planets">{{ h.planets_full }}</div><div class="rnum">{{ h.r_num }}</div>
+                </div>
+                {% elif h.num == 8 %}
+                <div class="pdf-house" style="top:90%; left:78%; transform:translate(-50%,-50%);">
+                    <div class="planets">{{ h.planets_full }}</div><div class="rnum">{{ h.r_num }}</div>
+                </div>
+                {% elif h.num == 9 %}
+                <div class="pdf-house" style="top:75%; left:90%; transform:translate(-50%,-50%);">
+                    <div class="planets">{{ h.planets_full }}</div><div class="rnum">{{ h.r_num }}</div>
+                </div>
+                {% elif h.num == 10 %}
+                <div class="pdf-house" style="top:50%; left:82%; transform:translate(-50%,-50%);">
+                    <div class="planets">{{ h.planets_full }}</div><div class="rnum">{{ h.r_num }}</div>
+                </div>
+                {% elif h.num == 11 %}
+                <div class="pdf-house" style="top:25%; left:90%; transform:translate(-50%,-50%);">
+                    <div class="planets">{{ h.planets_full }}</div><div class="rnum">{{ h.r_num }}</div>
+                </div>
+                {% elif h.num == 12 %}
+                <div class="pdf-house" style="top:10%; left:78%; transform:translate(-50%,-50%);">
+                    <div class="planets">{{ h.planets_full }}</div><div class="rnum">{{ h.r_num }}</div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
     </div>
     {% endif %}
 
