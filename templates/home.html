@@ -166,7 +166,7 @@
 
             <div id="kundali-input-section" class="card" {% if res or saved_kundalis %}style="display:none;"{% endif %}>
                 <h3>विवरण दर्ज करें</h3>
-                <form method="POST" action="{% url 'home' %}">
+               <form method="POST" action="{% url 'home' %}" onsubmit="return validateCity();">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="calc">
                     <label>पूरा नाम</label><input type="text" name="name" required>
@@ -193,7 +193,27 @@
                         <div id="city_suggestions"></div>
                     </div>
                     <input type="hidden" name="lat" id="lat_input"><input type="hidden" name="lon" id="lon_input">
-                    <small id="city_status"></small>
+                                       <small id="city_status"></small>
+                    <button type="submit" class="primary-btn" style="margin-top:20px;">कुंडली बनाएं ➔</button>
+                </form>
+                
+                <!-- City Validation Script -->
+                <script>
+                function validateCity() {
+                    var lat = document.getElementById("lat_input").value;
+                    var lon = document.getElementById("lon_input").value;
+                    
+                    // अगर lat या lon खाली है, मतलब यूज़र ने लिस्ट में से शहर नहीं चुना
+                    if (!lat || !lon || lat === "" || lon === "") {
+                        alert("⚠️ कृपया केवल नाम टाइप न करें। सही गणना के लिए नीचे आने वाली लिस्ट में से अपने शहर का चयन करें।");
+                        document.getElementById("city_status").innerHTML = '<span style="color:#ff4757; font-size:13px; font-weight:bold;">कृपया लिस्ट में से शहर चुनें!</span>';
+                        document.getElementById("city_input").focus(); // यूज़र का ध्यान वापस इनपुट पर ले जाएँ
+                        return false; // फॉर्म को सबमिट होने से रोकें
+                    }
+                    return true; // सब सही है, फॉर्म सबमिट करें
+                }
+                </script>
+
                     <button type="submit" class="primary-btn" style="margin-top:20px;">कुंडली बनाएं ➔</button>
                 </form>
             </div>
