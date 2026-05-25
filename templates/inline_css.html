@@ -23,9 +23,8 @@
         width: 100%;
     }
 
-    /* यह कुंडलियों वाले एरिया के लिए है ताकि वे इसके नीचे छुप जाएं */
     .sub-panel {
-        background-color: #0f172a; /* पैनल का कलर बैकग्राउंड से मैच करें */
+        background-color: #0f172a;
         padding-top: 10px;
     }
 
@@ -47,7 +46,6 @@
     .data-table th { text-align: left; padding: 10px 5px; color: #ffca28; border-bottom: 1px solid #334155; }
     .data-table td { padding: 10px 5px; border-bottom: 1px dashed #334155; }
 
-    /* --- 🌟 NEW ADDITIONS (ACCORDION, LAYOUT & FAB STYLES) 🌟 --- */
     .main-viewport, .view-panel {
         overflow-y: auto !important;
         -webkit-overflow-scrolling: touch !important; 
@@ -57,7 +55,7 @@
         padding-bottom: 100px !important; 
     }
 
-    /* 📂 Premium Accordion (Saved Kundalis Box) */
+    /* 📂 Premium Accordion */
     .premium-accordion {
         background: #1e293b;
         border: 1px solid rgba(255, 202, 40, 0.4);
@@ -83,7 +81,7 @@
     .premium-accordion[open] summary { border-bottom: 1px dashed rgba(255, 202, 40, 0.3); }
     .accordion-content { padding: 16px; }
 
-    /* 🖨️ Floating PDF Button (FAB) */
+    /* 🖨️ Floating PDF Button */
     .pdf-floating-btn {
         position: fixed;
         bottom: 30px;
@@ -109,20 +107,15 @@
     }
     .pdf-floating-btn svg { width: 28px; height: 28px; stroke: #0f172a; }
 
-    /* ========================================================= */
-    /* 📑 PDF Download Export Modes (UPDATED FOR CHART FIX) */
-    /* ========================================================= */
+    /* PDF Export */
     .pdf-export-mode { 
         background-color: #ffffff !important; 
         border-color: #000000 !important; 
         color: #000000 !important;
     }
-
     .pdf-export-mode * { 
         color: #000000 !important; 
     }
-
-    /* SVG चार्ट की लाइनों को काला करना */
     .pdf-export-mode svg rect, 
     .pdf-export-mode svg line, 
     .pdf-export-mode svg polygon,
@@ -130,11 +123,43 @@
     .pdf-export-mode svg circle { 
         stroke: #000000 !important; 
     }
-
-    /* 🌟 सबसे महत्वपूर्ण: SVG चार्ट के टेक्स्ट (ग्रहों के नाम/नंबर) को काला करना 🌟 */
     .pdf-export-mode svg text {
         fill: #000000 !important;
         stroke: none !important;
         font-weight: bold !important;
+    }
+
+    /* ==========================================
+       City Autocomplete Dropdown
+    ========================================== */
+    #city_suggestions {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        max-height: 220px;
+        overflow-y: auto;
+        z-index: 999;
+        margin-top: 4px;
+    }
+
+    .city-suggestion-item {
+        padding: 10px 14px;
+        color: #e2e8f0;
+        font-size: 13px;
+        cursor: pointer;
+        border-bottom: 1px solid #2d3f55;
+    }
+
+    .city-suggestion-item:hover {
+        background: #2d3f55;
+        color: #ffca28;
+    }
+
+    .city-suggestion-item:last-child {
+        border-bottom: none;
     }
 </style>

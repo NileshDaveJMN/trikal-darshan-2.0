@@ -70,21 +70,18 @@ function switchSubTab(element, panelId) {
 // 3. कुंडली PDF का चार्ट डाउनलोड करने का कोड
 // ==========================================
 function captureChartAndDownload() {
-    // Chart element dhundo — kisi bhi tab se PDF kaam kare
     var chartElement = document.getElementById('kundali_chart_div');
     var chartPanel = document.getElementById('panel-lagna');
 
     if (!chartElement) {
-        // Chart nahi mila — bina image ke PDF bhejo
         document.getElementById('pdfDownloadForm').submit();
         return;
     }
 
-    // Chart panel temporarily visible karo capture ke liye
     var panelWasHidden = chartPanel && chartPanel.style.display === 'none';
     if (panelWasHidden) {
         chartPanel.style.display = 'block';
-        chartPanel.style.visibility = 'hidden'; // Visible but not shown
+        chartPanel.style.visibility = 'hidden';
     }
 
     setTimeout(function() {
@@ -94,7 +91,6 @@ function captureChartAndDownload() {
             useCORS: true,
             logging: false
         }).then(function(canvas) {
-            // Restore panel state
             if (panelWasHidden) {
                 chartPanel.style.display = 'none';
                 chartPanel.style.visibility = '';
@@ -112,4 +108,76 @@ function captureChartAndDownload() {
         });
     }, 600);
 }
+
+// ==========================================
+// 4. जन्म स्थान Autocomplete (Nominatim)
+// ==========================================
+(function() {
+    var debounceTimer = null;
+
+    function fetchCities(query) {
+        if (query.length < 2) {
+            document.getElementById('city_suggestions').innerHTML = '';
+            return;
+        }
+
+        fetch('https://nominatim.openstreetmap.org/search?format=json&limit=6&addressdetails=1&q=' + encodeURIComponent(query), {
+            headers: {
+                'Accept-Language': 'hi,en'
+            }
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            var box = document.getElementById('city_suggestions');
+            box.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                box.innerHTML = '<div style="padding:10px; color:#aab4be; font-size:13px;">कोई शहर नहीं मिला</div>';
+                return;
+            }
+
+            data.forEach(function(item) {
+                var div = document.createElement('div');
+                div.className = 'city-suggestion-item';
+                div.textContent = item.display_name;
+                div.addEventListener('click', function() {
+                    document.getElementById('city_input').value = item.display_name;
+                    document.getElementById('lat_input').value = item.lat;
+                    document.getElementById('lon_input').value = item.lon;
+                    document.getElementById('city_suggestions').innerHTML = '';
+                    document.getElementById('city_status').innerHTML = '<span style="color:#4caf50; font-size:13px;">✓ शहर चुना गया</span>';
+                });
+                box.appendChild(div);
+            });
+        })
+        .catch(function() {
+            document.getElementById('city_suggestions').innerHTML = '<div style="padding:10px; color:#ff4757; font-size:13px;">नेटवर्क त्रुटि, पुनः प्रयास करें</div>';
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var input = document.getElementById('city_input');
+        if (!input) return;
+
+        input.addEventListener('input', function() {
+            document.getElementById('lat_input').value = '';
+            document.getElementById('lon_input').value = '';
+            document.getElementById('city_status').innerHTML = '';
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(function() {
+                fetchCities(input.value.trim());
+            }, 400);
+        });
+
+        // Bahar click karne par suggestions band karo
+        document.addEventListener('click', function(e) {
+            var box = document.getElementById('city_suggestions');
+            var input = document.getElementById('city_input');
+            if (box && e.target !== input && !box.contains(e.target)) {
+                box.innerHTML = '';
+            }
+        });
+    });
+})();
 </script>
