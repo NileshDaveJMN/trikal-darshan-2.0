@@ -582,24 +582,38 @@ def call_gemini(prompt: str, max_retries: int = 3) -> Optional[str]:
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 def send_telegram(chat_id: str, text: str) -> bool:
-    """HTML-formatted Telegram message भेजें"""
+    """HTML-formatted Telegram message भेजें (Teaser के साथ)"""
     if not BOT_TOKEN:
         print("  ⚠️  BOT_TOKEN नहीं है, Telegram skip।")
         return False
 
-    # Plain text को HTML-safe बनाएँ
+    # 1. टेक्स्ट को सुरक्षित (HTML-safe) बनाएँ
     safe_text = (
         text.replace("&", "&amp;")
             .replace("<", "&lt;")
             .replace(">", "&gt;")
     )
+
+    # 2. मार्केटिंग/टीज़र लॉजिक (मैसेज को 400 अक्षरों पर काटना)
+    max_length = 400  # आप इसे अपनी मर्जी से 300, 500 या 600 भी कर सकते हैं
+    
+    if len(safe_text) > max_length:
+        final_text = safe_text[:max_length] + "...\n\n"
+        final_text += "✨ <b>पूरा राशिफल देखने के लिए त्रिकाल दर्शन पोर्टल पर लॉगिन करें:</b>\n"
+        final_text += "🌐 <a href='https://trikal-darshan-2-0.onrender.com/'>यहाँ क्लिक करें</a>"
+    else:
+        final_text = safe_text
+
     header = "<b>🔮 त्रिकाल दर्शन — आपका आज का राशिफल</b>\n\n"
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    
     payload = {
         "chat_id":    chat_id,
-        "text":       header + safe_text,
+        "text":       header + final_text,
         "parse_mode": "HTML",
+        "disable_web_page_preview": True  # इससे लिंक का बड़ा डब्बा नहीं बनेगा, मैसेज साफ दिखेगा
     }
+    
     try:
         resp = requests.post(url, json=payload, timeout=10)
         if resp.status_code == 200:
@@ -609,7 +623,6 @@ def send_telegram(chat_id: str, text: str) -> bool:
     except Exception as e:
         print(f"  ❌ Telegram Exception: {e}")
     return False
-
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  SECTION 7 — MAIN ENGINE
