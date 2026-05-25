@@ -1,19 +1,25 @@
 {% extends "base.html" %}
 {% block content %}
-<div style="max-width: 400px; margin: 40px auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.1);">
-    <h2 style="color: #2c3e50; text-align: center; margin-bottom: 20px;">🔐 लॉगिन करें</h2>
+<div style="max-width: 400px; margin: 40px auto; background: #131c2c; padding: 30px; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); border: 1px solid #334155;">
+    <h2 style="color: #ffffff; text-align: center; margin-bottom: 20px;">🔐 लॉगिन करें</h2>
     
     {% if messages %}
-        {% for m in messages %}<p style="color: #c0392b; text-align: center; font-weight: bold;">{{ m }}</p>{% endfor %}
+        {% for m in messages %}
+        <div style="background: rgba(255, 71, 87, 0.1); border: 1px solid #ff4757; color: #ff4757; padding: 10px; border-radius: 8px; margin-bottom: 15px; font-size: 14px; text-align: center;">
+            {{ m }}
+        </div>
+        {% endfor %}
     {% endif %}
     
     <form method="POST">
         {% csrf_token %}
-        <input type="text" name="username" placeholder="यूज़रनेम" required style="width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #bdc3c7; border-radius: 8px; box-sizing: border-box;">
-        <input type="password" name="password" placeholder="पासवर्ड" required style="width: 100%; padding: 12px; margin-bottom: 20px; border: 1px solid #bdc3c7; border-radius: 8px; box-sizing: border-box;">
-        <button type="submit" style="width: 100%; background: linear-gradient(135deg, #e67e22, #d35400); color: white; font-weight: bold; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px;">लॉगिन</button>
+        <input type="text" name="username" placeholder="यूज़रनेम" required style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0f172a; color: #ffffff; border: 1px solid #334155; border-radius: 8px; box-sizing: border-box; outline: none;">
+        
+        <input type="password" name="password" placeholder="पासवर्ड" required style="width: 100%; padding: 12px; margin-bottom: 25px; background: #0f172a; color: #ffffff; border: 1px solid #334155; border-radius: 8px; box-sizing: border-box; outline: none;">
+        
+        <button type="submit" style="width: 100%; background: #ffca28; color: #0f172a; font-weight: bold; padding: 14px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; box-shadow: 0 4px 15px rgba(255, 202, 40, 0.4); text-transform: uppercase;">लॉगिन ➔</button>
     </form>
     
-    <p style="text-align: center; margin-top: 20px; color: #7f8c8d;">अकाउंट नहीं है? <a href="{% url 'register' %}" style="color: #2980b9; font-weight: bold; text-decoration: none;">नया अकाउंट बनाएं</a></p>
+    <p style="text-align: center; margin-top: 20px; color: #cbd5e1; font-size: 14px;">अकाउंट नहीं है? <a href="{% url 'register' %}" style="color: #24a1de; font-weight: bold; text-decoration: none;">नया अकाउंट बनाएं</a></p>
 </div>
 {% endblock %}
