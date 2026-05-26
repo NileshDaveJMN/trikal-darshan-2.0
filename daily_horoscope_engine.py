@@ -261,6 +261,38 @@ def get_transit_ashtakvarg_score(natal_chandra_idx: int, transit_pos: dict) -> d
 
 def get_vakri_grahas(transit_pos: dict) -> list[str]:
     return [g for g, data in transit_pos.items() if data.get("vakri")]
+def get_asta_grahas(transit_pos: dict) -> list[str]:
+    """
+    अस्त ग्रह: जो ग्रह सूर्य के बहुत निकट हों।
+    Parashari नियम — सूर्य से अंशात्मक दूरी सीमाएँ:
+      चंद्र: 12°, मंगल: 17°, बुध: 14° (vakri में 12°),
+      गुरु: 11°, शुक्र: 10° (vakri में 8°), शनि: 15°
+    राहु/केतु/सूर्य खुद अस्त नहीं होते।
+    """
+    ASTA_LIMITS = {
+        "चंद्र": 12,
+        "मंगल": 17,
+        "बुध":  14,
+        "गुरु": 11,
+        "शुक्र": 10,
+        "शनि": 15,
+    }
+    surya_lon = transit_pos["सूर्य"]["full_deg"]
+    asta = []
+    for graha, limit in ASTA_LIMITS.items():
+        if graha not in transit_pos:
+            continue
+        graha_lon = transit_pos[graha]["full_deg"]
+        diff = abs(surya_lon - graha_lon)
+        if diff > 180:
+            diff = 360 - diff
+        if graha == "बुध" and transit_pos[graha].get("vakri"):
+            limit = 12
+        if graha == "शुक्र" and transit_pos[graha].get("vakri"):
+            limit = 8
+        if diff <= limit:
+            asta.append(graha)
+    return asta
 
 def build_dasha_info(kundali) -> dict:
     try:
