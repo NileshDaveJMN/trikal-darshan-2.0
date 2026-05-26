@@ -315,6 +315,7 @@ def build_horoscope_prompt(
     guru_text: str,
     ashtakvarg: dict,
     vakri_grahas: list[str],
+    asta_grahas: list[str],
 ) -> str:
     today_str = datetime.date.today().strftime("%d %B %Y")
     natal_chandra = natal_pos["चंद्र"]["rashi"]
@@ -367,6 +368,7 @@ def build_horoscope_prompt(
     av_text = "\n".join(av_lines)
 
     vakri_text = "、".join(vakri_grahas) if vakri_grahas else "कोई नहीं"
+    asta_text  = "、".join(asta_grahas) if asta_grahas else "कोई नहीं"
 
     prompt = f"""
 आज की तारीख: {today_str}
@@ -561,6 +563,7 @@ def process_one_user(profile: "UserProfile", today_transit: dict, today_jd: floa
     ashtakvarg = get_transit_ashtakvarg_score(natal_chandra_idx, today_transit)
 
     vakri = get_vakri_grahas(today_transit)
+    asta  = get_asta_grahas(today_transit)
 
     prompt = build_horoscope_prompt(
         user_name=user_name,
@@ -574,6 +577,7 @@ def process_one_user(profile: "UserProfile", today_transit: dict, today_jd: floa
         guru_text=guru_text,
         ashtakvarg=ashtakvarg,
         vakri_grahas=vakri,
+        asta_grahas=asta,
     )
 
     rashifal_text = call_gemini(prompt)
@@ -703,6 +707,7 @@ def test_single_kundali(
     ashtakvarg = get_transit_ashtakvarg_score(natal_chandra_idx, today_transit)
 
     vakri = get_vakri_grahas(today_transit)
+    asta  = get_asta_grahas(today_transit)
 
     prompt = build_horoscope_prompt(
         user_name=naam,
@@ -716,6 +721,7 @@ def test_single_kundali(
         guru_text=guru_text,
         ashtakvarg=ashtakvarg,
         vakri_grahas=vakri,
+        asta_grahas=asta,
     )
 
     print("\n📋 Generated Prompt (पहले 600 chars):")
