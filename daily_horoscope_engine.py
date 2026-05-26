@@ -261,6 +261,7 @@ def get_transit_ashtakvarg_score(natal_chandra_idx: int, transit_pos: dict) -> d
 
 def get_vakri_grahas(transit_pos: dict) -> list[str]:
     return [g for g, data in transit_pos.items() if data.get("vakri")]
+
 def get_asta_grahas(transit_pos: dict) -> list[str]:
     """
     अस्त ग्रह: जो ग्रह सूर्य के बहुत निकट हों।
@@ -448,7 +449,12 @@ def build_horoscope_prompt(
 ══════════════════════════════════════════════
 1. दशा स्वामी ({dasha['md']}) और अंतर्दशा स्वामी ({dasha['ad']}) के गुण-दोष को आज के गोचर से मिलाकर फलित दें।
 2. शुभ ग्रहों का transit good house में हो तो उसे उजागर करें; अशुभ transit हो तो समाधान/उपाय भी बताएँ।
-3. यूजर के '{profile.primary_focus or 'सामान्य लक्ष्य'}' और '{profile.current_challenge or 'सामान्य चुनौती'}' को ध्यान में रखते हुए करियर / आर्थिक / स्वास्थ्य / रिश्ते — जो भी relevant हो, उस पर विशेष बात करें।
+3. फलित का आधार केवल kundali और gochar हो — दशा, गोचर और जन्म कुंडली से prediction निकालें।
+   यूज़र की profile (पेशा: '{profile.profession or 'सामान्य'}', चुनौती: '{profile.current_challenge or 'सामान्य'}') 
+   सिर्फ भाषा को relatable बनाने के लिए use करें।
+   उदाहरण: अगर 3रे भाव में बुध शुभ है तो बोलें "संवाद और यात्रा शुभ है" — 
+   profession देखकर यह मत बोलें कि "आपको नए client मिलेंगे।"
+   करियर / आर्थिक / स्वास्थ्य / रिश्ते — जो भाव आज सक्रिय हो उसी का फल दें।
 4. वक्री ग्रह ({vakri_text}) के प्रभाव पर एक वाक्य जरूर लिखें।
 4b. अस्त ग्रह ({asta_text}) सूर्य की किरणों में छुपे हैं — इनकी शक्ति क्षीण होती है।
     अगर कोई शुभ ग्रह अस्त हो तो उसके फल में कमी बताएँ और उपाय सुझाएँ।
