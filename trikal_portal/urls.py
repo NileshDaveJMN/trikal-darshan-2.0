@@ -1,4 +1,4 @@
-from core.views.kundali_views import home, download_kundali_pdf, api_get_ai_analysis, user_profile_view
+from core.views.kundali_views import home, download_kundali_pdf, api_get_ai_analysis, user_profile_view, ping
 from django.contrib import admin
 from core.views import milan_views
 from core.views.milan_views import milan_view, calculate_milan_api, save_milan_api
@@ -16,6 +16,7 @@ from core.views.trikal_api_views import api_send_daily_horoscope, api_save_chat_
 
 urlpatterns = [
     path('django-admin/', admin.site.urls),
+    path('ping/',         ping,          name='ping'),
     path('login/',    login_view,    name='login'),
     path('api/bot/send-horoscope/', api_send_daily_horoscope, name='api_send_daily_horoscope'),
     path('register/', register_view, name='register'),

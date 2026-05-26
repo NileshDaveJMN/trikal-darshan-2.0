@@ -407,3 +407,8 @@ def save_onboarding(request):
         return redirect('home') 
         
     return render(request, 'onboarding.html')
+
+
+# ── Ping endpoint — Render free instance awake rakhne ke liye ──
+def ping(request):
+    return HttpResponse("ok", content_type="text/plain")
