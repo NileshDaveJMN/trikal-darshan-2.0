@@ -262,6 +262,41 @@ def get_transit_ashtakvarg_score(natal_chandra_idx: int, transit_pos: dict) -> d
 def get_vakri_grahas(transit_pos: dict) -> list[str]:
     return [g for g, data in transit_pos.items() if data.get("vakri")]
 
+def get_asta_grahas(transit_pos: dict) -> list[str]:
+    """
+    अस्त ग्रह: जो ग्रह सूर्य के बहुत निकट हों।
+    Parashari नियम — सूर्य से अंशात्मक दूरी सीमाएँ:
+      चंद्र: 12°, मंगल: 17°, बुध: 14° (vakri में 12°),
+      गुरु: 11°, शुक्र: 10° (vakri में 8°), शनि: 15°
+    राहु/केतु/सूर्य खुद अस्त नहीं होते।
+    """
+    ASTA_LIMITS = {
+        "चंद्र": 12,
+        "मंगल": 17,
+        "बुध":  14,
+        "गुरु": 11,
+        "शुक्र": 10,
+        "शनि": 15,
+    }
+    surya_lon = transit_pos["सूर्य"]["full_deg"]
+    asta = []
+    for graha, limit in ASTA_LIMITS.items():
+        if graha not in transit_pos:
+            continue
+        graha_lon = transit_pos[graha]["full_deg"]
+        diff = abs(surya_lon - graha_lon)
+        if diff > 180:
+            diff = 360 - diff
+        # बुध vakri हो तो limit 12°
+        if graha == "बुध" and transit_pos[graha].get("vakri"):
+            limit = 12
+        # शुक्र vakri हो तो limit 8°
+        if graha == "शुक्र" and transit_pos[graha].get("vakri"):
+            limit = 8
+        if diff <= limit:
+            asta.append(graha)
+    return asta
+
 def build_dasha_info(kundali) -> dict:
     try:
         dt_ist = datetime.datetime(
@@ -315,6 +350,7 @@ def build_horoscope_prompt(
     guru_text: str,
     ashtakvarg: dict,
     vakri_grahas: list[str],
+    asta_grahas: list[str],
 ) -> str:
     today_str = datetime.date.today().strftime("%d %B %Y")
     natal_chandra = natal_pos["चंद्र"]["rashi"]
@@ -354,6 +390,7 @@ def build_horoscope_prompt(
     av_text = "\n".join(av_lines)
 
     vakri_text = "、".join(vakri_grahas) if vakri_grahas else "कोई नहीं"
+    asta_text = "、".join(asta_grahas) if asta_grahas else "कोई नहीं"
 
     prompt = f"""
 आज की तारीख: {today_str}
@@ -384,6 +421,7 @@ def build_horoscope_prompt(
 ══════════════════════════════════════════════
 {av_text}
   वक्री ग्रह आज: {vakri_text}
+  अस्त ग्रह आज: {asta_text}
 
 ══════════════════════════════════════════════
  विशेष ग्रह-योग
@@ -395,9 +433,11 @@ def build_horoscope_prompt(
  फलित नियम (इन्हें सख्ती से पालन करें)
 ══════════════════════════════════════════════
 1. दशा स्वामी ({dasha['md']}) और अंतर्दशा स्वामी ({dasha['ad']}) के गुण-दोष को आज के गोचर से मिलाकर फलित दें।
-2. शुभ ग्रहों का transit good house में हो तो उसे उजागर करें; अशुभ transit हो মাঠে समाधान/उपाय भी बताएँ।
+2. शुभ ग्रहों का transit good house में हो तो उसे उजागर करें; अशुभ transit हो तो समाधान/उपाय भी बताएँ।
 3. यूजर के '{profile.primary_focus or 'सामान्य लक्ष्य'}' और '{profile.current_challenge or 'सामान्य चुनौती'}' को ध्यान में रखते हुए करियर / आर्थिक / स्वास्थ्य / रिश्ते — जो भी relevant हो, उस पर विशेष बात करें।
 4. वक्री ग्रह ({vakri_text}) के प्रभाव पर एक वाक्य जरूर लिखें।
+4b. अस्त ग्रह ({asta_text}) सूर्य की किरणों में छुपे हैं — इनकी शक्ति क्षीण होती है।
+    अगर कोई शुभ ग्रह अस्त हो तो उसके फल में कमी बताएँ और उपाय सुझाएँ।
 5. भाषा: सरल, उत्साहवर्धक, सकारात्मक हिंदी। कोई ** या ## Markdown नहीं।
 6. लंबाई: 5-6 लाइन (न बहुत छोटा, न बहुत लंबा)।
 7. शुरुआत: '{user_name} जी,' से करें।
@@ -537,6 +577,7 @@ def process_one_user(profile: "UserProfile", today_transit: dict, today_jd: floa
     ashtakvarg = get_transit_ashtakvarg_score(natal_chandra_idx, today_transit)
 
     vakri = get_vakri_grahas(today_transit)
+    asta  = get_asta_grahas(today_transit)
 
     prompt = build_horoscope_prompt(
         user_name=user_name,
@@ -550,6 +591,7 @@ def process_one_user(profile: "UserProfile", today_transit: dict, today_jd: floa
         guru_text=guru_text,
         ashtakvarg=ashtakvarg,
         vakri_grahas=vakri,
+        asta_grahas=asta,
     )
 
     rashifal_text = call_gemini(prompt)
@@ -679,6 +721,7 @@ def test_single_kundali(
     ashtakvarg = get_transit_ashtakvarg_score(natal_chandra_idx, today_transit)
 
     vakri = get_vakri_grahas(today_transit)
+    asta  = get_asta_grahas(today_transit)
 
     prompt = build_horoscope_prompt(
         user_name=naam,
@@ -692,6 +735,7 @@ def test_single_kundali(
         guru_text=guru_text,
         ashtakvarg=ashtakvarg,
         vakri_grahas=vakri,
+        asta_grahas=asta,
     )
 
     print("\n📋 Generated Prompt (पहले 600 chars):")
