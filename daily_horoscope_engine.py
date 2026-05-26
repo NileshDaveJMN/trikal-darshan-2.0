@@ -262,41 +262,6 @@ def get_transit_ashtakvarg_score(natal_chandra_idx: int, transit_pos: dict) -> d
 def get_vakri_grahas(transit_pos: dict) -> list[str]:
     return [g for g, data in transit_pos.items() if data.get("vakri")]
 
-def get_asta_grahas(transit_pos: dict) -> list[str]:
-    """
-    अस्त ग्रह: जो ग्रह सूर्य के बहुत निकट हों।
-    Parashari नियम — सूर्य से अंशात्मक दूरी सीमाएँ:
-      चंद्र: 12°, मंगल: 17°, बुध: 14° (vakri में 12°),
-      गुरु: 11°, शुक्र: 10° (vakri में 8°), शनि: 15°
-    राहु/केतु/सूर्य खुद अस्त नहीं होते।
-    """
-    ASTA_LIMITS = {
-        "चंद्र": 12,
-        "मंगल": 17,
-        "बुध":  14,
-        "गुरु": 11,
-        "शुक्र": 10,
-        "शनि": 15,
-    }
-    surya_lon = transit_pos["सूर्य"]["full_deg"]
-    asta = []
-    for graha, limit in ASTA_LIMITS.items():
-        if graha not in transit_pos:
-            continue
-        graha_lon = transit_pos[graha]["full_deg"]
-        diff = abs(surya_lon - graha_lon)
-        if diff > 180:
-            diff = 360 - diff
-        # बुध vakri हो तो limit 12°
-        if graha == "बुध" and transit_pos[graha].get("vakri"):
-            limit = 12
-        # शुक्र vakri हो तो limit 8°
-        if graha == "शुक्र" and transit_pos[graha].get("vakri"):
-            limit = 8
-        if diff <= limit:
-            asta.append(graha)
-    return asta
-
 def build_dasha_info(kundali) -> dict:
     try:
         dt_ist = datetime.datetime(
@@ -350,7 +315,6 @@ def build_horoscope_prompt(
     guru_text: str,
     ashtakvarg: dict,
     vakri_grahas: list[str],
-    asta_grahas: list[str],
 ) -> str:
     today_str = datetime.date.today().strftime("%d %B %Y")
     natal_chandra = natal_pos["चंद्र"]["rashi"]
@@ -383,6 +347,19 @@ def build_horoscope_prompt(
         )
     transit_text = "\n".join(transit_lines)
 
+    # ── Natal graha positions (lagna se bhav) ───────────────
+    natal_lines = []
+    for g in key_transit:
+        if g not in natal_pos:
+            continue
+        d = natal_pos[g]
+        bhav = (d["rashi_idx"] - lagna_idx) % 12 + 1
+        vakri_flag = " (वक्री)" if d.get("vakri") else ""
+        natal_lines.append(
+            f"  {g}: {d['rashi']} {d['degree']:.1f}° | {d['nakshatra']} | {d['avastha']} | लग्न से {bhav}वाँ भाव{vakri_flag}"
+        )
+    natal_text = "\n".join(natal_lines)
+
     av_lines = [
         f"  {g}: जन्म चंद्र से {v['house']}वाँ भाव → {v['score_label']}"
         for g, v in ashtakvarg.items()
@@ -390,7 +367,6 @@ def build_horoscope_prompt(
     av_text = "\n".join(av_lines)
 
     vakri_text = "、".join(vakri_grahas) if vakri_grahas else "कोई नहीं"
-    asta_text = "、".join(asta_grahas) if asta_grahas else "कोई नहीं"
 
     prompt = f"""
 आज की तारीख: {today_str}
@@ -412,6 +388,11 @@ def build_horoscope_prompt(
 {profile_text}
 
 ══════════════════════════════════════════════
+ जन्म कुंडली — ग्रह स्थिति (Natal Positions)
+══════════════════════════════════════════════
+{natal_text}
+
+══════════════════════════════════════════════
  आज का सटीक गोचर (SwissEph Lahiri Ayanamsha)
 ══════════════════════════════════════════════
 {transit_text}
@@ -421,7 +402,6 @@ def build_horoscope_prompt(
 ══════════════════════════════════════════════
 {av_text}
   वक्री ग्रह आज: {vakri_text}
-  अस्त ग्रह आज: {asta_text}
 
 ══════════════════════════════════════════════
  विशेष ग्रह-योग
@@ -444,6 +424,10 @@ def build_horoscope_prompt(
 8. अंत में एक छोटा वैदिक उपाय (रंग / मंत्र / कर्म) जरूर बताएँ जो दशा स्वामी या आज की विशेष ग्रह-स्थिति के अनुकूल हो।
 9. टोन: एक अनुभवी और करुणामय गुरु जैसा — डराएँ नहीं, मार्गदर्शन करें।
 10. जन्म चंद्र-राशि ({natal_chandra}) से आज के गोचर ग्रहों की स्थिति का विश्लेषण ज़रूर करें। चंद्र-राशि से कौन सा ग्रह किस भाव में है यह बताकर फलित दें — जैसे 'आपकी {natal_chandra} राशि के लिए आज...' इस तरह चंद्र-राशि का स्पष्ट उल्लेख करें।
+11. ⚠️ अत्यंत महत्वपूर्ण — जन्म कुंडली के ग्रह और आज के गोचर ग्रह को कभी मिलाएं नहीं:
+    - जब जन्म कुंडली के किसी ग्रह की बात करें तो स्पष्ट लिखें: "आपकी जन्म कुंडली में {natal_lagna} लग्न से Xवें भाव में स्थित [ग्रह]..."
+    - जब आज के गोचर की बात करें तो स्पष्ट लिखें: "आज गोचर में [ग्रह] आपकी {natal_chandra} राशि से Xवें भाव में..."
+    - दोनों को एक ही वाक्य में मिलाकर गलत भाव न बताएँ।
 """
     return prompt.strip()
 
@@ -577,7 +561,6 @@ def process_one_user(profile: "UserProfile", today_transit: dict, today_jd: floa
     ashtakvarg = get_transit_ashtakvarg_score(natal_chandra_idx, today_transit)
 
     vakri = get_vakri_grahas(today_transit)
-    asta  = get_asta_grahas(today_transit)
 
     prompt = build_horoscope_prompt(
         user_name=user_name,
@@ -591,7 +574,6 @@ def process_one_user(profile: "UserProfile", today_transit: dict, today_jd: floa
         guru_text=guru_text,
         ashtakvarg=ashtakvarg,
         vakri_grahas=vakri,
-        asta_grahas=asta,
     )
 
     rashifal_text = call_gemini(prompt)
@@ -721,7 +703,6 @@ def test_single_kundali(
     ashtakvarg = get_transit_ashtakvarg_score(natal_chandra_idx, today_transit)
 
     vakri = get_vakri_grahas(today_transit)
-    asta  = get_asta_grahas(today_transit)
 
     prompt = build_horoscope_prompt(
         user_name=naam,
@@ -735,7 +716,6 @@ def test_single_kundali(
         guru_text=guru_text,
         ashtakvarg=ashtakvarg,
         vakri_grahas=vakri,
-        asta_grahas=asta,
     )
 
     print("\n📋 Generated Prompt (पहले 600 chars):")
