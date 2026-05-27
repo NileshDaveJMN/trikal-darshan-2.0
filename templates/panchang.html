@@ -55,11 +55,12 @@
     }
 </style>
 
-<!-- 📍 शहर चुनने का फॉर्म (City Selection) -->
+<!-- 📍 शहर चुनने का फॉर्म (City Selection - स्वदेशी लॉजिक) -->
 <div style="background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
     <h3 style="color: #d4af37; margin-top: 0; margin-bottom: 15px; font-size: 18px; text-align: center;">📍 वर्तमान शहर का पंचांग</h3>
     
-    <form method="GET" id="panchang-city-form" onsubmit="return validatePanchangCity();" style="display: flex; flex-direction: column; gap: 15px;">
+    <!-- यहाँ 'event' पास किया है ताकि हम पेज रिफ्रेश को रोक सकें -->
+    <form id="panchang-city-form" onsubmit="return validatePanchangCity(event);" style="display: flex; flex-direction: column; gap: 15px;">
         
         <input type="hidden" name="date" id="panchang_date_input" value="{{ current_date_value }}">
         
@@ -181,17 +182,28 @@
 </div>
 
 <script>
-    // 1. फॉर्म वैलिडेशन
-    function validatePanchangCity() {
+    // 1. फॉर्म वैलिडेशन और AJAX सबमिट
+    function validatePanchangCity(event) {
+        // 🚀 यह लाइन पेज को रिफ्रेश होने से रोकेगी!
+        if(event) {
+            event.preventDefault(); 
+        }
+
         var lat = document.getElementById("panchang_lat_input").value;
         var lon = document.getElementById("panchang_lon_input").value;
+        
         if (!lat || !lon || lat === "" || lon === "") {
             alert("⚠️ कृपया केवल नाम टाइप न करें। सही गणना के लिए नीचे आने वाली लिस्ट में से अपने शहर का चयन करें।");
             document.getElementById("panchang_city_status").innerHTML = '<span style="color:#ff4757; font-size:13px; font-weight:bold;">कृपया लिस्ट में से शहर चुनें!</span>';
             document.getElementById("panchang_city_input").focus();
             return false; 
         }
-        return true; 
+
+        // 🚀 सब सही है तो सीधा AJAX वाला फंक्शन कॉल कर लें 
+        var dateStr = document.getElementById('panchang_date_input').value;
+        loadPanchangDate(dateStr);
+        
+        return false; // सेफ्टी के लिए फिर से false
     }
 
     // 2. Nominatim API (Kundali jaisa)
@@ -200,7 +212,6 @@
         var input = document.getElementById('panchang_city_input');
         if (!input) return;
 
-        // AJAX re-init ki vajah se purane event listeners hatane ke liye clone karein
         var new_input = input.cloneNode(true);
         input.parentNode.replaceChild(new_input, input);
 
