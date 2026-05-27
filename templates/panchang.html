@@ -10,6 +10,8 @@
     .p-card-premium .p-value { font-size: 20px; color: #e2e8f0; font-weight: bold; }
 
     .muhurat-container h3 { color: #d4af37; font-size: 18px; margin-bottom: 20px; text-align: center; }
+    .muhurat-box { padding: 15px; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+    .muhurat-box:hover { opacity: 0.9; }
     .muhurat-box span.m-label { font-size: 15px; font-weight: bold; }
     .muhurat-box span.m-time { font-size: 17px; color: #e2e8f0; margin-top: 8px; font-weight: bold; }
     
@@ -21,32 +23,32 @@
     .modal-content { background-color: #1e293b !important; color: #e2e8f0 !important; border: 1px solid #d4af37 !important; border-radius: 15px !important; }
     .modal-header { color: #d4af37 !important; border-bottom: 1px solid #334155 !important; font-weight: bold; }
     .close-btn { background: #d4af37 !important; color: #0f172a !important; border-radius: 20px !important; font-weight: bold !important; }
-    
-    /* City Search Custom Styling */
-    .pac-container { background-color: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; font-family: inherit; }
-    .pac-item { color: #94a3b8; border-top: 1px solid #334155; padding: 8px 10px; cursor: pointer; }
-    .pac-item:hover { background-color: #0f172a; }
-    .pac-item-query { color: #d4af37; font-weight: bold; }
 </style>
 
-<!-- 📍 शहर चुनने का फॉर्म (City Selection) -->
+<!-- 📍 शहर चुनने का फॉर्म (City Selection - स्वदेशी लॉजिक) -->
 <div style="background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
     <h3 style="color: #d4af37; margin-top: 0; margin-bottom: 15px; font-size: 18px; text-align: center;">📍 वर्तमान शहर का पंचांग</h3>
     
-    <form method="GET" id="panchang-city-form" style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+    <form method="GET" id="panchang-city-form" onsubmit="return validatePanchangCity();" style="display: flex; flex-direction: column; gap: 15px;">
         
         <!-- अगर यूज़र ने कोई तारीख पहले से चुन रखी है, तो वो भी सबमिट हो -->
         <input type="hidden" name="date" value="{{ current_date_value }}">
         
-        <input type="text" id="panchang_city_search" placeholder="शहर खोजें (उदा: Gandhinagar, Surat)..." value="{{ p_data.current_city|default:'नई दिल्ली' }}"
-               style="width: 70%; padding: 12px; background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; outline: none; font-size: 15px;">
+        <div style="position:relative; width: 100%;">
+            <input type="text" name="city" id="panchang_city_input" autocomplete="off" placeholder="शहर खोजें (उदा: Gandhinagar, Surat)..." value="{{ p_data.current_city|default:'नई दिल्ली' }}" required
+                   style="width: 100%; padding: 12px; background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; outline: none; font-size: 15px; box-sizing: border-box;">
+            
+            <!-- सजेशंस ड्रॉपडाउन -->
+            <div id="panchang_city_suggestions" style="position: absolute; top: 100%; left: 0; width: 100%; background: #1e293b; border: 1px solid #334155; border-radius: 4px; z-index: 100; max-height: 200px; overflow-y: auto; display: none;"></div>
+        </div>
         
         <!-- हिडन फील्ड्स -->
-        <input type="hidden" name="lat" id="panchang_lat" value="{{ request.GET.lat|default:'28.5839' }}">
-        <input type="hidden" name="lon" id="panchang_lon" value="{{ request.GET.lon|default:'77.2090' }}">
-        <input type="hidden" name="city" id="panchang_city_name" value="{{ p_data.current_city|default:'नई दिल्ली' }}">
+        <input type="hidden" name="lat" id="panchang_lat_input" value="{{ request.GET.lat|default:'28.5839' }}">
+        <input type="hidden" name="lon" id="panchang_lon_input" value="{{ request.GET.lon|default:'77.2090' }}">
         
-        <button type="submit" style="background: #24a1de; color: #ffffff; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.3s;">सेट करें</button>
+        <small id="panchang_city_status" style="text-align: center;"></small>
+
+        <button type="submit" style="background: #24a1de; color: #ffffff; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.3s; width: 100%;">पंचांग सेट करें</button>
     </form>
     
     <p style="color: #94a3b8; text-align: center; margin-top: 15px; font-size: 14px; margin-bottom: 0;">
@@ -73,7 +75,7 @@
 
 </div>
 
-<div class="text-center mb-4" style="color: #94a3b8; font-size: 14px;">
+<div class="text-center mb-4" style="color: #94a3b8; font-size: 14px; text-align: center; margin-bottom: 20px;">
     चयनित तिथि: {{ p_data.date_str }} ({{ p_data.day }})
 </div>
 
@@ -100,19 +102,19 @@
             <span style="color: #d4af37;">⚠️ महत्वपूर्ण मुहूर्त</span> (जानकारी के लिए टैप करें)
         </h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="muhurat-box" style="background: #2d1b1b; border-left: 4px solid #ef4444; cursor: pointer;" onclick="showInfo('rahukaal')">
+            <div class="muhurat-box" style="background: #2d1b1b; border-left: 4px solid #ef4444;" onclick="showInfo('rahukaal')">
                 <span style="color: #fca5a5; font-size: 13px; font-weight: bold;">🔴 राहुकाल</span>
                 <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px; display: block;">{{ p_data.rahukaal }}</span>
             </div>
-            <div class="muhurat-box" style="background: #332200; border-left: 4px solid #f59e0b; cursor: pointer;" onclick="showInfo('yamaganda')">
+            <div class="muhurat-box" style="background: #332200; border-left: 4px solid #f59e0b;" onclick="showInfo('yamaganda')">
                 <span style="color: #fcd34d; font-size: 13px; font-weight: bold;">🟠 यमगंड</span>
                 <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px; display: block;">{{ p_data.yamaganda }}</span>
             </div>
-            <div class="muhurat-box" style="background: #1b2d24; border-left: 4px solid #22c55e; cursor: pointer;" onclick="showInfo('gulika')">
+            <div class="muhurat-box" style="background: #1b2d24; border-left: 4px solid #22c55e;" onclick="showInfo('gulika')">
                 <span style="color: #86efac; font-size: 13px; font-weight: bold;">🟢 गुलिक</span>
                 <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px; display: block;">{{ p_data.gulika }}</span>
             </div>
-            <div class="muhurat-box" style="background: #162032; border-left: 4px solid #3b82f6; cursor: pointer;" onclick="showInfo('abhijit')">
+            <div class="muhurat-box" style="background: #162032; border-left: 4px solid #3b82f6;" onclick="showInfo('abhijit')">
                 <span style="color: #93c5fd; font-size: 13px; font-weight: bold;">🔵 अभिजित</span>
                 <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px; display: block;">{{ p_data.abhijit }}</span>
             </div>
@@ -157,41 +159,93 @@
     </div>
 </div>
 
-<!-- Google Maps API (Cities Auto-complete के लिए) -->
-<!-- ⚠️ ध्यान दें: नीचे 'YOUR_API_KEY' की जगह अपनी असली गूगल API Key ज़रूर डालें -->
-<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
-
 <script>
-    // 🌍 Google Places API (Auto-complete for City)
-    function initPanchangAutocomplete() {
-        const input = document.getElementById('panchang_city_search');
-        if (!input) return;
+    // 1. फॉर्म वैलिडेशन (जैसे कुंडली में था)
+    function validatePanchangCity() {
+        var lat = document.getElementById("panchang_lat_input").value;
+        var lon = document.getElementById("panchang_lon_input").value;
+        
+        if (!lat || !lon || lat === "" || lon === "") {
+            alert("⚠️ कृपया केवल नाम टाइप न करें। सही गणना के लिए नीचे आने वाली लिस्ट में से अपने शहर का चयन करें।");
+            document.getElementById("panchang_city_status").innerHTML = '<span style="color:#ff4757; font-size:13px; font-weight:bold;">कृपया लिस्ट में से शहर चुनें!</span>';
+            document.getElementById("panchang_city_input").focus();
+            return false; 
+        }
+        return true; 
+    }
 
-        if (typeof google !== 'undefined' && google.maps && google.maps.places) {
-            const autocomplete = new google.maps.places.Autocomplete(input, {
-                types: ['(cities)']
-            });
+    // 2. सिटी सर्च लॉजिक (बिना गूगल API के, आपके लोकल डेटाबेस से)
+    function setupPanchangCitySearch() {
+        const pCityInput = document.getElementById('panchang_city_input');
+        const pCitySuggestions = document.getElementById('panchang_city_suggestions');
+        const pLatInput = document.getElementById('panchang_lat_input');
+        const pLonInput = document.getElementById('panchang_lon_input');
 
-            autocomplete.addListener('place_changed', function() {
-                const place = autocomplete.getPlace();
-                if (!place.geometry) {
+        if (pCityInput) {
+            // Remove old event listeners if re-initializing after AJAX
+            let newPCityInput = pCityInput.cloneNode(true);
+            pCityInput.parentNode.replaceChild(newPCityInput, pCityInput);
+            
+            newPCityInput.addEventListener('input', function() {
+                let query = this.value;
+                if (query.length < 2) {
+                    pCitySuggestions.style.display = 'none';
                     return;
                 }
-                
-                document.getElementById('panchang_lat').value = place.geometry.location.lat();
-                document.getElementById('panchang_lon').value = place.geometry.location.lng();
-                document.getElementById('panchang_city_name').value = place.name;
+
+                // आपके लोकल सर्च URL को हिट कर रहे हैं
+                fetch(`/search-city/?q=${encodeURIComponent(query)}`)
+                .then(response => response.json())
+                .then(data => {
+                    pCitySuggestions.innerHTML = '';
+                    if (data.length > 0) {
+                        pCitySuggestions.style.display = 'block';
+                        data.forEach(city => {
+                            let div = document.createElement('div');
+                            div.style.padding = '10px';
+                            div.style.cursor = 'pointer';
+                            div.style.borderBottom = '1px solid #334155';
+                            div.style.color = '#e2e8f0';
+                            
+                            div.onmouseover = function() { this.style.backgroundColor = '#0f172a'; }
+                            div.onmouseout = function() { this.style.backgroundColor = 'transparent'; }
+                            
+                            div.innerHTML = city.name + (city.state ? ', ' + city.state : ''); 
+                            
+                            div.onclick = function() {
+                                newPCityInput.value = city.name;
+                                pLatInput.value = city.lat;
+                                pLonInput.value = city.lon;
+                                pCitySuggestions.style.display = 'none';
+                                document.getElementById("panchang_city_status").innerHTML = '';
+                                
+                                // ऑटो-लोड पंचांग
+                                let dateStr = document.querySelector('input[name="date"]').value;
+                                loadPanchangDate(dateStr);
+                            };
+                            pCitySuggestions.appendChild(div);
+                        });
+                    } else {
+                        pCitySuggestions.style.display = 'none';
+                    }
+                });
+            });
+
+            document.addEventListener('click', function(e) {
+                if (e.target !== newPCityInput && pCitySuggestions) {
+                    pCitySuggestions.style.display = 'none';
+                }
             });
         }
     }
 
-    // 🚀 AJAX के ज़रिए नया पंचांग लोड करने का फंक्शन
+    // 3. AJAX के ज़रिए नया पंचांग लोड करने का फंक्शन
     function loadPanchangDate(dateStr) {
         if(!dateStr) return;
         
-        let lat = document.getElementById('panchang_lat').value || '28.5839';
-        let lon = document.getElementById('panchang_lon').value || '77.2090';
-        let city = document.getElementById('panchang_city_name').value || 'नई दिल्ली';
+        let lat = document.getElementById('panchang_lat_input').value || '28.5839';
+        let lon = document.getElementById('panchang_lon_input').value || '77.2090';
+        let city = document.getElementById('panchang_city_input').value || 'नई दिल्ली';
         
         let targetUrl = `/panchang/?date=${dateStr}&lat=${lat}&lon=${lon}&city=${encodeURIComponent(city)}`;
         
@@ -202,7 +256,7 @@
             if(container) {
                 container.innerHTML = html;
                 applyChoghadiyaColors();
-                initPanchangAutocomplete(); 
+                setupPanchangCitySearch(); // AJAX के बाद फिर से सर्च चालू करें
             } else {
                 window.location.href = targetUrl;
             }
@@ -210,7 +264,7 @@
         .catch(err => console.error("Error loading panchang:", err));
     }
 
-    // 🎨 चौघड़िया का रंग सेट करने का फंक्शन
+    // 4. चौघड़िया का रंग सेट करने का फंक्शन
     function applyChoghadiyaColors() {
         let ch_names = document.querySelectorAll('.ch-name-text');
         ch_names.forEach(el => {
@@ -225,7 +279,7 @@
         });
     }
 
-    // 📖 मुहूर्त इन्फो बॉक्स
+    // 5. मुहूर्त इन्फो बॉक्स
     function showInfo(type) {
         const modal = document.getElementById('infoModal');
         const header = document.getElementById('modalHeader');
@@ -255,8 +309,9 @@
         document.getElementById('infoModal').style.display = 'none';
     }
 
+    // पेज लोड होते ही चालू करें
     document.addEventListener("DOMContentLoaded", function() {
         applyChoghadiyaColors();
-        initPanchangAutocomplete();
+        setupPanchangCitySearch();
     });
 </script>
