@@ -156,13 +156,10 @@
         <button class="close-btn" onclick="closeModal()" style="width: 100%; padding: 10px; border: none; cursor: pointer;">समझ गया</button>
     </div>
 </div>
-<!-- Google Maps API (Cities Auto-complete के लिए) -->
-<script src="https://maps.googleapis.com/maps/api/js?key=यहाँ_अपनी_गूगल_API_KEY_डालें&libraries=places"></script>
 
-<script>
-    // 🌍 Google Places API (Auto-complete for City)
-    function initPanchangAutocomplete() {
-        // ... (आपका जावास्क्रिप्ट कोड)
+<!-- Google Maps API (Cities Auto-complete के लिए) -->
+<!-- ⚠️ ध्यान दें: नीचे 'YOUR_API_KEY' की जगह अपनी असली गूगल API Key ज़रूर डालें -->
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script>
 
 <script>
     // 🌍 Google Places API (Auto-complete for City)
@@ -170,7 +167,6 @@
         const input = document.getElementById('panchang_city_search');
         if (!input) return;
 
-        // अगर google object मौजूद है (यानी स्क्रिप्ट बेस टेम्पलेट में लोड हो चुकी है)
         if (typeof google !== 'undefined' && google.maps && google.maps.places) {
             const autocomplete = new google.maps.places.Autocomplete(input, {
                 types: ['(cities)']
@@ -182,13 +178,9 @@
                     return;
                 }
                 
-                // Lat, Lon और City का नाम Hidden Fields में डालें
                 document.getElementById('panchang_lat').value = place.geometry.location.lat();
                 document.getElementById('panchang_lon').value = place.geometry.location.lng();
-                
-                // शहर का नाम (जैसे Gandhinagar, Surat) निकालें
-                let cityName = place.name;
-                document.getElementById('panchang_city_name').value = cityName;
+                document.getElementById('panchang_city_name').value = place.name;
             });
         }
     }
@@ -197,7 +189,6 @@
     function loadPanchangDate(dateStr) {
         if(!dateStr) return;
         
-        // मौजूदा शहर का Lat/Lon भी साथ में भेजें
         let lat = document.getElementById('panchang_lat').value || '28.5839';
         let lon = document.getElementById('panchang_lon').value || '77.2090';
         let city = document.getElementById('panchang_city_name').value || 'नई दिल्ली';
@@ -211,9 +202,8 @@
             if(container) {
                 container.innerHTML = html;
                 applyChoghadiyaColors();
-                initPanchangAutocomplete(); // नया HTML लोड होने के बाद ऑटो-कम्प्लीट फिर से चालू करें
+                initPanchangAutocomplete(); 
             } else {
-                // अगर view-panchang कंटेनर नहीं है, तो सीधा पेज रीलोड कर दें
                 window.location.href = targetUrl;
             }
         })
@@ -265,7 +255,6 @@
         document.getElementById('infoModal').style.display = 'none';
     }
 
-    // पेज लोड होने पर इनिटियलाइज़ करें
     document.addEventListener("DOMContentLoaded", function() {
         applyChoghadiyaColors();
         initPanchangAutocomplete();
