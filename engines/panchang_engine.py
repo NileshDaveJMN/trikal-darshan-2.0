@@ -35,7 +35,7 @@ def get_panchang_data(target_dt_ist, is_today):
         hindu_maas = maas_names[amavasya_sun_rashi_idx]
 
         obs = ephem.Observer()
-        obs.lat, obs.long = '28.5839', '77.2090'
+        obs.lat, obs.long = str(lat), str(lon) 
         obs.elevation = 216
         obs.horizon = '-0:50'
         sun = ephem.Sun()

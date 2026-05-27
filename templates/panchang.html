@@ -21,11 +21,43 @@
     .modal-content { background-color: #1e293b !important; color: #e2e8f0 !important; border: 1px solid #d4af37 !important; border-radius: 15px !important; }
     .modal-header { color: #d4af37 !important; border-bottom: 1px solid #334155 !important; font-weight: bold; }
     .close-btn { background: #d4af37 !important; color: #0f172a !important; border-radius: 20px !important; font-weight: bold !important; }
+    
+    /* City Search Custom Styling */
+    .pac-container { background-color: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; font-family: inherit; }
+    .pac-item { color: #94a3b8; border-top: 1px solid #334155; padding: 8px 10px; cursor: pointer; }
+    .pac-item:hover { background-color: #0f172a; }
+    .pac-item-query { color: #d4af37; font-weight: bold; }
 </style>
 
+<!-- 📍 शहर चुनने का फॉर्म (City Selection) -->
+<div style="background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+    <h3 style="color: #d4af37; margin-top: 0; margin-bottom: 15px; font-size: 18px; text-align: center;">📍 वर्तमान शहर का पंचांग</h3>
+    
+    <form method="GET" id="panchang-city-form" style="display: flex; gap: 10px; justify-content: center; align-items: center;">
+        
+        <!-- अगर यूज़र ने कोई तारीख पहले से चुन रखी है, तो वो भी सबमिट हो -->
+        <input type="hidden" name="date" value="{{ current_date_value }}">
+        
+        <input type="text" id="panchang_city_search" placeholder="शहर खोजें (उदा: Gandhinagar, Surat)..." value="{{ p_data.current_city|default:'नई दिल्ली' }}"
+               style="width: 70%; padding: 12px; background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; outline: none; font-size: 15px;">
+        
+        <!-- हिडन फील्ड्स -->
+        <input type="hidden" name="lat" id="panchang_lat" value="{{ request.GET.lat|default:'28.5839' }}">
+        <input type="hidden" name="lon" id="panchang_lon" value="{{ request.GET.lon|default:'77.2090' }}">
+        <input type="hidden" name="city" id="panchang_city_name" value="{{ p_data.current_city|default:'नई दिल्ली' }}">
+        
+        <button type="submit" style="background: #24a1de; color: #ffffff; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.3s;">सेट करें</button>
+    </form>
+    
+    <p style="color: #94a3b8; text-align: center; margin-top: 15px; font-size: 14px; margin-bottom: 0;">
+        अभी आप <strong>{{ p_data.current_city|default:"नई दिल्ली" }}</strong> का पंचांग देख रहे हैं।
+    </p>
+</div>
+
+<!-- 📅 तारीख नेविगेशन (Date Navigation) -->
 <div style="display: flex; align-items: center; justify-content: space-between; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 10px; box-sizing: border-box; width: 100%; margin-bottom: 20px;">
     
-    <button type="button" onclick="loadPanchangDate('{{ p_data.prev_date }}')" style="background: #0f172a; color: #d4af37; border: 1px solid #334155; padding: 8px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 18px; flex-shrink: 0; text-align: center; cursor: pointer;">
+    <button type="button" onclick="loadPanchangDate('{{ p_data.prev_date }}')" style="background: #0f172a; color: #d4af37; border: 1px solid #334155; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 18px; flex-shrink: 0; text-align: center; cursor: pointer;">
         &#8592;
     </button>
 
@@ -35,7 +67,7 @@
                onchange="loadPanchangDate(this.value)">
     </div>
 
-    <button type="button" onclick="loadPanchangDate('{{ p_data.next_date }}')" style="background: #0f172a; color: #d4af37; border: 1px solid #334155; padding: 8px 15px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 18px; flex-shrink: 0; text-align: center; cursor: pointer;">
+    <button type="button" onclick="loadPanchangDate('{{ p_data.next_date }}')" style="background: #0f172a; color: #d4af37; border: 1px solid #334155; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 18px; flex-shrink: 0; text-align: center; cursor: pointer;">
         &#8594;
     </button>
 
@@ -45,6 +77,7 @@
     चयनित तिथि: {{ p_data.date_str }} ({{ p_data.day }})
 </div>
 
+<!-- 📊 पंचांग डैशबोर्ड -->
 <div class="panchang-dashboard">
     <div class="p-grid">
         <div class="p-card-premium"><span class="p-title">🌙 तिथि</span><span class="p-value">{{ p_data.tithi }}</span></div>
@@ -67,21 +100,21 @@
             <span style="color: #d4af37;">⚠️ महत्वपूर्ण मुहूर्त</span> (जानकारी के लिए टैप करें)
         </h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-            <div class="muhurat-box" style="background: #2d1b1b; border-left: 4px solid #ef4444;" onclick="showInfo('rahukaal')">
+            <div class="muhurat-box" style="background: #2d1b1b; border-left: 4px solid #ef4444; cursor: pointer;" onclick="showInfo('rahukaal')">
                 <span style="color: #fca5a5; font-size: 13px; font-weight: bold;">🔴 राहुकाल</span>
-                <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px;">{{ p_data.rahukaal }}</span>
+                <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px; display: block;">{{ p_data.rahukaal }}</span>
             </div>
-            <div class="muhurat-box" style="background: #332200; border-left: 4px solid #f59e0b;" onclick="showInfo('yamaganda')">
+            <div class="muhurat-box" style="background: #332200; border-left: 4px solid #f59e0b; cursor: pointer;" onclick="showInfo('yamaganda')">
                 <span style="color: #fcd34d; font-size: 13px; font-weight: bold;">🟠 यमगंड</span>
-                <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px;">{{ p_data.yamaganda }}</span>
+                <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px; display: block;">{{ p_data.yamaganda }}</span>
             </div>
-            <div class="muhurat-box" style="background: #1b2d24; border-left: 4px solid #22c55e;" onclick="showInfo('gulika')">
+            <div class="muhurat-box" style="background: #1b2d24; border-left: 4px solid #22c55e; cursor: pointer;" onclick="showInfo('gulika')">
                 <span style="color: #86efac; font-size: 13px; font-weight: bold;">🟢 गुलिक</span>
-                <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px;">{{ p_data.gulika }}</span>
+                <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px; display: block;">{{ p_data.gulika }}</span>
             </div>
-            <div class="muhurat-box" style="background: #162032; border-left: 4px solid #3b82f6;" onclick="showInfo('abhijit')">
+            <div class="muhurat-box" style="background: #162032; border-left: 4px solid #3b82f6; cursor: pointer;" onclick="showInfo('abhijit')">
                 <span style="color: #93c5fd; font-size: 13px; font-weight: bold;">🔵 अभिजित</span>
-                <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px;">{{ p_data.abhijit }}</span>
+                <span style="color: #e2e8f0; font-size: 14px; margin-top: 5px; display: block;">{{ p_data.abhijit }}</span>
             </div>
         </div>
     </div>
@@ -115,6 +148,7 @@
     </div>
 </div>
 
+<!-- ℹ️ इन्फो मोडल -->
 <div id="infoModal" class="modal" style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7);">
     <div class="modal-content" style="margin: 30% auto; padding: 20px; width: 80%;">
         <div id="modalHeader" class="modal-header"></div>
@@ -124,41 +158,77 @@
 </div>
 
 <script>
-    // AJAX के ज़रिए नया पंचांग लोड करने का फंक्शन
+    // 🌍 Google Places API (Auto-complete for City)
+    function initPanchangAutocomplete() {
+        const input = document.getElementById('panchang_city_search');
+        if (!input) return;
+
+        // अगर google object मौजूद है (यानी स्क्रिप्ट बेस टेम्पलेट में लोड हो चुकी है)
+        if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+            const autocomplete = new google.maps.places.Autocomplete(input, {
+                types: ['(cities)']
+            });
+
+            autocomplete.addListener('place_changed', function() {
+                const place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    return;
+                }
+                
+                // Lat, Lon और City का नाम Hidden Fields में डालें
+                document.getElementById('panchang_lat').value = place.geometry.location.lat();
+                document.getElementById('panchang_lon').value = place.geometry.location.lng();
+                
+                // शहर का नाम (जैसे Gandhinagar, Surat) निकालें
+                let cityName = place.name;
+                document.getElementById('panchang_city_name').value = cityName;
+            });
+        }
+    }
+
+    // 🚀 AJAX के ज़रिए नया पंचांग लोड करने का फंक्शन
     function loadPanchangDate(dateStr) {
         if(!dateStr) return;
         
-        fetch(`/panchang/?date=${dateStr}`)
+        // मौजूदा शहर का Lat/Lon भी साथ में भेजें
+        let lat = document.getElementById('panchang_lat').value || '28.5839';
+        let lon = document.getElementById('panchang_lon').value || '77.2090';
+        let city = document.getElementById('panchang_city_name').value || 'नई दिल्ली';
+        
+        let targetUrl = `/panchang/?date=${dateStr}&lat=${lat}&lon=${lon}&city=${encodeURIComponent(city)}`;
+        
+        fetch(targetUrl)
         .then(response => response.text())
         .then(html => {
-            // पंचांग वाले टैब कंटेनर (view-panchang) के अंदर नया HTML डालें
             const container = document.getElementById('view-panchang');
             if(container) {
                 container.innerHTML = html;
-                
-                // नया HTML आने के बाद चौघड़िया का रंग फिर से सेट करें
                 applyChoghadiyaColors();
+                initPanchangAutocomplete(); // नया HTML लोड होने के बाद ऑटो-कम्प्लीट फिर से चालू करें
+            } else {
+                // अगर view-panchang कंटेनर नहीं है, तो सीधा पेज रीलोड कर दें
+                window.location.href = targetUrl;
             }
         })
         .catch(err => console.error("Error loading panchang:", err));
     }
 
-    // चौघड़िया का रंग सेट करने का फंक्शन
+    // 🎨 चौघड़िया का रंग सेट करने का फंक्शन
     function applyChoghadiyaColors() {
         let ch_names = document.querySelectorAll('.ch-name-text');
         ch_names.forEach(el => {
             let text = el.innerText.trim();
             if (['शुभ', 'अमृत', 'लाभ'].includes(text)) {
-                el.style.color = '#d4af37'; // Golden (Positive)
+                el.style.color = '#d4af37'; 
             } else if (['रोग', 'उद्वेग', 'काल'].includes(text)) {
-                el.style.color = '#ff8787'; // Soft Red (Negative)
+                el.style.color = '#ff8787'; 
             } else {
-                el.style.color = '#94a3b8'; // Slate Gray (Neutral/Chal)
+                el.style.color = '#94a3b8'; 
             }
         });
     }
 
-    // मुहूर्त इन्फो बॉक्स के लिए फंक्शन (अगर पहले नहीं था तो ऐड कर दिया)
+    // 📖 मुहूर्त इन्फो बॉक्स
     function showInfo(type) {
         const modal = document.getElementById('infoModal');
         const header = document.getElementById('modalHeader');
@@ -188,6 +258,9 @@
         document.getElementById('infoModal').style.display = 'none';
     }
 
-    // पहली बार पेज लोड होने पर रंग अप्लाई करें
-    document.addEventListener("DOMContentLoaded", applyChoghadiyaColors);
+    // पेज लोड होने पर इनिटियलाइज़ करें
+    document.addEventListener("DOMContentLoaded", function() {
+        applyChoghadiyaColors();
+        initPanchangAutocomplete();
+    });
 </script>
