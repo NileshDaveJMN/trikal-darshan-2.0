@@ -4,7 +4,7 @@ import swisseph as swe
 import ephem
 from datetime import datetime, timedelta
 
-def get_panchang_data(target_dt_ist, is_today):
+def get_panchang_data(target_dt_ist, is_today, lat=28.5839, lon=77.2090):
     try:
         dt_utc = target_dt_ist - timedelta(hours=5, minutes=30)
         jd_ut = swe.julday(dt_utc.year, dt_utc.month, dt_utc.day, dt_utc.hour + dt_utc.minute/60.0 + dt_utc.second/3600.0)
