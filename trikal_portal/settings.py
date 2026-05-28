@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-_(1@ran2op0v^mhq@2zun67n$3&*9+t8gfvv(ayi_5%(q4%*yi'
 
 DEBUG = True
-ALLOWED_HOSTS = ['trikal-darshan-2-0.onrender.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -73,12 +73,18 @@ WSGI_APPLICATION = 'trikal_portal.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#database
 
+import dj_database_url
+
+# यहाँ नीचे वाले कोटेशन मार्क्स (" ") के अंदर अपना असली Render वाला URL पेस्ट करें
+RENDER_DB_URL = "postgresql://trikal_user:pS1IvOdD0g1u225MPYBDXCtO3mblzAFk@dpg-d88sd20js32c73a08bb0-a.singapore-postgres.render.com/trikal"
+
 DATABASES = {
     'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
+        default=RENDER_DB_URL,
         conn_max_age=600
     )
 }
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
