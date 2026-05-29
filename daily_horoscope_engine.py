@@ -551,7 +551,7 @@ def send_telegram(chat_id: str, text: str) -> bool:
     if len(safe_text) > max_length:
         final_text = safe_text[:max_length] + "...\n\n"
         final_text += "✨ <b>पूरा राशिफल देखने के लिए त्रिकाल दर्शन पोर्टल पर लॉगिन करें:</b>\n"
-        final_text += "🌐 <a href='https://trikal-darshan-2-0.onrender.com/'>यहाँ क्लिक करें</a>"
+        final_text += "🌐 <a href='https://trikal-darshan.onrender.com/'>यहाँ क्लिक करें</a>"
     else:
         final_text = safe_text
 
