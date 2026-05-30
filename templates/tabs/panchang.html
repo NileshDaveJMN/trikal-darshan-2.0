@@ -78,27 +78,7 @@
 
         <button type="submit" style="background: #24a1de; color: #ffffff; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.3s; width: 100%;">पंचांग सेट करें</button>
     </form>
-
-    {% if user.is_authenticated %}
-    <div style="margin-top: 12px; display: flex; gap: 10px;">
-        <button onclick="saveDefaultLocation()" id="save-loc-btn"
-            style="flex:1; background: {% if location_saved %}#1a3a2a{% else %}#1e293b{% endif %}; 
-                   color: {% if location_saved %}#4ade80{% else %}#ffca28{% endif %}; 
-                   border: 1px solid {% if location_saved %}#4ade80{% else %}#ffca28{% endif %}; 
-                   padding: 10px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: bold;">
-            {% if location_saved %}✅ डिफ़ॉल्ट लोकेशन सेट है{% else %}📌 डिफ़ॉल्ट लोकेशन सेट करें{% endif %}
-        </button>
-        {% if location_saved %}
-        <button onclick="clearDefaultLocation()"
-            style="background: #1e293b; color: #ef4444; border: 1px solid #ef4444; 
-                   padding: 10px 14px; border-radius: 8px; cursor: pointer; font-size: 13px;">
-            🗑️
-        </button>
-        {% endif %}
-    </div>
-    <p id="loc-save-msg" style="text-align:center; font-size:13px; margin: 8px 0 0 0; color: #4ade80; display:none;"></p>
-    {% endif %}
-
+    
     <p style="color: #94a3b8; text-align: center; margin-top: 15px; font-size: 14px; margin-bottom: 0;">
         अभी आप <strong>{{ p_data.current_city|default:"नई दिल्ली" }}</strong> का पंचांग देख रहे हैं।
     </p>
@@ -360,67 +340,6 @@
         }
     }
     function closeModal() { document.getElementById('infoModal').style.display = 'none'; }
-
-    // 6. Save Default Location
-    function saveDefaultLocation() {
-        var lat  = document.getElementById('panchang_lat_input').value;
-        var lon  = document.getElementById('panchang_lon_input').value;
-        var city = document.getElementById('panchang_city_input').value;
-
-        if (!lat || !lon) {
-            alert('पहले शहर चुनें!');
-            return;
-        }
-
-        fetch('/api/save-location/', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
-            body: JSON.stringify({lat: parseFloat(lat), lon: parseFloat(lon), city: city})
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.ok) {
-                var btn = document.getElementById('save-loc-btn');
-                if (btn) {
-                    btn.textContent = '✅ डिफ़ॉल्ट लोकेशन सेट है';
-                    btn.style.color = '#4ade80';
-                    btn.style.borderColor = '#4ade80';
-                    btn.style.background = '#1a3a2a';
-                }
-                var msg = document.getElementById('loc-save-msg');
-                if (msg) {
-                    msg.textContent = data.message || 'लोकेशन सेट हो गई!';
-                    msg.style.display = 'block';
-                    setTimeout(() => msg.style.display = 'none', 3000);
-                }
-            }
-        })
-        .catch(err => console.error('Save location error:', err));
-    }
-
-    // 7. Clear Default Location
-    function clearDefaultLocation() {
-        if (!confirm('डिफ़ॉल्ट लोकेशन हटाएं?')) return;
-        fetch('/api/clear-location/', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken')},
-            body: '{}'
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.ok) window.location.reload();
-        });
-    }
-
-    // CSRF Token helper
-    function getCookie(name) {
-        let v = null;
-        document.cookie.split(';').forEach(c => {
-            c = c.trim();
-            if (c.startsWith(name + '=')) v = decodeURIComponent(c.slice(name.length + 1));
-        });
-        return v;
-    }
 
     // Init
     document.addEventListener("DOMContentLoaded", function() {
