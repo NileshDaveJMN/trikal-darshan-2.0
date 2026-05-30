@@ -24,7 +24,7 @@
     .modal-header { color: #d4af37 !important; border-bottom: 1px solid #334155 !important; font-weight: bold; }
     .close-btn { background: #d4af37 !important; color: #0f172a !important; border-radius: 20px !important; font-weight: bold !important; }
     
-    /* Autocomplete CSS (Kundali jaisa) */
+    /* Autocomplete CSS */
     #panchang_city_suggestions {
         position: absolute;
         top: 100%;
@@ -55,11 +55,10 @@
     }
 </style>
 
-<!-- 📍 शहर चुनने का फॉर्म (City Selection - स्वदेशी लॉजिक) -->
+<!-- 📍 शहर चुनने का फॉर्म -->
 <div style="background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
     <h3 style="color: #d4af37; margin-top: 0; margin-bottom: 15px; font-size: 18px; text-align: center;">📍 वर्तमान शहर का पंचांग</h3>
     
-    <!-- यहाँ 'event' पास किया है ताकि हम पेज रिफ्रेश को रोक सकें -->
     <form id="panchang-city-form" onsubmit="return validatePanchangCity(event);" style="display: flex; flex-direction: column; gap: 15px;">
         
         <input type="hidden" name="date" id="panchang_date_input" value="{{ current_date_value }}">
@@ -84,7 +83,7 @@
     </p>
 </div>
 
-<!-- 📅 तारीख नेविगेशन (Date Navigation) -->
+<!-- 📅 तारीख नेविगेशन -->
 <div style="display: flex; align-items: center; justify-content: space-between; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 10px; box-sizing: border-box; width: 100%; margin-bottom: 20px;">
     <button type="button" onclick="loadPanchangDate('{{ p_data.prev_date }}')" style="background: #0f172a; color: #d4af37; border: 1px solid #334155; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 18px; flex-shrink: 0; text-align: center; cursor: pointer;">
         &#8592;
@@ -182,9 +181,8 @@
 </div>
 
 <script>
-    // 1. फॉर्म वैलिडेशन और AJAX सबमिट
+    // 1. फॉर्म वैलिडेशन
     function validatePanchangCity(event) {
-        // 🚀 यह लाइन पेज को रिफ्रेश होने से रोकेगी!
         if(event) {
             event.preventDefault(); 
         }
@@ -199,14 +197,12 @@
             return false; 
         }
 
-        // 🚀 सब सही है तो सीधा AJAX वाला फंक्शन कॉल कर लें 
         var dateStr = document.getElementById('panchang_date_input').value;
         loadPanchangDate(dateStr);
-        
-        return false; // सेफ्टी के लिए फिर से false
+        return false; 
     }
 
-    // 2. Nominatim API (Kundali jaisa)
+    // 2. Nominatim API 
     function setupPanchangNominatim() {
         var debounceTimer = null;
         var input = document.getElementById('panchang_city_input');
@@ -239,6 +235,8 @@
                     var div = document.createElement('div');
                     div.className = 'city-suggestion-item';
                     div.textContent = item.display_name;
+                    
+                    // 🌟 जब यूज़र लिस्ट से शहर चुने 🌟
                     div.addEventListener('click', function() {
                         document.getElementById('panchang_city_input').value = item.display_name;
                         document.getElementById('panchang_lat_input').value = item.lat;
@@ -247,10 +245,30 @@
                         box.style.display = 'none';
                         document.getElementById('panchang_city_status').innerHTML = '<span style="color:#4caf50; font-size:13px;">✓ शहर चुना गया</span>';
                         
-                        // Select karte hi panchang load karein
-                        var dateStr = document.getElementById('panchang_date_input').value;
-                        loadPanchangDate(dateStr);
+                        // 🌟 API को कॉल करके शहर सेव करवाएं 🌟
+                        fetch('/api/save-location/', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                lat: item.lat,
+                                lon: item.lon,
+                                city: item.display_name
+                            })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log("Location Saved DB:", data);
+                            // सेव होने के बाद पंचांग लोड करें
+                            var dateStr = document.getElementById('panchang_date_input').value;
+                            loadPanchangDate(dateStr);
+                        })
+                        .catch(err => {
+                            console.error("Save error:", err);
+                            var dateStr = document.getElementById('panchang_date_input').value;
+                            loadPanchangDate(dateStr);
+                        });
                     });
+                    
                     box.appendChild(div);
                 });
                 box.style.display = 'block';
@@ -272,7 +290,6 @@
             }, 400);
         });
 
-        // Bahar click karne par list band karein
         document.addEventListener('click', function(e) {
             var box = document.getElementById('panchang_city_suggestions');
             if (box && e.target !== new_input && !box.contains(e.target)) {

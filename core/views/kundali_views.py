@@ -1,4 +1,3 @@
-# views/kundali_views.py
 import os
 import json
 from datetime import datetime
@@ -184,7 +183,7 @@ def home(request, k_id=None):
                     messages.success(request, f"✅ {n} की कुंडली सफलतापूर्वक बन गई है! (बाकी क्रेडिट: {user_profile.kundali_credits})")
                     return redirect('view_specific_kundali', k_id=new_k.id)
                 else:
-                    messages.error(request, "⚠️ आपके कुंडली क्रेडिट्स खत्म हो गए हैं! नई कुंडली बनाने के लिए कृपया रिचार्ज करें।")
+                    messages.error(request, "⚠️ आपके कुंडली क्रेडिट्स खत्म চরম गए हैं! नई कुंडली बनाने के लिए कृपया रिचार्ज करें।")
                     return redirect('/?tab=view-user')
             else:
                 res = get_kundali_data(n, g, d, m, y, h, min_m, s, c, lat, lon, need_ai=False)
@@ -229,8 +228,30 @@ def home(request, k_id=None):
 
     month_choices = [{'val': i+1, 'name': month} for i, month in enumerate(MONTHS)]
     target_dt = datetime.now()
-    p_data = get_panchang_data(target_dt, True)
+
+    # 🌟 डेटाबेस से यूज़र का डिफ़ॉल्ट शहर निकालें 🌟
+    user_lat = 28.5839
+    user_lon = 77.2090
+    current_city = 'नई दिल्ली'
+
+    if request.user.is_authenticated:
+        try:
+            prof = request.user.userprofile
+            if prof.default_lat and prof.default_lon:
+                user_lat = prof.default_lat
+                user_lon = prof.default_lon
+                current_city = prof.default_city or 'नई दिल्ली'
+        except Exception:
+            pass
+
+    # पंचांग इंजन में यूज़र के lat/lon भेजें
+    p_data = get_panchang_data(target_dt, True, float(user_lat), float(user_lon))
+    
+    if p_data:
+        p_data['current_city'] = current_city
+
     current_date_value = target_dt.strftime("%Y-%m-%d")
+    
     saved_milans = []
     
     if request.user.is_authenticated:
