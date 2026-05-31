@@ -81,7 +81,10 @@ RENDER_DB_URL = "postgresql://trikal_user:pS1IvOdD0g1u225MPYBDXCtO3mblzAFk@dpg-d
 DATABASES = {
     'default': dj_database_url.config(
         default=RENDER_DB_URL,
-        conn_max_age=600
+        
+        conn_max_age=0,
+        conn_health_checks=True,
+    
     )
 }
 
