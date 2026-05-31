@@ -6,38 +6,42 @@
     .section-title { color: #f39c12; border-bottom: 2px solid #f39c12; padding-bottom: 5px; margin-bottom: 20px; font-weight: bold; }
     .btn-milan { background: linear-gradient(135deg, #f39c12, #e67e22); border: none; color: white; padding: 12px 30px; font-size: 18px; border-radius: 50px; width: 100%; font-weight: bold; transition: 0.3s; cursor: pointer; }
     .btn-milan:hover { transform: scale(1.05); box-shadow: 0 5px 15px rgba(230, 126, 34, 0.4); }
-    .result-box { display: none; margin-top: 30px; animation: fadeIn 0.8s; }
+    .btn-milan:disabled { background: #7f8c8d; cursor: not-allowed; box-shadow: none; transform: none; }
+    .result-box { margin-top: 30px; animation: fadeIn 0.8s; }
     .score-circle { width: 120px; height: 120px; border-radius: 50%; border: 8px solid #f39c12; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: bold; margin: 0 auto 20px; background: #333; }
     .remedy-card { background: #2c3e50; border-left: 5px solid #e74c3c; padding: 15px; border-radius: 8px; margin-bottom: 10px; }
-    .lock-card { background: rgba(38, 38, 38, 0.95); border: 2px dashed #f39c12; border-radius: 15px; padding: 40px; text-align: center; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 </style>
+
+<!-- React JS और Babel CDN -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 
 <div class="container milan-container mb-5">
     <p class="text-center text-muted">वर और कन्या के 36 गुणों का सटीक मिलान करें</p>
     
+    <!-- 📂 सेव किए गए मिलान (Django Template Logic रहेगा) -->
     {% if user.is_authenticated and saved_milans %}
     <div style="background: #1e293b; padding: 15px; border-radius: 12px; border: 1px solid #334155; margin-bottom: 25px;">
         <h4 style="color: #d4af37; margin-top: 0; margin-bottom: 15px; font-size: 18px; text-align: center;">📂 सेव किए गए मिलान</h4>
         <div style="max-height: 250px; overflow-y: auto; padding-right: 5px;">
             {% for m in saved_milans %}
             <div style="display:flex; align-items:center; justify-content:space-between; background:#1e2a38; border:1px solid #2e3f52; border-radius:10px; padding:12px 14px; margin-bottom:10px;">
-                <div onclick="loadSavedMilanFull('{{ m.id }}')" style="cursor: pointer; flex:1;">
+                <div style="flex:1;">
                     <strong style="font-size:15px; color:#ffffff;">❤️ {{ m.boy_name }} & {{ m.girl_name }}</strong>
                     <span style="font-size:12px; color:#aab4be; display:block; margin-top:2px;">
                         गुण: {{ m.total_score }}/36 &bull; {{ m.created_at|date:"d M Y" }}
                     </span>
                 </div>
-                
                 <div style="display:flex; align-items:center; gap: 15px;">
                     <a href="/download-milan-pdf/?b_name={{ m.boy_name|urlencode }}&g_name={{ m.girl_name|urlencode }}&b_naks={{ m.boy_nakshatra|urlencode }}&g_naks={{ m.girl_nakshatra|urlencode }}&b_rashi={{ m.boy_rashi|urlencode }}&g_rashi={{ m.girl_rashi|urlencode }}&score={{ m.total_score }}" 
-                       target="_blank" style="text-decoration:none; padding:0; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));" title="PDF रिपोर्ट डाउनलोड करें">
+                       target="_blank" style="text-decoration:none; padding:0;" title="PDF रिपोर्ट डाउनलोड करें">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffca28" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="12" y1="3" x2="12" y2="21"></line>
                             <polyline points="19 14 12 21 5 14"></polyline>
                         </svg>
                     </a>
-                    
                     <form method="POST" action="{% url 'home' %}" style="margin:0;" onsubmit="return confirm('क्या आप इस मिलान को हटाना चाहते हैं?')">
                         {% csrf_token %}
                         <input type="hidden" name="action" value="delete_milan">
@@ -53,248 +57,258 @@
 
     <h2 class="text-center mb-4 text-warning">💑 अष्टकूट कुंडली मिलान</h2>
     
-    <form id="milanForm">
-        {% csrf_token %}
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card-milan">
-                    <h4 class="section-title">🤵 वर का विवरण (Boy)</h4>
-                    <div class="mb-3">
-                        <label class="form-label">नाम</label>
-                        <input type="text" name="boy_name" class="form-control bg-dark text-white border-secondary" placeholder="वर का नाम लिखें" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">नक्षत्र</label>
-                        <select name="boy_nakshatra" class="form-select bg-dark text-white border-secondary" required>
-                            <option value="">नक्षत्र चुनें</option>
-                            <option value="Ashwini">Ashwini (अश्विनी)</option>
-                            <option value="Bharani">Bharani (भरणी)</option>
-                            <option value="Krittika">Krittika (कृत्तिका)</option>
-                            <option value="Rohini">Rohini (रोहिणी)</option>
-                            <option value="Mrigashira">Mrigashira (मृगशिरा)</option>
-                            <option value="Ardra">Ardra (आर्द्रा)</option>
-                            <option value="Punarvasu">Punarvasu (पुनर्वसु)</option>
-                            <option value="Pushya">Pushya (पुष्य)</option>
-                            <option value="Ashlesha">Ashlesha (अश्लेषा)</option>
-                            <option value="Magha">Magha (मघा)</option>
-                            <option value="Purva Phalguni">Purva Phalguni (पूर्वाफाल्गुनी)</option>
-                            <option value="Uttara Phalguni">Uttara Phalguni (उत्तराफाल्गुनी)</option>
-                            <option value="Hasta">Hasta (हस्त)</option>
-                            <option value="Chitra">Chitra (चित्रा)</option>
-                            <option value="Swati">Swati (स्वाति)</option>
-                            <option value="Vishakha">Vishakha (विशाखा)</option>
-                            <option value="Anuradha">Anuradha (अनुराधा)</option>
-                            <option value="Jyeshtha">Jyeshtha (ज्येष्ठा)</option>
-                            <option value="Mula">Mula (मूल)</option>
-                            <option value="Purva Ashadha">Purva Ashadha (पूर्वाषाढ़ा)</option>
-                            <option value="Uttara Ashadha">Uttara Ashadha (उत्तराषाढ़ा)</option>
-                            <option value="Shravana">Shravana (श्रवण)</option>
-                            <option value="Dhanishta">Dhanishta (धनिष्ठा)</option>
-                            <option value="Shatabhisha">Shatabhisha (शतभिषा)</option>
-                            <option value="Purva Bhadrapada">Purva Bhadrapada (पूर्वाभाद्रपद)</option>
-                            <option value="Uttara Bhadrapada">Uttara Bhadrapada (उत्तराभाद्रपद)</option>
-                            <option value="Revati">Revati (रेवती)</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">राशि</label>
-                        <select name="boy_rashi" class="form-select bg-dark text-white border-secondary">
-                            <option value="मेष">मेष</option><option value="वृषभ">वृषभ</option><option value="मिथुन">मिथुन</option>
-                            <option value="कर्क">कर्क</option><option value="सिंह">सिंह</option><option value="कन्या">कन्या</option>
-                            <option value="तुला">तुला</option><option value="वृश्चिक">वृश्चिक</option><option value="धनु">धनु</option>
-                            <option value="मकर">मकर</option><option value="कुंभ">कुंभ</option><option value="मीन">मीन</option>
-                        </select>
-                    </div>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" name="boy_manglik" value="yes" id="boyManglik">
-                        <label class="form-check-label" for="boyManglik">क्या वर मांगलिक है?</label>
-                    </div>
-                </div>
-            </div>
+    <!-- React को CSRF Token देने के लिए -->
+    <input type="hidden" id="csrf_token_react" value="{{ csrf_token }}">
 
-            <div class="col-md-6">
-                <div class="card-milan">
-                    <h4 class="section-title">👰 कन्या का विवरण (Girl)</h4>
-                    <div class="mb-3">
-                        <label class="form-label">नाम</label>
-                        <input type="text" name="girl_name" class="form-control bg-dark text-white border-secondary" placeholder="कन्या का नाम लिखें" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">नक्षत्र</label>
-                        <select name="girl_nakshatra" class="form-select bg-dark text-white border-secondary" required>
-                            <option value="">नक्षत्र चुनें</option>
-                            <option value="Ashwini">Ashwini (अश्विनी)</option>
-                            <option value="Bharani">Bharani (भरणी)</option>
-                            <option value="Krittika">Krittika (कृत्तिका)</option>
-                            <option value="Rohini">Rohini (रोहिणी)</option>
-                            <option value="Mrigashira">Mrigashira (मृगशिरा)</option>
-                            <option value="Ardra">Ardra (आर्द्रा)</option>
-                            <option value="Punarvasu">Punarvasu (पुनर्वसु)</option>
-                            <option value="Pushya">Pushya (पुष्य)</option>
-                            <option value="Ashlesha">Ashlesha (अश्लेषा)</option>
-                            <option value="Magha">Magha (मघा)</option>
-                            <option value="Purva Phalguni">Purva Phalguni (पूर्वाफाल्गुनी)</option>
-                            <option value="Uttara Phalguni">Uttara Phalguni (उत्तराफाल्गुनी)</option>
-                            <option value="Hasta">Hasta (हस्त)</option>
-                            <option value="Chitra">Chitra (चित्रा)</option>
-                            <option value="Swati">Swati (स्वाति)</option>
-                            <option value="Vishakha">Vishakha (विशाखा)</option>
-                            <option value="Anuradha">Anuradha (अनुराधा)</option>
-                            <option value="Jyeshtha">Jyeshtha (ज्येष्ठा)</option>
-                            <option value="Mula">Mula (मूल)</option>
-                            <option value="Purva Ashadha">Purva Ashadha (पूर्वाषाढ़ा)</option>
-                            <option value="Uttara Ashadha">Uttara Ashadha (उत्तराषाढ़ा)</option>
-                            <option value="Shravana">Shravana (श्रवण)</option>
-                            <option value="Dhanishta">Dhanishta (धनिष्ठा)</option>
-                            <option value="Shatabhisha">Shatabhisha (शतभिषा)</option>
-                            <option value="Purva Bhadrapada">Purva Bhadrapada (पूर्वाभाद्रपद)</option>
-                            <option value="Uttara Bhadrapada">Uttara Bhadrapada (उत्तराभाद्रपद)</option>
-                            <option value="Revati">Revati (रेवती)</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">राशि</label>
-                        <select name="girl_rashi" class="form-select bg-dark text-white border-secondary">
-                            <option value="मेष">मेष</option><option value="वृषभ">वृषभ</option><option value="मिथुन">मिथुन</option>
-                            <option value="कर्क">कर्क</option><option value="सिंह">सिंह</option><option value="कन्या">कन्या</option>
-                            <option value="तुला">तुला</option><option value="वृश्चिक">वृश्चिक</option><option value="धनु">धनु</option>
-                            <option value="मकर">मकर</option><option value="कुंभ">कुंभ</option><option value="मीन">मीन</option>
-                        </select>
-                    </div>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" name="girl_manglik" value="yes" id="girlManglik">
-                        <label class="form-check-label" for="girlManglik">क्या कन्या मांगलिक है?</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="text-center mt-3">
-            <button type="submit" class="btn-milan shadow-lg">💖 मिलान चेक करें</button>
-        </div>
-    </form>
-
-    <div id="milanTopAction" style="display:none; text-align: right; margin-top: 30px; margin-bottom: -45px; position: relative; z-index: 10;">
-        <a href="#" id="milanDownloadIcon" target="_blank" style="text-decoration:none; padding:10px; transition:0.3s;" title="PDF रिपोर्ट डाउनलोड करें">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffca28" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="3" x2="12" y2="21"></line>
-                <polyline points="19 14 12 21 5 14"></polyline>
-            </svg>
-        </a>
-    </div>
-
-    <div id="resultArea" class="result-box mt-5">
-        <hr class="border-secondary mb-5">
-        
-        <div class="text-center mb-4">
-            <div class="score-circle">
-                <span id="finalScore">0</span>/36
-            </div>
-            <h3 id="matchStatus"></h3>
-            <p id="manglikNote" class="badge bg-secondary p-2 fs-6 mt-2"></p>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table table-dark table-hover border-secondary">
-                <thead>
-                    <tr class="text-warning">
-                        <th>कूट (Koot)</th>
-                        <th>प्राप्त अंक</th>
-                        <th>स्थिति</th>
-                    </tr>
-                </thead>
-                <tbody id="breakdownTable">
-                </tbody>
-            </table>
-        </div>
-
-        <div id="pdf-download-container"></div>
-        <div id="remedyArea" class="mt-4 text-start"></div>
-    </div>
+    <!-- 🌟 React App यहाँ रेंडर होगा 🌟 -->
+    <div id="react-milan-root"></div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-$('#milanForm').on('submit', function(e) {
-    e.preventDefault();
+<script type="text/babel">
+    const { useState, useEffect } = React;
 
-    let formData = $(this).serialize();
+    const NAKSHATRAS = ["Ashwini", "Bharani", "Krittika", "Rohini", "Mrigashira", "Ardra", "Punarvasu", "Pushya", "Ashlesha", "Magha", "Purva Phalguni", "Uttara Phalguni", "Hasta", "Chitra", "Swati", "Vishakha", "Anuradha", "Jyeshtha", "Mula", "Purva Ashadha", "Uttara Ashadha", "Shravana", "Dhanishta", "Shatabhisha", "Purva Bhadrapada", "Uttara Bhadrapada", "Revati"];
+    const RASHIS = ["मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"];
 
-    $.ajax({
-        url: "{% url 'api_calculate_milan' %}",
-        method: "POST",
-        data: formData,
-        success: function(response) {
-            if(response.status == 'success') {
-                let d = response.data;
-                $('#finalScore').text(d.total_score);
-                $('#matchStatus').text(d.is_recommended ? "✅ शुभ मिलान" : "⚠️ मिलान सामान्य है");
-                $('#matchStatus').css('color', d.is_recommended ? '#2ecc71' : '#f1c40f');
+    const MilanApp = () => {
+        // State (डेटा स्टोर करने के लिए)
+        const [boy, setBoy] = useState({ name: '', naks: '', rashi: 'मेष', manglik: false });
+        const [girl, setGirl] = useState({ name: '', naks: '', rashi: 'मेष', manglik: false });
+        
+        const [loading, setLoading] = useState(false);
+        const [result, setResult] = useState(null);
+        const [error, setError] = useState(null);
+        const [saveStatus, setSaveStatus] = useState(null);
+
+        // API Call (Calculate Milan)
+        const handleCalculate = async (e) => {
+            e.preventDefault();
+            setLoading(true);
+            setError(null);
+            setResult(null);
+            setSaveStatus(null);
+
+            const csrfToken = document.getElementById('csrf_token_react').value;
+            const params = new URLSearchParams();
+            
+            // Boy Data
+            params.append('boy_name', boy.name);
+            params.append('boy_nakshatra', boy.naks);
+            params.append('boy_rashi', boy.rashi);
+            if(boy.manglik) params.append('boy_manglik', 'yes');
+            
+            // Girl Data
+            params.append('girl_name', girl.name);
+            params.append('girl_nakshatra', girl.naks);
+            params.append('girl_rashi', girl.rashi);
+            if(girl.manglik) params.append('girl_manglik', 'yes');
+
+            try {
+                const response = await fetch("{% url 'api_calculate_milan' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: params.toString()
+                });
                 
-                let tableHtml = "";
-                for (let koot in d.breakdown) {
-                    let item = d.breakdown[koot];
-                    tableHtml += `<tr><td>${koot}</td><td>${item.score}/${item.max}</td><td>${item.status}</td></tr>`;
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    setResult(data.data);
+                } else {
+                    setError(data.message);
                 }
-                $('#breakdownTable').html(tableHtml);
-                $('#manglikNote').text(d.manglik_status);
-
-                let bName = $('input[name="boy_name"]').val();
-                let gName = $('input[name="girl_name"]').val();
-                let bNaks = $('select[name="boy_nakshatra"]').val();
-                let gNaks = $('select[name="girl_nakshatra"]').val();
-                let bRashi = $('select[name="boy_rashi"]').val();
-                let gRashi = $('select[name="girl_rashi"]').val();
-                let bManglik = $('#boyManglik').is(':checked') ? 'yes' : 'no';
-                let gManglik = $('#girlManglik').is(':checked') ? 'yes' : 'no';
-                
-                let pdfUrl = `/download-milan-pdf/?b_name=${encodeURIComponent(bName)}&g_name=${encodeURIComponent(gName)}&b_naks=${encodeURIComponent(bNaks)}&g_naks=${encodeURIComponent(gNaks)}&b_rashi=${encodeURIComponent(bRashi)}&g_rashi=${encodeURIComponent(gRashi)}&b_manglik=${bManglik}&g_manglik=${gManglik}&score=${d.total_score}`;
-
-                // सुरक्षित बाहर वाले एयरो में URL सेट करके उसे दिखाना
-                $('#milanDownloadIcon').attr('href', pdfUrl);
-                $('#milanTopAction').fadeIn();
-
-                let saveBtnHtml = `
-                    <button type="button" class="btn-milan mt-3" style="background: #2ecc71; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; font-weight: bold; cursor: pointer;" onclick="saveMilanData(event, '${d.total_score}', '${d.is_recommended}', '${d.manglik_status}')">
-                        💾 इस मिलान को सेव करें
-                    </button>
-                    <p id="saveStatusMsg" class="mt-2 text-center" style="font-weight: bold;"></p>
-                `;
-                $('#pdf-download-container').html(saveBtnHtml);
-
-                $('#resultArea').fadeIn();
-                $('html, body').animate({ scrollTop: $("#resultArea").offset().top - 80 }, 600);
-            } else {
-                alert("Error: " + response.message);
+            } catch (err) {
+                setError("सर्वर से संपर्क नहीं हो पाया। कृपया पुनः प्रयास करें।");
             }
-        }
-    });
-});
+            setLoading(false);
+        };
 
-function saveMilanData(event, total_score, is_recommended, manglik_status) {
-    let saveBtn = event.target;
-    saveBtn.disabled = true;
-    saveBtn.innerText = "⏳ सेव हो रहा है...";
+        // API Call (Save Milan)
+        const handleSave = async () => {
+            setSaveStatus({ type: 'loading', msg: '⏳ सेव हो रहा है...' });
+            const csrfToken = document.getElementById('csrf_token_react').value;
+            const params = new URLSearchParams();
+            
+            params.append('boy_name', boy.name);
+            params.append('boy_nakshatra', boy.naks);
+            params.append('boy_rashi', boy.rashi);
+            params.append('girl_name', girl.name);
+            params.append('girl_nakshatra', girl.naks);
+            params.append('girl_rashi', girl.rashi);
+            params.append('total_score', result.total_score);
+            params.append('is_recommended', result.is_recommended);
+            params.append('manglik_status', result.manglik_status);
 
-    let dataToSave = $('#milanForm').serialize() + `&total_score=${total_score}&is_recommended=${is_recommended}&manglik_status=${encodeURIComponent(manglik_status)}`;
-    
-    $.ajax({
-        url: "{% url 'api_save_milan' %}",
-        method: "POST",
-        headers: { "X-CSRFToken": "{{ csrf_token }}" },
-        data: dataToSave,
-        success: function(res) {
-            if(res.status == 'success') {
-                $('#saveStatusMsg').html('✅ <span style="color:#2ecc71;">' + res.message + '</span>');
-                setTimeout(function() {
-                    window.location.href = '/?tab=view-milan';
-                }, 1000);
-            } else {
-                $('#saveStatusMsg').html('❌ <span style="color:#e74c3c;">' + res.message + '</span>');
-                saveBtn.disabled = false;
-                saveBtn.innerText = "💾 इस मिलान को सेव करें";
+            try {
+                const response = await fetch("{% url 'api_save_milan' %}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken },
+                    body: params.toString()
+                });
+                const data = await response.json();
+                if (data.status === 'success') {
+                    setSaveStatus({ type: 'success', msg: '✅ ' + data.message });
+                    setTimeout(() => window.location.href = '/?tab=view-milan', 1500);
+                } else {
+                    setSaveStatus({ type: 'error', msg: '❌ ' + data.message });
+                }
+            } catch (err) {
+                setSaveStatus({ type: 'error', msg: '❌ सेव करने में त्रुटि आई।' });
             }
-        }
-    });
-}
+        };
+
+        // PDF URL Generator
+        const getPdfUrl = () => {
+            const b_man = boy.manglik ? 'yes' : 'no';
+            const g_man = girl.manglik ? 'yes' : 'no';
+            return `/download-milan-pdf/?b_name=${encodeURIComponent(boy.name)}&g_name=${encodeURIComponent(girl.name)}&b_naks=${encodeURIComponent(boy.naks)}&g_naks=${encodeURIComponent(girl.naks)}&b_rashi=${encodeURIComponent(boy.rashi)}&g_rashi=${encodeURIComponent(girl.rashi)}&b_manglik=${b_man}&g_manglik=${g_man}&score=${result.total_score}`;
+        };
+
+        return (
+            <div>
+                {/* 📝 FORM SECTION */}
+                <form onSubmit={handleCalculate}>
+                    <div className="row">
+                        {/* 🤵 BOY CARD */}
+                        <div className="col-md-6">
+                            <div className="card-milan">
+                                <h4 className="section-title">🤵 वर का विवरण (Boy)</h4>
+                                <div className="mb-3">
+                                    <label className="form-label">नाम</label>
+                                    <input type="text" className="form-control bg-dark text-white border-secondary" placeholder="वर का नाम" required 
+                                        value={boy.name} onChange={e => setBoy({...boy, name: e.target.value})} />
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">नक्षत्र</label>
+                                    <select className="form-select bg-dark text-white border-secondary" required 
+                                        value={boy.naks} onChange={e => setBoy({...boy, naks: e.target.value})}>
+                                        <option value="">नक्षत्र चुनें</option>
+                                        {NAKSHATRAS.map(n => <option key={`b-${n}`} value={n}>{n}</option>)}
+                                    </select>
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">राशि</label>
+                                    <select className="form-select bg-dark text-white border-secondary" 
+                                        value={boy.rashi} onChange={e => setBoy({...boy, rashi: e.target.value})}>
+                                        {RASHIS.map(r => <option key={`br-${r}`} value={r}>{r}</option>)}
+                                    </select>
+                                </div>
+                                <div className="form-check form-switch">
+                                    <input className="form-check-input" type="checkbox" id="boyManglik" 
+                                        checked={boy.manglik} onChange={e => setBoy({...boy, manglik: e.target.checked})} />
+                                    <label className="form-check-label" htmlFor="boyManglik">क्या वर मांगलिक है?</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 👰 GIRL CARD */}
+                        <div className="col-md-6">
+                            <div className="card-milan">
+                                <h4 className="section-title">👰 कन्या का विवरण (Girl)</h4>
+                                <div className="mb-3">
+                                    <label className="form-label">नाम</label>
+                                    <input type="text" className="form-control bg-dark text-white border-secondary" placeholder="कन्या का नाम" required 
+                                        value={girl.name} onChange={e => setGirl({...girl, name: e.target.value})} />
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">नक्षत्र</label>
+                                    <select className="form-select bg-dark text-white border-secondary" required 
+                                        value={girl.naks} onChange={e => setGirl({...girl, naks: e.target.value})}>
+                                        <option value="">नक्षत्र चुनें</option>
+                                        {NAKSHATRAS.map(n => <option key={`g-${n}`} value={n}>{n}</option>)}
+                                    </select>
+                                </div>
+                                <div className="mb-3">
+                                    <label className="form-label">राशि</label>
+                                    <select className="form-select bg-dark text-white border-secondary" 
+                                        value={girl.rashi} onChange={e => setGirl({...girl, rashi: e.target.value})}>
+                                        {RASHIS.map(r => <option key={`gr-${r}`} value={r}>{r}</option>)}
+                                    </select>
+                                </div>
+                                <div className="form-check form-switch">
+                                    <input className="form-check-input" type="checkbox" id="girlManglik" 
+                                        checked={girl.manglik} onChange={e => setGirl({...girl, manglik: e.target.checked})} />
+                                    <label className="form-check-label" htmlFor="girlManglik">क्या कन्या मांगलिक है?</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {error && <div className="alert alert-danger mt-3">{error}</div>}
+
+                    <div className="text-center mt-3">
+                        <button type="submit" className="btn-milan shadow-lg" disabled={loading}>
+                            {loading ? "⏳ गणना हो रही है..." : "💖 मिलान चेक करें"}
+                        </button>
+                    </div>
+                </form>
+
+                {/* 📊 RESULT SECTION */}
+                {result && (
+                    <div className="result-box mt-5">
+                        <hr className="border-secondary mb-5" />
+                        
+                        <div style={{textAlign: 'right', marginTop: '10px', marginBottom: '-40px', position: 'relative', zIndex: 10}}>
+                            <a href={getPdfUrl()} target="_blank" title="PDF रिपोर्ट डाउनलोड करें">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffca28" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="12" y1="3" x2="12" y2="21"></line>
+                                    <polyline points="19 14 12 21 5 14"></polyline>
+                                </svg>
+                            </a>
+                        </div>
+
+                        <div className="text-center mb-4">
+                            <div className="score-circle">
+                                <span>{result.total_score}</span>/36
+                            </div>
+                            <h3 style={{color: result.is_recommended ? '#2ecc71' : '#f1c40f'}}>
+                                {result.is_recommended ? "✅ शुभ मिलान" : "⚠️ मिलान सामान्य है"}
+                            </h3>
+                            <p className="badge bg-secondary p-2 fs-6 mt-2">{result.manglik_status}</p>
+                        </div>
+
+                        <div className="table-responsive">
+                            <table className="table table-dark table-hover border-secondary">
+                                <thead>
+                                    <tr className="text-warning">
+                                        <th>कूट (Koot)</th>
+                                        <th>प्राप्त अंक</th>
+                                        <th>स्थिति</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Object.entries(result.breakdown).map(([koot, item]) => (
+                                        <tr key={koot}>
+                                            <td>{koot}</td>
+                                            <td>{item.score}/{item.max}</td>
+                                            <td>{item.status}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* SAVE BUTTON */}
+                        <div className="mt-4">
+                            <button onClick={handleSave} className="btn-milan" style={{background: '#2ecc71'}} disabled={saveStatus && saveStatus.type === 'loading'}>
+                                💾 इस मिलान को सेव करें
+                            </button>
+                            {saveStatus && (
+                                <p className="mt-2 text-center" style={{fontWeight: 'bold', color: saveStatus.type === 'error' ? '#e74c3c' : '#2ecc71'}}>
+                                    {saveStatus.msg}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    // React App को Render करना
+    const root = ReactDOM.createRoot(document.getElementById('react-milan-root'));
+    root.render(<MilanApp />);
 </script>
