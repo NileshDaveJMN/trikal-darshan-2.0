@@ -91,13 +91,11 @@
             const csrfToken = document.getElementById('csrf_token_react').value;
             const params = new URLSearchParams();
             
-            // Boy Data
             params.append('boy_name', boy.name);
             params.append('boy_nakshatra', boy.naks);
             params.append('boy_rashi', boy.rashi);
             if(boy.manglik) params.append('boy_manglik', 'yes');
             
-            // Girl Data
             params.append('girl_name', girl.name);
             params.append('girl_nakshatra', girl.naks);
             params.append('girl_rashi', girl.rashi);
@@ -160,19 +158,22 @@
             }
         };
 
-        // PDF URL Generator
         const getPdfUrl = () => {
             const b_man = boy.manglik ? 'yes' : 'no';
             const g_man = girl.manglik ? 'yes' : 'no';
             return `/download-milan-pdf/?b_name=${encodeURIComponent(boy.name)}&g_name=${encodeURIComponent(girl.name)}&b_naks=${encodeURIComponent(boy.naks)}&g_naks=${encodeURIComponent(girl.naks)}&b_rashi=${encodeURIComponent(boy.rashi)}&g_rashi=${encodeURIComponent(girl.rashi)}&b_manglik=${b_man}&g_manglik=${g_man}&score=${result.total_score}`;
         };
 
+        // 🌟 DJANGO ERROR FIX: React Styles को वेरिएबल्स में डाल दिया गया है ताकि Django क्रैश न हो 🌟
+        const downloadIconStyle = { textAlign: 'right', marginTop: '10px', marginBottom: '-40px', position: 'relative', zIndex: 10 };
+        const statusStyle = result ? { color: result.is_recommended ? '#2ecc71' : '#f1c40f' } : {};
+        const saveBtnStyle = { background: '#2ecc71' };
+        const saveMsgStyle = saveStatus ? { fontWeight: 'bold', color: saveStatus.type === 'error' ? '#e74c3c' : '#2ecc71' } : {};
+
         return (
             <div>
-                {/* 📝 FORM SECTION */}
                 <form onSubmit={handleCalculate}>
                     <div className="row">
-                        {/* 🤵 BOY CARD */}
                         <div className="col-md-6">
                             <div className="card-milan">
                                 <h4 className="section-title">🤵 वर का विवरण (Boy)</h4>
@@ -204,7 +205,6 @@
                             </div>
                         </div>
 
-                        {/* 👰 GIRL CARD */}
                         <div className="col-md-6">
                             <div className="card-milan">
                                 <h4 className="section-title">👰 कन्या का विवरण (Girl)</h4>
@@ -246,12 +246,12 @@
                     </div>
                 </form>
 
-                {/* 📊 RESULT SECTION */}
                 {result && (
                     <div className="result-box mt-5">
                         <hr className="border-secondary mb-5" />
                         
-                        <div style={{textAlign: 'right', marginTop: '10px', marginBottom: '-40px', position: 'relative', zIndex: 10}}>
+                        {/* 🌟 फिक्स किया गया स्टाइल यहाँ इस्तेमाल हुआ है */}
+                        <div style={downloadIconStyle}>
                             <a href={getPdfUrl()} target="_blank" title="PDF रिपोर्ट डाउनलोड करें">
                                 <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ffca28" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                                     <line x1="12" y1="3" x2="12" y2="21"></line>
@@ -264,7 +264,7 @@
                             <div className="score-circle">
                                 <span>{result.total_score}</span>/36
                             </div>
-                            <h3 style={{color: result.is_recommended ? '#2ecc71' : '#f1c40f'}}>
+                            <h3 style={statusStyle}>
                                 {result.is_recommended ? "✅ शुभ मिलान" : "⚠️ मिलान सामान्य है"}
                             </h3>
                             <p className="badge bg-secondary p-2 fs-6 mt-2">{result.manglik_status}</p>
@@ -291,13 +291,12 @@
                             </table>
                         </div>
 
-                        {/* SAVE BUTTON */}
                         <div className="mt-4">
-                            <button onClick={handleSave} className="btn-milan" style={{background: '#2ecc71'}} disabled={saveStatus && saveStatus.type === 'loading'}>
+                            <button onClick={handleSave} className="btn-milan" style={saveBtnStyle} disabled={saveStatus && saveStatus.type === 'loading'}>
                                 💾 इस मिलान को सेव करें
                             </button>
                             {saveStatus && (
-                                <p className="mt-2 text-center" style={{fontWeight: 'bold', color: saveStatus.type === 'error' ? '#e74c3c' : '#2ecc71'}}>
+                                <p className="mt-2 text-center" style={saveMsgStyle}>
                                     {saveStatus.msg}
                                 </p>
                             )}
@@ -308,7 +307,6 @@
         );
     };
 
-    // React App को Render करना
     const root = ReactDOM.createRoot(document.getElementById('react-milan-root'));
     root.render(<MilanApp />);
 </script>
