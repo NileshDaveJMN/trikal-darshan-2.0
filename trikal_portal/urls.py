@@ -16,7 +16,7 @@ from core.views.trikal_api_views import (
 from core.views.kundali_views import home, download_kundali_pdf, api_get_ai_analysis, user_profile_view, save_onboarding, ping
 
 urlpatterns = [
-    path('django-admin/', admin.site.urls)
+    path('django-admin/', admin.site.urls),
     path('ping/', ping, name='ping'),
 
 
