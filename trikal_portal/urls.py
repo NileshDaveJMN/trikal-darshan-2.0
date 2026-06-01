@@ -13,9 +13,12 @@ from core.views.trikal_api_views import (
     api_save_chat_id, api_pending_horoscope,
     api_save_horoscope, api_send_daily_horoscope
 )
+from core.views.kundali_views import home, download_kundali_pdf, api_get_ai_analysis, user_profile_view, save_onboarding, ping
 
 urlpatterns = [
-    path('django-admin/', admin.site.urls),
+    path('django-admin/', admin.site.urls)
+    path('ping/', ping, name='ping'),
+
 
     # Auth
     path('login/',    login_view,    name='login'),
