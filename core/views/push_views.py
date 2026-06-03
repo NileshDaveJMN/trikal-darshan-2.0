@@ -28,7 +28,6 @@ def get_vapid_public_key(request):
 
 
 # ─── 2. User ka subscription save karo ───
-@login_required
 @require_POST
 def save_push_subscription(request):
     try:
@@ -52,7 +51,6 @@ def save_push_subscription(request):
 
 
 # ─── 3. Subscription delete karo (unsubscribe) ───
-@login_required
 @require_POST
 def delete_push_subscription(request):
     try:
