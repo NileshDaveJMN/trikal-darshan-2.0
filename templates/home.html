@@ -43,6 +43,13 @@
         <div id="view-user" class="view-panel active">
             <div class="card" style="text-align:center;">
                 <h3 style="margin-bottom: 25px;">👤 यूज़र प्रोफाइल</h3>
+                {% if user.is_authenticated %}
+<div style="margin: 0 0 20px 0;">
+  <button id="push-toggle-btn" onclick="TRIKAL_PUSH.subscribe()" style="background:linear-gradient(45deg,#b71c1c,#e53935);color:white;border:none;padding:13px 20px;border-radius:20px;font-size:15px;cursor:pointer;width:100%;font-weight:bold;">
+    🔔 दैनिक सूचनाएं पाएं
+  </button>
+</div>
+{% endif %}
                 
                 {% if user.is_authenticated %}
                                        <!-- ======= दैनिक राशिफल सेक्शन ======= -->
