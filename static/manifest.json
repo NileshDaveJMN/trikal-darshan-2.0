@@ -1,0 +1,12 @@
+{
+  "name": "त्रिकाल दर्शन - AI कुंडली",
+  "short_name": "त्रिकाल दर्शन",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#b71c1c",
+  "icons": [
+    { "src": "/static/logo.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/static/logo.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

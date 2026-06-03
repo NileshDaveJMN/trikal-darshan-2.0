@@ -1,3 +1,4 @@
+from django.views.generic import TemplateView
 from core.views.kundali_views import home, download_kundali_pdf, api_get_ai_analysis, user_profile_view
 from django.contrib import admin
 from core.views import milan_views
@@ -63,4 +64,5 @@ urlpatterns = [
     path('api/bot/pending-horoscope/', api_pending_horoscope,      name='api_pending_horoscope'),
     path('api/bot/save-horoscope/',    api_save_horoscope,         name='api_save_horoscope'),
     path('api/bot/send-horoscope/',    api_send_daily_horoscope,   name='api_send_daily_horoscope'),
+    path('offline/', TemplateView.as_view(template_name='offline.html'), name='offline'),
 ]

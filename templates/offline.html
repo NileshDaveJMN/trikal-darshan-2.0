@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ऑफलाइन - त्रिकाल दर्शन</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .header-bar {
+      background: linear-gradient(135deg, #b71c1c 0%, #8e0000 100%);
+      width: 100%;
+      padding: 16px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      border-bottom: 4px solid #ffca28;
+      font-size: 20px;
+      font-weight: bold;
+      color: white;
+    }
+
+    .card {
+      background: #1e293b;
+      border-radius: 18px;
+      padding: 40px 30px;
+      max-width: 380px;
+      width: 100%;
+      border: 1px solid #334155;
+      box-shadow: 0 10px 35px rgba(0,0,0,0.5);
+      margin-top: 60px;
+    }
+
+    .icon {
+      font-size: 72px;
+      margin-bottom: 20px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    h1 {
+      color: #ffca28;
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    p {
+      color: #94a3b8;
+      font-size: 15px;
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #334155;
+      margin: 24px 0;
+    }
+
+    .tip-box {
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 16px;
+      border-left: 4px solid #ffca28;
+      text-align: left;
+      margin-bottom: 24px;
+    }
+
+    .tip-box p {
+      color: #cbd5e1;
+      font-size: 13px;
+      margin-bottom: 4px;
+    }
+
+    .tip-box p:first-child {
+      color: #ffca28;
+      font-weight: bold;
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .retry-btn {
+      display: inline-block;
+      background: linear-gradient(45deg, #b71c1c, #e53935);
+      color: white;
+      border: none;
+      padding: 14px 40px;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      transition: 0.3s;
+      box-shadow: 0 4px 15px rgba(183,28,28,0.4);
+      width: 100%;
+    }
+
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(183,28,28,0.5);
+    }
+
+    .shloka {
+      color: #475569;
+      font-size: 12px;
+      font-style: italic;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header-bar">🔮 त्रिकाल दर्शन</div>
+
+  <div class="card">
+    <div class="icon">📡</div>
+    <h1>इंटरनेट नहीं है</h1>
+    <p>फिलहाल नेटवर्क कनेक्शन उपलब्ध नहीं है।</p>
+    <p>कृपया अपना इंटरनेट चेक करें और दोबारा कोशिश करें।</p>
+
+    <hr class="divider">
+
+    <div class="tip-box">
+      <p>💡 ज्योतिष का एक सत्य</p>
+      <p>ग्रहों की चाल रुकती नहीं — लेकिन हम थोड़ा इंतजार कर सकते हैं।</p>
+      <p>नेट आते ही आपकी कुंडली और पंचांग फिर से तैयार होंगे।</p>
+    </div>
+
+    <button class="retry-btn" onclick="window.location.reload()">
+      🔄 दोबारा कोशिश करें
+    </button>
+  </div>
+
+  <p class="shloka">
+    "यदा यदा हि धर्मस्य..." — कनेक्शन जल्द ही आएगा 🙏
+  </p>
+
+</body>
+</html>
