@@ -4,6 +4,7 @@ from django.contrib import admin
 from core.views import milan_views
 from core.views.milan_views import milan_view, calculate_milan_api, save_milan_api
 from core.views.panchang_views import panchang, save_default_location, clear_default_location
+from core.views.push_views import get_vapid_public_key, save_push_subscription, delete_push_subscription, admin_send_notification
 from core.views.auth_views import login_view, register_view, user_logout, submit_payment
 from core.views.admin_views import admin_view, admin_leads, contact, logout_view
 from django.urls import path
@@ -65,4 +66,8 @@ urlpatterns = [
     path('api/bot/save-horoscope/',    api_save_horoscope,         name='api_save_horoscope'),
     path('api/bot/send-horoscope/',    api_send_daily_horoscope,   name='api_send_daily_horoscope'),
     path('offline/', TemplateView.as_view(template_name='offline.html'), name='offline'),
+    path('api/push/vapid-key/', get_vapid_public_key, name='vapid_key'),
+path('api/push/subscribe/', save_push_subscription, name='push_subscribe'),
+path('api/push/unsubscribe/', delete_push_subscription, name='push_unsubscribe'),
+path('api/push/send/', admin_send_notification, name='push_send'),
 ]
