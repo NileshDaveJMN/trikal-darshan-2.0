@@ -74,12 +74,3 @@ path('api/push/send/', admin_send_notification, name='push_send'),
 path('api/push/test/', admin_send_notification, name='push_test'),
 ]
 
-# Temporary test - baad mein hata dena
-from django.http import JsonResponse
-def test_push_now(request):
-    from core.views.push_views import send_push_to_all
-    result = send_push_to_all("🔮 Test Notification", "Push system kaam kar raha hai!", "/")
-    return JsonResponse(result)
-
-from django.urls import path as _path
-urlpatterns += [_path('api/push/test-now/', test_push_now)]
