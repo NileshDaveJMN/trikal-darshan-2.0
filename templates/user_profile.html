@@ -4,6 +4,13 @@
     
     <div style="text-align: center; margin-bottom: 30px;">
         <h2 style="color: #f1c40f; font-size: 26px; margin-bottom: 5px;">💎 त्रिकाल प्रीमियम डैशबोर्ड</h2>
+        {% if user.is_authenticated %}
+<div style="margin: 15px 0;">
+  <button id="push-toggle-btn" style="background:linear-gradient(45deg,#b71c1c,#e53935);color:white;border:none;padding:14px 20px;border-radius:20px;font-size:15px;cursor:pointer;width:100%;font-weight:bold;">
+    🔔 दैनिक सूचनाएं पाएं
+  </button>
+</div>
+{% endif %}
         <p style="color: #94a3b8; font-size: 15px;">नमस्ते {{ user.username }}! अपनी जरूरत के अनुसार क्रेडिट्स खरीदें और सटीक विश्लेषण अनलॉक करें।</p>
     </div>
 

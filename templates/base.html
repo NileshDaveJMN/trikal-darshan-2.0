@@ -89,12 +89,7 @@
                     <span style="font-size: 13px; color: #f1c40f; font-weight: bold; font-family: monospace;">
                         🪙 K: {{ user.userprofile.kundali_credits|default:0 }} | M: {{ user.userprofile.milan_credits|default:0 }}
                     </span>
-                </div>
-                {% if user.is_authenticated %}
-<button id="push-toggle-btn" style="background:linear-gradient(45deg,#b71c1c,#e53935);color:white;border:none;padding:10px 20px;border-radius:20px;font-size:14px;cursor:pointer;margin:10px 0;width:100%;">
-  🔔 दैनिक सूचनाएं पाएं
-</button>
-{% endif %}
+                </div>               
                 <a href="/profile/" style="color: white; background: #2c3e50; padding: 6px 14px; border-radius: 20px; text-decoration: none; font-size: 13px; font-weight: bold; border: 1px solid #34495e;">
                     👤 {{ user.username }}
                 </a>
