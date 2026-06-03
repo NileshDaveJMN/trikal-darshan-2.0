@@ -183,15 +183,27 @@ def api_send_daily_horoscope(request):
         return JsonResponse({"ok": False}, status=401)
     def run_horoscope():
         try:
-            import sys, os, threading
+            import sys, os
             root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             if root not in sys.path:
                 sys.path.insert(0, root)
-            from daily_horoscope_engine import generate_and_send_daily_horoscopes
-            generate_and_send_daily_horoscopes()
+            # Step 1: Rashifal generate karo
+            from daily_horoscope_engine import generate_daily_horoscopes
+            generate_daily_horoscopes()
+            # Step 2: Push notifications bhejo
+            from core.models import UserProfile, PushSubscription
+            from core.views.push_views import send_push_to_user
+            profiles = UserProfile.objects.select_related("user").all()
+            for profile in profiles:
+                subs = PushSubscription.objects.filter(user=profile.user, is_active=True)
+                if subs.exists() and profile.daily_horoscope_text:
+                    name = profile.user.first_name or profile.user.username
+                    text = profile.daily_horoscope_text[:100] + "..."
+                    send_push_to_user(profile.user, f"🔮 {name} जी, आज का राशिफल", text, "/")
+                    print(f"  📲 Push sent: {profile.user.username}")
         except Exception as e:
             print(f"Horoscope error: {e}")
             import traceback; traceback.print_exc()
     import threading
     threading.Thread(target=run_horoscope, daemon=True).start()
-    return JsonResponse({"ok": True})
+    return JsonResponse({"ok": True, "message": "Horoscope generation started!"})
