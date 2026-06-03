@@ -27,7 +27,10 @@ function showView(event, viewId) {
     if (event && event.currentTarget) {
         event.currentTarget.classList.add('active');
     }
-
+// Push button init karo jab profile tab khule
+    if (viewId === 'view-user' && typeof TRIKAL_PUSH !== 'undefined') {
+        TRIKAL_PUSH.init();
+    }
     // सब-टैब बार (लग्न, दशा) को सिर्फ कुंडली पर दिखाएं
     var subTabsBar = document.getElementById('sub-tabs-bar');
     if (subTabsBar) {
