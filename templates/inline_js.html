@@ -184,3 +184,146 @@ function captureChartAndDownload() {
     });
 })();
 </script>
+
+<script>
+// ==========================================
+// PUSH NOTIFICATIONS
+// ==========================================
+var PUSH_VAPID_KEY = '';
+
+function urlBase64ToUint8Array(base64String) {
+    var padding = '='.repeat((4 - base64String.length % 4) % 4);
+    var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    var rawData = window.atob(base64);
+    var outputArray = new Uint8Array(rawData.length);
+    for (var i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+function getCsrf() {
+    var cookies = document.cookie.split(';');
+    for (var i = 0; i < cookies.length; i++) {
+        var c = cookies[i].trim();
+        if (c.startsWith('csrftoken=')) return c.split('=')[1];
+    }
+    return '';
+}
+
+function showPushToast(msg) {
+    var toast = document.createElement('div');
+    toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#1e293b;color:#e2e8f0;padding:12px 20px;border-radius:20px;font-size:14px;z-index:9999;border:1px solid #ffca28;box-shadow:0 4px 15px rgba(0,0,0,0.4);';
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(function() { toast.remove(); }, 3500);
+}
+
+function updatePushBtn(isSubscribed) {
+    var btn = document.getElementById('push-toggle-btn');
+    if (!btn) return;
+    if (isSubscribed) {
+        btn.textContent = '🔕 सूचनाएं बंद करें';
+        btn.style.background = '#334155';
+        btn.onclick = doUnsubscribe;
+    } else {
+        btn.textContent = '🔔 दैनिक सूचनाएं पाएं';
+        btn.style.background = 'linear-gradient(45deg,#b71c1c,#e53935)';
+        btn.onclick = doSubscribe;
+    }
+}
+
+function doSubscribe() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        showPushToast('❌ आपका browser push notifications support नहीं करता');
+        return;
+    }
+    fetch('/api/push/vapid-key/')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            PUSH_VAPID_KEY = data.publicKey;
+            return navigator.serviceWorker.ready;
+        })
+        .then(function(reg) {
+            return reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(PUSH_VAPID_KEY)
+            });
+        })
+        .then(function(subscription) {
+            return fetch('/api/push/subscribe/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrf()
+                },
+                body: JSON.stringify(subscription)
+            });
+        })
+        .then(function(r) {
+            if (r.ok) {
+                showPushToast('🔔 सूचनाएं चालू हो गईं!');
+                updatePushBtn(true);
+            }
+        })
+        .catch(function(err) {
+            console.error('Push subscribe error:', err);
+            if (err.name === 'NotAllowedError') {
+                showPushToast('⚠️ Permission denied। Browser settings से allow करें।');
+            } else {
+                showPushToast('❌ Error: ' + err.message);
+            }
+        });
+}
+
+function doUnsubscribe() {
+    navigator.serviceWorker.ready
+        .then(function(reg) { return reg.pushManager.getSubscription(); })
+        .then(function(sub) {
+            if (sub) {
+                fetch('/api/push/unsubscribe/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCsrf() },
+                    body: JSON.stringify({ endpoint: sub.endpoint })
+                });
+                return sub.unsubscribe();
+            }
+        })
+        .then(function() {
+            showPushToast('🔕 सूचनाएं बंद कर दी गईं।');
+            updatePushBtn(false);
+        });
+}
+
+function initPushButton() {
+    var btn = document.getElementById('push-toggle-btn');
+    if (!btn) return;
+
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        btn.style.display = 'none';
+        return;
+    }
+
+    navigator.serviceWorker.ready.then(function(reg) {
+        reg.pushManager.getSubscription().then(function(sub) {
+            updatePushBtn(!!sub);
+        });
+    });
+
+    btn.onclick = doSubscribe;
+}
+
+// Profile tab khulne par init karo
+var _origShowView = typeof showView === 'function' ? showView : null;
+showView = function(event, viewId) {
+    if (_origShowView) _origShowView(event, viewId);
+    if (viewId === 'view-user') {
+        setTimeout(initPushButton, 100);
+    }
+};
+
+// Page load par bhi try karo
+document.addEventListener('DOMContentLoaded', function() {
+    initPushButton();
+});
+</script>
