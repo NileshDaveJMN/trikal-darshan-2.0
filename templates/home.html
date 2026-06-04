@@ -27,6 +27,12 @@
         <button class="p-tab-btn" onclick="showView(event, 'view-kundali')">📜 कुंडली</button>
         <button class="p-tab-btn" onclick="showView(event, 'view-milan')">💑 मिलान</button>
         <button class="p-tab-btn" onclick="showView(event, 'view-panchang')">📅 पंचांग</button>
+            <div class="primary-tabs">
+        <button class="p-tab-btn active" onclick="showView(event, 'view-user')">👤 प्रोफाइल</button>
+        <button class="p-tab-btn" onclick="showView(event, 'view-kundali')">📜 कुंडली</button>
+        <button class="p-tab-btn" onclick="showView(event, 'view-milan')">💑 मिलान</button>
+        <button class="p-tab-btn" onclick="showView(event, 'view-panchang')">📅 पंचांग</button>
+        <button class="p-tab-btn" onclick="showView(event, 'view-rashifal')">🔮 राशिफल</button> 
     </div>
 
     <div class="sub-tabs-bar" id="sub-tabs-bar" style="display:none;">
@@ -343,6 +349,44 @@
 <div id="view-panchang" class="view-panel" style="display:none;">
     {% include 'panchang.html' %}
 </div>
+        <div id="view-rashifal" class="view-panel" style="display:none;">
+            <div class="card" style="text-align:center;">
+                <h3 style="margin-bottom: 10px;">आज का दैनिक राशिफल</h3>
+                <p style="color: #94a3b8; font-size: 14px; margin-bottom: 25px;">अपनी राशि चुनें और AI द्वारा जनरेटेड वैदिक ज्योतिष पर आधारित आज का फलित जानें:</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                    {% for r in rashis %}
+                        <button onclick="fetchRashifal('{{ r.id }}', '{{ r.name }}')" 
+                                style="background: #0f172a; color: #cbd5e1; padding: 12px 10px; border: 1px solid #334155; border-radius: 8px; font-size: 14px; cursor: pointer; transition: background 0.3s;">
+                            <span style="font-size: 18px; display: block; margin-bottom: 5px;">{{ r.symbol }}</span>
+                            {{ r.name }}
+                        </button>
+                    {% endfor %}
+                </div>
+
+                <div id="rashifal-loading" style="display: none; color: #ffca28; font-size: 15px; margin: 25px 0;">
+                    <div style="font-size: 24px; animation: spin 2s linear infinite; display: inline-block;">✨</div>
+                    <br>सितारों की गणना हो रही है... कृपया प्रतीक्षा करें...
+                </div>
+
+                <div id="rashifal-error" style="display: none; color: #ff4757; font-size: 14px; margin: 20px 0;"></div>
+
+                <div id="rashifal-result" style="display: none; text-align: left; background: #131c2c; padding: 20px; border-radius: 10px; border: 1px solid #334155; margin-top: 20px;">
+                    <h3 id="res-title" style="text-align: center; color: #ffca28; margin-bottom: 15px; border-bottom: 1px dashed #334155; padding-bottom: 10px;"></h3>
+                    
+                    <div style="margin-bottom: 12px;"><strong style="color:#2ecc71;">🌟 सामान्य:</strong> <span id="res-general" style="color:#e2e8f0; font-size: 14px; line-height: 1.6;"></span></div>
+                    <div style="margin-bottom: 12px;"><strong style="color:#3498db;">💼 करियर:</strong> <span id="res-career" style="color:#e2e8f0; font-size: 14px; line-height: 1.6;"></span></div>
+                    <div style="margin-bottom: 12px;"><strong style="color:#e74c3c;">❤️ प्रेम:</strong> <span id="res-love" style="color:#e2e8f0; font-size: 14px; line-height: 1.6;"></span></div>
+                    <div style="margin-bottom: 12px;"><strong style="color:#9b59b6;">⚕️ स्वास्थ्य:</strong> <span id="res-health" style="color:#e2e8f0; font-size: 14px; line-height: 1.6;"></span></div>
+                    <div style="margin-bottom: 12px;"><strong style="color:#f1c40f;">🎯 शुभ:</strong> <span id="res-lucky" style="color:#e2e8f0; font-size: 14px; line-height: 1.6;"></span></div>
+                    
+                    <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #334155;">
+                        <strong style="color:#e67e22;">✨ उपाय:</strong> 
+                        <span id="res-upay" style="color:#ffca28; font-size: 15px; font-weight: bold; line-height: 1.6;"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
 
 
     </div> <!-- main-viewport बंद -->

@@ -318,6 +318,46 @@ showView = function(event, viewId) {
         setTimeout(initPushButton, 100);
     }
 };
+// ==========================================
+// दैनिक राशिफल प्राप्त करने का AJAX कोड
+// ==========================================
+function fetchRashifal(rashiId, rashiName) {
+    // UI रिसेट करें
+    document.getElementById('rashifal-result').style.display = 'none';
+    document.getElementById('rashifal-error').style.display = 'none';
+    document.getElementById('rashifal-loading').style.display = 'block';
+
+    // API कॉल (बिना पेज रीलोड किए)
+    fetch(`/api/rashifal/?rashi_id=${rashiId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('rashifal-loading').style.display = 'none';
+            
+            if (data.success) {
+                // डेटा भरें
+                document.getElementById('res-title').innerText = "✨ " + rashiName + " राशिफल ✨";
+                document.getElementById('res-general').innerText = data.GENERAL || 'विवरण उपलब्ध नहीं';
+                document.getElementById('res-career').innerText = data.CAREER || 'विवरण उपलब्ध नहीं';
+                document.getElementById('res-love').innerText = data.LOVE || 'विवरण उपलब्ध नहीं';
+                document.getElementById('res-health').innerText = data.HEALTH || 'विवरण उपलब्ध नहीं';
+                document.getElementById('res-lucky').innerText = data.LUCKY || 'विवरण उपलब्ध नहीं';
+                document.getElementById('res-upay').innerText = data.UPAY || 'विवरण उपलब्ध नहीं';
+                
+                // रिजल्ट दिखाएं
+                document.getElementById('rashifal-result').style.display = 'block';
+            } else {
+                // एरर दिखाएं
+                document.getElementById('rashifal-error').innerText = data.error || "सर्वर से उत्तर प्राप्त नहीं हुआ।";
+                document.getElementById('rashifal-error').style.display = 'block';
+            }
+        })
+        .catch(error => {
+            document.getElementById('rashifal-loading').style.display = 'none';
+            document.getElementById('rashifal-error').innerText = "नेटवर्क की समस्या या सर्वर से संपर्क नहीं हो पाया।";
+            document.getElementById('rashifal-error').style.display = 'block';
+            console.error("Rashifal Error:", error);
+        });
+}
 
 // Page load par bhi try karo
 document.addEventListener('DOMContentLoaded', function() {

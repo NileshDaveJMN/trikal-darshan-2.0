@@ -1,5 +1,6 @@
 import os
 import json
+from core.views.rashifal_views import RASHI_LIST
 from datetime import datetime
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
@@ -272,7 +273,8 @@ def home(request, k_id=None):
         'ai_history': ai_history,
         'saved_milans': saved_milans,
         'p_data': p_data,
-        'current_date_value': current_date_value
+        'current_date_value': current_date_value,
+        'rashis': RASHI_LIST,  # <--- यह नई लाइन जोड़ें
     }
             
     return render(request, 'home.html', context)
