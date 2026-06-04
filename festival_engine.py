@@ -68,9 +68,7 @@ FESTIVAL_RULES = [
      "month": None, "deity": "चंद्र",
      "desc": "पूर्णिमा"},
 
-    {"name": "अमावस्या", "emoji": "🌑", "tithi": 30, "paksha": "K",
-     "month": None, "deity": "पितृ",
-     "desc": "अमावस्या"},
+    
 
     {"name": "चतुर्थी", "emoji": "🐘", "tithi": 4, "paksha": "S",
      "month": None, "deity": "गणेश",
@@ -164,44 +162,68 @@ FESTIVAL_RULES = [
 
 # ── Swisseph: Get Today's Tithi & Lunar Month ─────────────────────────
 def get_today_panchang():
-    """Returns tithi number, paksha (S/K), lunar month (1-12)"""
+    """Get today's panchang using same logic as panchang_engine.py"""
     try:
-        now = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
-        jd  = swe.julday(now.year, now.month, now.day,
-                         now.hour + now.minute / 60.0)
+        import ephem
+        from datetime import timedelta
+
+        now = datetime.now(pytz.timezone("Asia/Kolkata"))
+
+        # ── Same as panchang_engine: convert IST to UTC ──
+        dt_utc = now - timedelta(hours=5, minutes=30)
+        jd_ut  = swe.julday(
+            dt_utc.year, dt_utc.month, dt_utc.day,
+            dt_utc.hour + dt_utc.minute / 60.0 + dt_utc.second / 3600.0
+        )
         swe.set_sid_mode(swe.SIDM_LAHIRI)
-        ayan = swe.get_ayanamsa_ut(jd)
 
-        # Sun and Moon longitudes (sidereal)
-        sun_lon  = (swe.calc_ut(jd, swe.SUN,  swe.FLG_SWIEPH)[0][0] - ayan) % 360
-        moon_lon = (swe.calc_ut(jd, swe.MOON, swe.FLG_SWIEPH)[0][0] - ayan) % 360
+        # ── Use FLG_SIDEREAL directly — same as panchang_engine ──
+        res_sun,  _ = swe.calc_ut(jd_ut, swe.SUN,  swe.FLG_SWIEPH | swe.FLG_SIDEREAL)
+        res_moon, _ = swe.calc_ut(jd_ut, swe.MOON, swe.FLG_SWIEPH | swe.FLG_SIDEREAL)
+        sun_lon  = res_sun[0]
+        moon_lon = res_moon[0]
 
-        # Tithi = every 12° difference between moon and sun
-        diff  = (moon_lon - sun_lon) % 360
-        tithi = int(diff / 12) + 1  # 1-30
+        # ── Tithi — same as panchang_engine ──
+        tithi_idx = int(((moon_lon - sun_lon) % 360) / 12.0)  # 0-29
+        paksha    = "S" if tithi_idx < 15 else "K"
+        tithi_num = (tithi_idx % 15) + 1  # 1-15 within each paksha
 
-        # Paksha
-        paksha = "S" if tithi <= 15 else "K"
-        tithi_in_paksha = tithi if tithi <= 15 else tithi - 15
+        # ── Lunar Month — same back-calculation as panchang_engine ──
+        moon_sun_diff      = (moon_lon - sun_lon) % 360
+        days_since_amavasya = moon_sun_diff / 12.190749
+        amavasya_sun_lon   = (sun_lon - (days_since_amavasya * 0.9856)) % 360
+        lunar_month_idx    = int(amavasya_sun_lon / 30)  # 0-11
 
-        # Lunar month from Sun's sidereal position
-        lunar_month = int(sun_lon / 30) + 1  # 1-12
+        # ── Moon rashi and nakshatra ──
+        moon_rashi_idx = int(moon_lon / 30)
+        nakshatra_idx  = int(moon_lon / (360 / 27.0))
+
+        # ── Tithi name for logging ──
+        tithi_names = [
+            "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी",
+            "षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी",
+            "एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","पूर्णिमा",
+            "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी",
+            "षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी",
+            "एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","अमावस्या"
+        ]
 
         return {
-            "tithi": tithi_in_paksha,
-            "tithi_raw": tithi,
-            "paksha": paksha,
-            "lunar_month": lunar_month,
-            "moon_rashi": int(moon_lon / 30),
-            "nakshatra": int(moon_lon / (360/27))
+            "tithi":       tithi_num,        # 1-15
+            "tithi_idx":   tithi_idx,         # 0-29 (raw)
+            "tithi_name":  tithi_names[tithi_idx],
+            "paksha":      paksha,            # "S" or "K"
+            "lunar_month": lunar_month_idx,   # 0-11
+            "moon_rashi":  moon_rashi_idx,    # 0-11
+            "nakshatra":   nakshatra_idx,     # 0-26
         }
+
     except Exception as e:
         print(f"  ❌ Panchang error: {e}")
         return None
 
 
 def get_today_festivals(panchang):
-    """Match today's panchang against festival rules"""
     if not panchang:
         return []
 
@@ -209,15 +231,16 @@ def get_today_festivals(panchang):
     for rule in FESTIVAL_RULES:
         tithi_match  = rule["tithi"] == panchang["tithi"]
         paksha_match = rule["paksha"] == panchang["paksha"]
-        month_match  = (rule["month"] is None or
-                        rule["month"] == panchang["lunar_month"])
-
+        # lunar_month in panchang is now 0-11 index
+        # rule month is 1-12 — so compare correctly
+        month_match  = (
+            rule["month"] is None or
+            rule["month"] == panchang["lunar_month"] + 1
+        )
         if tithi_match and paksha_match and month_match:
             festivals.append(rule)
 
     return festivals
-
-
 # ── Gemini: Personalized Festival Remedy ─────────────────────────────
 def call_gemini(prompt):
     if not GEMINI_API_KEYS:
@@ -286,9 +309,9 @@ def send_festival_notifications():
         print("  ❌ Panchang calculation failed")
         return
 
-    print(f"  📅 Tithi: {panchang['tithi']} | "
-          f"Paksha: {panchang['paksha']} | "
-          f"Month: {LUNAR_MONTHS[panchang['lunar_month']-1]}")
+    print(f"  📅 Tithi: {panchang['tithi_name']} | "
+      f"Paksha: {'शुक्ल' if panchang['paksha']=='S' else 'कृष्ण'} | "
+      f"Month: {LUNAR_MONTHS[panchang['lunar_month']]}")
 
     festivals = get_today_festivals(panchang)
     if not festivals:
