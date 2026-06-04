@@ -134,29 +134,54 @@ def _generate_rashifal(rashi_name, rashi_lord, transit):
 # ── Main API View ─────────────────────────────────────────────────────
 def api_rashifal(request):
     from django.http import JsonResponse
+    from core.models import DailyRashifal
+    import datetime
+
     rashi_id = request.GET.get("rashi_id", "").strip()
     rashi    = next((r for r in RASHI_LIST if r["id"] == rashi_id), None)
 
     if not rashi:
         return JsonResponse({"success": False, "error": "अमान्य राशि"})
 
-    today_str = datetime.datetime.now().strftime("%Y-%m-%d")
-    cache_key = f"{rashi_id}_{today_str}"
+    today = datetime.date.today()
 
-    # Serve from cache if available
-    if cache_key in _rashifal_cache:
-        return JsonResponse({"success": True, **_rashifal_cache[cache_key]})
+    # 1. सबसे पहले डेटाबेस में चेक करें (जो सुबह 5:30 बजे सेव हुआ था)
+    db_rashifal = DailyRashifal.objects.filter(date=today, rashi_id=rashi_id).first()
 
-    # Generate fresh
+    if db_rashifal:
+        # अगर डेटाबेस में है, तो बिना AI कॉल किए तुरंत डेटा भेज दें
+        return JsonResponse({
+            "success": True,
+            "GENERAL": db_rashifal.general,
+            "CAREER": db_rashifal.career,
+            "LOVE": db_rashifal.love,
+            "HEALTH": db_rashifal.health,
+            "LUCKY": db_rashifal.lucky,
+            "UPAY": db_rashifal.upay
+        })
+
+    # 2. फ़ॉलबैक (Fallback): अगर किसी कारण से सुबह स्क्रिप्ट फेल हो गई थी, 
+    # तो केवल उस पहले यूज़र के लिए लाइव जनरेट करें
     transit = _get_transit_summary()
     data    = _generate_rashifal(rashi["name"], rashi["lord"], transit)
 
     if not data:
-        return JsonResponse({"success": False,
-                             "error": "AI सेवा उपलब्ध नहीं। थोड़ी देर बाद प्रयास करें।"})
+        return JsonResponse({"success": False, "error": "AI सेवा उपलब्ध नहीं। थोड़ी देर बाद प्रयास करें।"})
 
-    _rashifal_cache[cache_key] = data
+    # लाइव जनरेट हुआ डेटा भी डेटाबेस में सेव कर लें ताकि अगले यूज़र को फायदा मिले
+    DailyRashifal.objects.create(
+        date=today,
+        rashi_id=rashi_id,
+        general=data.get("GENERAL", ""),
+        career=data.get("CAREER", ""),
+        love=data.get("LOVE", ""),
+        health=data.get("HEALTH", ""),
+        lucky=data.get("LUCKY", ""),
+        upay=data.get("UPAY", "")
+    )
+
     return JsonResponse({"success": True, **data})
+
 
 
 # ── Page Views ────────────────────────────────────────────────────────

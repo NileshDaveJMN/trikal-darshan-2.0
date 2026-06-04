@@ -100,6 +100,26 @@ class TabSettings(models.Model):
 
     def __str__(self):
         return "सभी टैब्स की सेटिंग"
+import datetime
+from django.db import models
+
+class DailyRashifal(models.Model):
+    date = models.DateField(default=datetime.date.today)
+    rashi_id = models.CharField(max_length=20)
+    
+    general = models.TextField(blank=True, null=True)
+    career = models.TextField(blank=True, null=True)
+    love = models.TextField(blank=True, null=True)
+    health = models.TextField(blank=True, null=True)
+    lucky = models.TextField(blank=True, null=True)
+    upay = models.TextField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ('date', 'rashi_id')
+        
+    def __str__(self):
+        return f"{self.rashi_id} - {self.date}"
+
 
 class KundaliMilanHistory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)

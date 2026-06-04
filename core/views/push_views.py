@@ -10,7 +10,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
 from core.models import PushSubscription, UserProfile, SavedKundali
-from pywebpush import webpush, WebPushException
+try:
+    from pywebpush import webpush, WebPushException
+except ImportError:
+    webpush = None
+    
+    class WebPushException(Exception):
+        pass
 
 
 def get_vapid_keys():

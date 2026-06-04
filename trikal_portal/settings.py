@@ -78,16 +78,35 @@ import dj_database_url
 # यहाँ नीचे वाले कोटेशन मार्क्स (" ") के अंदर अपना असली Render वाला URL पेस्ट करें
 RENDER_DB_URL = "postgresql://trikal_user:pS1IvOdD0g1u225MPYBDXCtO3mblzAFk@dpg-d88sd20js32c73a08bb0-a.singapore-postgres.render.com/trikal"
 
-DATABASES = {
-    'default': dj_database_url.config(
-        default=RENDER_DB_URL,
-        
-        conn_max_age=0,
-        conn_health_checks=True,
-    
-    )
-}
 
+
+# settings.py में पुराना DATABASES ब्लॉक ढूंढकर उसे इस प्रकार अपडेट करें:
+
+import sys
+
+# चेक करें कि क्या कोड मोबाइल (Pydroid) पर चल रहा है
+IS_PYDROID = 'pydroid3' in sys.executable or 'ru.iiec.pydroid3' in sys.prefix
+
+if IS_PYDROID:
+    # मोबाइल के लिए लोकल SQLite डेटाबेस
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    # लाइव प्रोडक्शन सर्वर (Render/PythonAnywhere) के लिए आपका पुराना PostgreSQL
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.getenv('DB_NAME', 'your_db_name'),
+            'USER': os.getenv('DB_USER', 'your_db_user'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'your_db_password'),
+            'HOST': os.getenv('DB_HOST', 'your_db_host'),
+            'PORT': os.getenv('DB_PORT', '5432'),
+        }
+    }
 
 
 # Password validation
