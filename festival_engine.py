@@ -28,148 +28,119 @@ for i in range(1, 10):
         GEMINI_API_KEYS.append(key)
 GEMINI_MODEL = "gemini-3-flash-preview"
 
-# ── Hindu Month Names (Sidereal Solar) ───────────────────────────────
-HINDU_MONTHS = [
-    "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या",
-    "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"
-]
-
-# Lunar month names (Amanta system — new moon to new moon)
+# ── Lunar Month Names (Amanta System) ────────────────────────────────
 LUNAR_MONTHS = [
     "चैत्र", "वैशाख", "ज्येष्ठ", "आषाढ़", "श्रावण", "भाद्रपद",
     "आश्विन", "कार्तिक", "मार्गशीर्ष", "पौष", "माघ", "फाल्गुन"
 ]
 
-# ── Festival Rules Dictionary ─────────────────────────────────────────
-# Format: { "festival_name": {"tithi": N, "paksha": "S/K", "lunar_month": N or None} }
-# paksha: S = Shukla (bright), K = Krishna (dark)
-# lunar_month: 1-12 (None means every month)
-# special: for Ekadashi, Pradosh etc that repeat every month
-
-FESTIVAL_RULES = [
-    # ── Every Month ──────────────────────────────────────────────────
-    {"name": "एकादशी", "emoji": "🙏", "tithi": 11, "paksha": "S",
-     "month": None, "deity": "विष्णु",
-     "desc": "शुक्ल एकादशी"},
-
-    {"name": "एकादशी", "emoji": "🙏", "tithi": 11, "paksha": "K",
-     "month": None, "deity": "विष्णु",
-     "desc": "कृष्ण एकादशी"},
-
-    {"name": "प्रदोष व्रत", "emoji": "🕉️", "tithi": 13, "paksha": "S",
-     "month": None, "deity": "शिव",
-     "desc": "शुक्ल प्रदोष"},
-
-    {"name": "प्रदोष व्रत", "emoji": "🕉️", "tithi": 13, "paksha": "K",
-     "month": None, "deity": "शिव",
-     "desc": "कृष्ण प्रदोष"},
-
-    {"name": "पूर्णिमा", "emoji": "🌕", "tithi": 15, "paksha": "S",
-     "month": None, "deity": "चंद्र",
-     "desc": "पूर्णिमा"},
-
-    
-
-    {"name": "चतुर्थी", "emoji": "🐘", "tithi": 4, "paksha": "S",
-     "month": None, "deity": "गणेश",
-     "desc": "विनायक चतुर्थी"},
-
-    {"name": "संकष्टी चतुर्थी", "emoji": "🐘", "tithi": 4, "paksha": "K",
-     "month": None, "deity": "गणेश",
-     "desc": "संकष्टी चतुर्थी"},
-
-    # ── Major Annual Festivals ────────────────────────────────────────
-    {"name": "महाशिवरात्रि", "emoji": "🔱", "tithi": 14, "paksha": "K",
-     "month": 12, "deity": "शिव",
-     "desc": "फाल्गुन कृष्ण चतुर्दशी"},
-
-    {"name": "होली", "emoji": "🎨", "tithi": 15, "paksha": "S",
-     "month": 12, "deity": "कृष्ण",
-     "desc": "फाल्गुन पूर्णिमा"},
-
-    {"name": "राम नवमी", "emoji": "🏹", "tithi": 9, "paksha": "S",
-     "month": 1, "deity": "राम",
-     "desc": "चैत्र शुक्ल नवमी"},
-
-    {"name": "हनुमान जयंती", "emoji": "🙏", "tithi": 15, "paksha": "S",
-     "month": 1, "deity": "हनुमान",
-     "desc": "चैत्र पूर्णिमा"},
-
-    {"name": "अक्षय तृतीया", "emoji": "🌟", "tithi": 3, "paksha": "S",
-     "month": 2, "deity": "विष्णु-लक्ष्मी",
-     "desc": "वैशाख शुक्ल तृतीया"},
-
-    {"name": "गंगा दशहरा", "emoji": "🌊", "tithi": 10, "paksha": "S",
-     "month": 3, "deity": "गंगा",
-     "desc": "ज्येष्ठ शुक्ल दशमी"},
-
-    {"name": "गुरु पूर्णिमा", "emoji": "👨‍🏫", "tithi": 15, "paksha": "S",
-     "month": 4, "deity": "गुरु",
-     "desc": "आषाढ़ पूर्णिमा"},
-
-    {"name": "नाग पंचमी", "emoji": "🐍", "tithi": 5, "paksha": "S",
-     "month": 5, "deity": "नागदेव",
-     "desc": "श्रावण शुक्ल पंचमी"},
-
-    {"name": "रक्षाबंधन", "emoji": "🪢", "tithi": 15, "paksha": "S",
-     "month": 5, "deity": "यम-यमी",
-     "desc": "श्रावण पूर्णिमा"},
-
-    {"name": "जन्माष्टमी", "emoji": "🦚", "tithi": 8, "paksha": "K",
-     "month": 5, "deity": "कृष्ण",
-     "desc": "भाद्रपद कृष्ण अष्टमी"},
-
-    {"name": "गणेश चतुर्थी", "emoji": "🐘", "tithi": 4, "paksha": "S",
-     "month": 6, "deity": "गणेश",
-     "desc": "भाद्रपद शुक्ल चतुर्थी"},
-
-    {"name": "नवरात्रि प्रारंभ", "emoji": "🙏", "tithi": 1, "paksha": "S",
-     "month": 7, "deity": "दुर्गा",
-     "desc": "आश्विन शुक्ल प्रतिपदा"},
-
-    {"name": "दशहरा", "emoji": "🏹", "tithi": 10, "paksha": "S",
-     "month": 7, "deity": "राम-दुर्गा",
-     "desc": "आश्विन शुक्ल दशमी"},
-
-    {"name": "शरद पूर्णिमा", "emoji": "🌕", "tithi": 15, "paksha": "S",
-     "month": 7, "deity": "लक्ष्मी",
-     "desc": "आश्विन पूर्णिमा"},
-
-    {"name": "करवा चौथ", "emoji": "💑", "tithi": 4, "paksha": "K",
-     "month": 8, "deity": "शिव-पार्वती",
-     "desc": "कार्तिक कृष्ण चतुर्थी"},
-
-    {"name": "धनतेरस", "emoji": "💰", "tithi": 13, "paksha": "K",
-     "month": 8, "deity": "धन्वंतरि-लक्ष्मी",
-     "desc": "कार्तिक कृष्ण त्रयोदशी"},
-
-    {"name": "दीपावली", "emoji": "🪔", "tithi": 15, "paksha": "K",
-     "month": 8, "deity": "लक्ष्मी",
-     "desc": "कार्तिक अमावस्या"},
-
-    {"name": "गोवर्धन पूजा", "emoji": "🐄", "tithi": 1, "paksha": "S",
-     "month": 8, "deity": "कृष्ण",
-     "desc": "कार्तिक शुक्ल प्रतिपदा"},
-
-    {"name": "भाई दूज", "emoji": "👫", "tithi": 2, "paksha": "S",
-     "month": 8, "deity": "यमराज",
-     "desc": "कार्तिक शुक्ल द्वितीया"},
-
-    {"name": "देव उठनी एकादशी", "emoji": "🙏", "tithi": 11, "paksha": "S",
-     "month": 8, "deity": "विष्णु",
-     "desc": "कार्तिक शुक्ल एकादशी"},
+RASHI_NAMES = [
+    "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या",
+    "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"
 ]
 
-# ── Swisseph: Get Today's Tithi & Lunar Month ─────────────────────────
+# ── Festival Rules ────────────────────────────────────────────────────
+# tithi : 1-15 within paksha
+# paksha: S = Shukla, K = Krishna
+# month : 1-12 (None = every month)
+
+FESTIVAL_RULES = [
+
+    # ── Every Month ──────────────────────────────────────────────────
+    {"name": "एकादशी",          "emoji": "🙏",  "tithi": 11, "paksha": "S",
+     "month": None, "deity": "विष्णु",       "desc": "शुक्ल एकादशी"},
+
+    {"name": "एकादशी",          "emoji": "🙏",  "tithi": 11, "paksha": "K",
+     "month": None, "deity": "विष्णु",       "desc": "कृष्ण एकादशी"},
+
+    {"name": "प्रदोष व्रत",     "emoji": "🕉️", "tithi": 13, "paksha": "S",
+     "month": None, "deity": "शिव",          "desc": "शुक्ल प्रदोष"},
+
+    {"name": "प्रदोष व्रत",     "emoji": "🕉️", "tithi": 13, "paksha": "K",
+     "month": None, "deity": "शिव",          "desc": "कृष्ण प्रदोष"},
+
+    {"name": "पूर्णिमा",        "emoji": "🌕",  "tithi": 15, "paksha": "S",
+     "month": None, "deity": "चंद्र",        "desc": "पूर्णिमा"},
+
+    # ✅ FIXED — Amavasya added (tithi=15, paksha=K)
+    {"name": "अमावस्या",        "emoji": "🌑",  "tithi": 15, "paksha": "K",
+     "month": None, "deity": "पितृ",          "desc": "अमावस्या"},
+
+    {"name": "चतुर्थी",         "emoji": "🐘",  "tithi": 4,  "paksha": "S",
+     "month": None, "deity": "गणेश",          "desc": "विनायक चतुर्थी"},
+
+    {"name": "संकष्टी चतुर्थी", "emoji": "🐘",  "tithi": 4,  "paksha": "K",
+     "month": None, "deity": "गणेश",          "desc": "संकष्टी चतुर्थी"},
+
+    # ── Major Annual Festivals ────────────────────────────────────────
+    {"name": "महाशिवरात्रि",    "emoji": "🔱",  "tithi": 14, "paksha": "K",
+     "month": 12,   "deity": "शिव",           "desc": "फाल्गुन कृष्ण चतुर्दशी"},
+
+    {"name": "होली",            "emoji": "🎨",  "tithi": 15, "paksha": "S",
+     "month": 12,   "deity": "कृष्ण",         "desc": "फाल्गुन पूर्णिमा"},
+
+    {"name": "राम नवमी",        "emoji": "🏹",  "tithi": 9,  "paksha": "S",
+     "month": 1,    "deity": "राम",            "desc": "चैत्र शुक्ल नवमी"},
+
+    {"name": "हनुमान जयंती",    "emoji": "🙏",  "tithi": 15, "paksha": "S",
+     "month": 1,    "deity": "हनुमान",         "desc": "चैत्र पूर्णिमा"},
+
+    {"name": "अक्षय तृतीया",    "emoji": "🌟",  "tithi": 3,  "paksha": "S",
+     "month": 2,    "deity": "विष्णु-लक्ष्मी", "desc": "वैशाख शुक्ल तृतीया"},
+
+    {"name": "गंगा दशहरा",      "emoji": "🌊",  "tithi": 10, "paksha": "S",
+     "month": 3,    "deity": "गंगा",           "desc": "ज्येष्ठ शुक्ल दशमी"},
+
+    {"name": "गुरु पूर्णिमा",   "emoji": "👨‍🏫", "tithi": 15, "paksha": "S",
+     "month": 4,    "deity": "गुरु",           "desc": "आषाढ़ पूर्णिमा"},
+
+    {"name": "नाग पंचमी",       "emoji": "🐍",  "tithi": 5,  "paksha": "S",
+     "month": 5,    "deity": "नागदेव",         "desc": "श्रावण शुक्ल पंचमी"},
+
+    {"name": "रक्षाबंधन",       "emoji": "🪢",  "tithi": 15, "paksha": "S",
+     "month": 5,    "deity": "यम-यमी",         "desc": "श्रावण पूर्णिमा"},
+
+    {"name": "जन्माष्टमी",      "emoji": "🦚",  "tithi": 8,  "paksha": "K",
+     "month": 5,    "deity": "कृष्ण",          "desc": "भाद्रपद कृष्ण अष्टमी"},
+
+    {"name": "गणेश चतुर्थी",    "emoji": "🐘",  "tithi": 4,  "paksha": "S",
+     "month": 6,    "deity": "गणेश",           "desc": "भाद्रपद शुक्ल चतुर्थी"},
+
+    {"name": "नवरात्रि प्रारंभ","emoji": "🙏",  "tithi": 1,  "paksha": "S",
+     "month": 7,    "deity": "दुर्गा",         "desc": "आश्विन शुक्ल प्रतिपदा"},
+
+    {"name": "दशहरा",           "emoji": "🏹",  "tithi": 10, "paksha": "S",
+     "month": 7,    "deity": "राम-दुर्गा",     "desc": "आश्विन शुक्ल दशमी"},
+
+    {"name": "शरद पूर्णिमा",    "emoji": "🌕",  "tithi": 15, "paksha": "S",
+     "month": 7,    "deity": "लक्ष्मी",        "desc": "आश्विन पूर्णिमा"},
+
+    {"name": "करवा चौथ",        "emoji": "💑",  "tithi": 4,  "paksha": "K",
+     "month": 8,    "deity": "शिव-पार्वती",    "desc": "कार्तिक कृष्ण चतुर्थी"},
+
+    {"name": "धनतेरस",          "emoji": "💰",  "tithi": 13, "paksha": "K",
+     "month": 8,    "deity": "धन्वंतरि-लक्ष्मी","desc": "कार्तिक कृष्ण त्रयोदशी"},
+
+    {"name": "दीपावली",         "emoji": "🪔",  "tithi": 15, "paksha": "K",
+     "month": 8,    "deity": "लक्ष्मी",        "desc": "कार्तिक अमावस्या"},
+
+    {"name": "गोवर्धन पूजा",    "emoji": "🐄",  "tithi": 1,  "paksha": "S",
+     "month": 8,    "deity": "कृष्ण",          "desc": "कार्तिक शुक्ल प्रतिपदा"},
+
+    {"name": "भाई दूज",         "emoji": "👫",  "tithi": 2,  "paksha": "S",
+     "month": 8,    "deity": "यमराज",          "desc": "कार्तिक शुक्ल द्वितीया"},
+
+    {"name": "देव उठनी एकादशी", "emoji": "🙏",  "tithi": 11, "paksha": "S",
+     "month": 8,    "deity": "विष्णु",         "desc": "कार्तिक शुक्ल एकादशी"},
+]
+
+
+# ── Panchang Calculation (same logic as panchang_engine.py) ──────────
 def get_today_panchang():
-    """Get today's panchang using same logic as panchang_engine.py"""
     try:
-        import ephem
         from datetime import timedelta
 
-        now = datetime.now(pytz.timezone("Asia/Kolkata"))
-
-        # ── Same as panchang_engine: convert IST to UTC ──
+        now    = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
         dt_utc = now - timedelta(hours=5, minutes=30)
         jd_ut  = swe.julday(
             dt_utc.year, dt_utc.month, dt_utc.day,
@@ -177,45 +148,40 @@ def get_today_panchang():
         )
         swe.set_sid_mode(swe.SIDM_LAHIRI)
 
-        # ── Use FLG_SIDEREAL directly — same as panchang_engine ──
+        # ✅ FLG_SIDEREAL directly — same as panchang_engine
         res_sun,  _ = swe.calc_ut(jd_ut, swe.SUN,  swe.FLG_SWIEPH | swe.FLG_SIDEREAL)
         res_moon, _ = swe.calc_ut(jd_ut, swe.MOON, swe.FLG_SWIEPH | swe.FLG_SIDEREAL)
         sun_lon  = res_sun[0]
         moon_lon = res_moon[0]
 
-        # ── Tithi — same as panchang_engine ──
+        # ✅ Tithi — same as panchang_engine
         tithi_idx = int(((moon_lon - sun_lon) % 360) / 12.0)  # 0-29
         paksha    = "S" if tithi_idx < 15 else "K"
-        tithi_num = (tithi_idx % 15) + 1  # 1-15 within each paksha
+        tithi_num = (tithi_idx % 15) + 1                       # 1-15
 
-        # ── Lunar Month — same back-calculation as panchang_engine ──
-        moon_sun_diff      = (moon_lon - sun_lon) % 360
+        # ✅ Lunar month — back-calculation from Amavasya
+        moon_sun_diff       = (moon_lon - sun_lon) % 360
         days_since_amavasya = moon_sun_diff / 12.190749
-        amavasya_sun_lon   = (sun_lon - (days_since_amavasya * 0.9856)) % 360
-        lunar_month_idx    = int(amavasya_sun_lon / 30)  # 0-11
+        amavasya_sun_lon    = (sun_lon - (days_since_amavasya * 0.9856)) % 360
+        lunar_month_idx     = int(amavasya_sun_lon / 30)       # 0-11
 
-        # ── Moon rashi and nakshatra ──
-        moon_rashi_idx = int(moon_lon / 30)
-        nakshatra_idx  = int(moon_lon / (360 / 27.0))
-
-        # ── Tithi name for logging ──
         tithi_names = [
-            "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी",
-            "षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी",
-            "एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","पूर्णिमा",
-            "प्रतिपदा","द्वितीया","तृतीया","चतुर्थी","पंचमी",
-            "षष्ठी","सप्तमी","अष्टमी","नवमी","दशमी",
-            "एकादशी","द्वादशी","त्रयोदशी","चतुर्दशी","अमावस्या"
+            "प्रतिपदा", "द्वितीया",  "तृतीया",    "चतुर्थी",   "पंचमी",
+            "षष्ठी",    "सप्तमी",    "अष्टमी",    "नवमी",      "दशमी",
+            "एकादशी",   "द्वादशी",   "त्रयोदशी",  "चतुर्दशी",  "पूर्णिमा",
+            "प्रतिपदा", "द्वितीया",  "तृतीया",    "चतुर्थी",   "पंचमी",
+            "षष्ठी",    "सप्तमी",    "अष्टमी",    "नवमी",      "दशमी",
+            "एकादशी",   "द्वादशी",   "त्रयोदशी",  "चतुर्दशी",  "अमावस्या"
         ]
 
         return {
-            "tithi":       tithi_num,        # 1-15
-            "tithi_idx":   tithi_idx,         # 0-29 (raw)
+            "tithi":       tithi_num,
+            "tithi_idx":   tithi_idx,
             "tithi_name":  tithi_names[tithi_idx],
-            "paksha":      paksha,            # "S" or "K"
+            "paksha":      paksha,
             "lunar_month": lunar_month_idx,   # 0-11
-            "moon_rashi":  moon_rashi_idx,    # 0-11
-            "nakshatra":   nakshatra_idx,     # 0-26
+            "moon_rashi":  int(moon_lon / 30),
+            "nakshatra":   int(moon_lon / (360 / 27.0)),
         }
 
     except Exception as e:
@@ -223,6 +189,7 @@ def get_today_panchang():
         return None
 
 
+# ── Festival Matching ─────────────────────────────────────────────────
 def get_today_festivals(panchang):
     if not panchang:
         return []
@@ -231,8 +198,7 @@ def get_today_festivals(panchang):
     for rule in FESTIVAL_RULES:
         tithi_match  = rule["tithi"] == panchang["tithi"]
         paksha_match = rule["paksha"] == panchang["paksha"]
-        # lunar_month in panchang is now 0-11 index
-        # rule month is 1-12 — so compare correctly
+        # panchang lunar_month is 0-11, rule month is 1-12
         month_match  = (
             rule["month"] is None or
             rule["month"] == panchang["lunar_month"] + 1
@@ -241,7 +207,9 @@ def get_today_festivals(panchang):
             festivals.append(rule)
 
     return festivals
-# ── Gemini: Personalized Festival Remedy ─────────────────────────────
+
+
+# ── Gemini API ────────────────────────────────────────────────────────
 def call_gemini(prompt):
     if not GEMINI_API_KEYS:
         return None
@@ -269,8 +237,9 @@ def call_gemini(prompt):
     return None
 
 
-def generate_festival_remedy(user_name, rashi_name, festival, profession, challenge):
-    """Generate personalized remedy for festival based on user profile"""
+# ── Personalized Festival Remedy ──────────────────────────────────────
+def generate_festival_remedy(user_name, rashi_name, festival,
+                              profession, challenge):
     today = datetime.date.today().strftime("%d %B, %Y")
     prompt = f"""
 आज की तारीख: {today}
@@ -298,7 +267,7 @@ def generate_festival_remedy(user_name, rashi_name, festival, profession, challe
     return call_gemini(prompt)
 
 
-# ── Main Festival Notification Function ──────────────────────────────
+# ── Main Function ─────────────────────────────────────────────────────
 def send_festival_notifications():
     print("\n" + "─" * 55)
     print("  🎊 Festival Notification Engine")
@@ -310,8 +279,8 @@ def send_festival_notifications():
         return
 
     print(f"  📅 Tithi: {panchang['tithi_name']} | "
-      f"Paksha: {'शुक्ल' if panchang['paksha']=='S' else 'कृष्ण'} | "
-      f"Month: {LUNAR_MONTHS[panchang['lunar_month']]}")
+          f"Paksha: {'शुक्ल' if panchang['paksha']=='S' else 'कृष्ण'} | "
+          f"Month: {LUNAR_MONTHS[panchang['lunar_month']]}")
 
     festivals = get_today_festivals(panchang)
     if not festivals:
@@ -320,18 +289,14 @@ def send_festival_notifications():
 
     print(f"  🎉 आज के पर्व: {[f['name'] for f in festivals]}")
 
-    # Use primary festival (first match)
+    # Primary festival
     festival = festivals[0]
     print(f"\n  🔔 Sending: {festival['emoji']} {festival['name']}")
-
-    RASHI_NAMES = ["मेष","वृषभ","मिथुन","कर्क","सिंह","कन्या",
-                   "तुला","वृश्चिक","धनु","मकर","कुंभ","मीन"]
 
     profiles = UserProfile.objects.select_related("user").all()
     sent = failed = skipped = 0
 
     for profile in profiles:
-        # Must have active push subscription
         subs = PushSubscription.objects.filter(
             user=profile.user, is_active=True
         )
@@ -339,13 +304,10 @@ def send_festival_notifications():
             skipped += 1
             continue
 
-        user_name = profile.user.first_name or profile.user.username
-
-        # Get user's moon rashi from profile or use today's moon rashi
+        user_name  = profile.user.first_name or profile.user.username
         rashi_idx  = getattr(profile, 'moon_rashi_idx', panchang['moon_rashi'])
         rashi_name = RASHI_NAMES[rashi_idx % 12]
 
-        # Generate personalized remedy
         remedy = generate_festival_remedy(
             user_name,
             rashi_name,
@@ -355,25 +317,22 @@ def send_festival_notifications():
         )
 
         if not remedy:
-            # Fallback generic message
             remedy = (f"{user_name} जी, आज {festival['name']} के शुभ अवसर पर "
                       f"{festival['deity']} की पूजा करें और उनका आशीर्वाद प्राप्त करें। "
                       f"यह दिन आपके लिए शुभ फल लेकर आएगा। 🙏")
 
-        # Short preview for notification
         preview = remedy[:90] + "..."
 
-        # Send push notification
         send_push_to_user(
             profile.user,
             f"{festival['emoji']} {festival['name']} की शुभकामनाएं!",
             preview,
-            "/profile/"  # Opens user's profile/horoscope page
+            "/profile/"
         )
 
         print(f"    ✅ {user_name} ({rashi_name})")
         sent += 1
-        time.sleep(0.3)  # Rate limit
+        time.sleep(0.3)
 
     print(f"\n  📲 Sent: {sent} | ❌ Failed: {failed} | ⏭️ Skipped: {skipped}")
     print("─" * 55)
