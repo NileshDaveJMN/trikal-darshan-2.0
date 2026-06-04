@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}आज का राशिफल 2026 - सभी 12 राशियाँ | त्रिकाल दर्शन{% endblock %}
+
+{% block content %}
+
+<div style="text-align:center; padding: 20px 0 10px 0;">
+    <h2 style="color:#ffca28; font-size:22px; margin-bottom:5px;">🔮 आज का राशिफल</h2>
+    <p style="color:#94a3b8; font-size:14px; margin:0;">{{ today }} | अपनी राशि चुनें</p>
+</div>
+
+<!-- 12 Rashi Grid -->
+<div style="display:grid; grid-template-columns: repeat(3,1fr); gap:12px; padding:10px 0 30px 0;">
+
+    {% for rashi in rashis %}
+    <a href="/rashifal/{{ rashi.id }}/" style="text-decoration:none;">
+        <div style="
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid #334155;
+            border-bottom: 3px solid #b71c1c;
+            border-radius: 12px;
+            padding: 18px 8px;
+            text-align: center;
+            transition: 0.3s;
+            cursor: pointer;
+        "
+        onmouseover="this.style.borderBottomColor='#ffca28'; this.style.transform='translateY(-3px)'"
+        onmouseout="this.style.borderBottomColor='#b71c1c'; this.style.transform='translateY(0)'">
+            <div style="font-size:28px; margin-bottom:6px;">{{ rashi.symbol }}</div>
+            <div style="color:#ffffff; font-weight:bold; font-size:15px; margin-bottom:3px;">{{ rashi.name }}</div>
+            <div style="color:#94a3b8; font-size:11px;">स्वामी: {{ rashi.lord }}</div>
+        </div>
+    </a>
+    {% endfor %}
+
+</div>
+
+<!-- Info Card -->
+<div style="
+    background: linear-gradient(135deg, #451a1a, #2b1111);
+    border-left: 4px solid #ffca28;
+    border-radius: 12px;
+    padding: 18px;
+    margin-bottom: 20px;
+    text-align: left;
+">
+    <p style="color:#ffca28; font-weight:bold; font-size:15px; margin:0 0 8px 0;">🌟 त्रिकाल दर्शन राशिफल के बारे में</p>
+    <p style="color:#cbd5e1; font-size:13.5px; margin:0; line-height:1.7;">
+        हमारा राशिफल वैदिक ज्योतिष के सिद्धांतों और Swiss Ephemeris से 
+        प्राप्त आज के ग्रहों की सटीक स्थिति के आधार पर AI द्वारा तैयार किया जाता है।
+        यह पूरी तरह <strong style="color:#ffca28;">निःशुल्क</strong> है।
+    </p>
+</div>
+
+<!-- CTA for Kundali -->
+<div style="
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    border: 1px dashed #ffca28;
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 10px;
+">
+    <p style="color:#ffffff; font-size:15px; margin:0 0 12px 0;">
+        🔮 व्यक्तिगत जन्म कुंडली और सटीक भविष्यफल के लिए
+    </p>
+    <a href="/register/" style="
+        background: linear-gradient(45deg, #b71c1c, #e53935);
+        color: white;
+        text-decoration: none;
+        padding: 12px 25px;
+        border-radius: 25px;
+        font-weight: bold;
+        font-size: 14px;
+        display: inline-block;
+    ">निःशुल्क कुंडली बनाएं →</a>
+</div>
+
+{% endblock %}

@@ -1,3 +1,4 @@
+from core.views.rashifal_views import rashifal_home, rashifal_detail
 from core.views.seo_views import sitemap_xml, robots_txt
 from django.views.generic import TemplateView
 from core.views.kundali_views import home, download_kundali_pdf, api_get_ai_analysis, user_profile_view
@@ -18,6 +19,7 @@ from core.views.trikal_api_views import (
     api_save_horoscope, api_send_daily_horoscope
 )
 from core.views.kundali_views import home, download_kundali_pdf, api_get_ai_analysis, user_profile_view, save_onboarding, ping
+from core.views.rashifal_views import rashifal_home, rashifal_detail, api_rashifal
 
 urlpatterns = [
     path('django-admin/', admin.site.urls),
@@ -76,5 +78,8 @@ path('api/push/subscribe/', save_push_subscription, name='push_subscribe'),
 path('api/push/unsubscribe/', delete_push_subscription, name='push_unsubscribe'),
 path('api/push/send/', admin_send_notification, name='push_send'),
 path('api/push/test/', admin_send_notification, name='push_test'),
+path('rashifal/',                rashifal_home,   name='rashifal'),
+path('rashifal/<str:rashi_id>/', rashifal_detail, name='rashifal_detail'),
+path('api/rashifal/',            api_rashifal,    name='api_rashifal'),
 ]
 

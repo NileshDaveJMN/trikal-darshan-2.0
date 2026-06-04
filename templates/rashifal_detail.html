@@ -1,0 +1,220 @@
+,{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ rashi.name }} राशिफल आज {{ today }} | त्रिकाल दर्शन{% endblock %}
+
+{% block content %}
+
+<!-- Back Button -->
+<div style="margin-bottom:15px;">
+    <a href="/rashifal/" style="
+        color:#94a3b8;
+        text-decoration:none;
+        font-size:14px;
+        display:inline-flex;
+        align-items:center;
+        gap:5px;
+    ">← सभी राशियाँ</a>
+</div>
+
+<!-- Rashi Header -->
+<div style="
+    background: linear-gradient(135deg, #451a1a, #2b1111);
+    border-left: 5px solid #ffca28;
+    border-radius: 14px;
+    padding: 22px;
+    text-align: center;
+    margin-bottom: 20px;
+">
+    <div style="font-size:48px; margin-bottom:8px;">{{ rashi.symbol }}</div>
+    <h1 style="color:#ffca28; font-size:24px; margin:0 0 5px 0;">{{ rashi.name }} राशि</h1>
+    <p style="color:#94a3b8; font-size:13px; margin:0;">राशि स्वामी: {{ rashi.lord }} | {{ today }}</p>
+</div>
+
+<!-- Loading State -->
+<div id="loading-section" style="text-align:center; padding:30px 0;">
+    <div style="font-size:36px; margin-bottom:12px;">⏳</div>
+    <p style="color:#ffca28; font-size:15px; font-weight:bold;">आज का राशिफल तैयार हो रहा है...</p>
+    <p style="color:#94a3b8; font-size:13px;">Swiss Ephemeris से ग्रह स्थिति और AI विश्लेषण</p>
+</div>
+
+<!-- Prediction Section (filled by JS) -->
+<div id="prediction-section" style="display:none;">
+
+    <!-- General -->
+    <div class="pred-card" style="
+        background:#1e293b;
+        border:1px solid #334155;
+        border-left:4px solid #ffca28;
+        border-radius:12px;
+        padding:18px;
+        margin-bottom:14px;
+    ">
+        <p style="color:#ffca28; font-weight:bold; font-size:15px; margin:0 0 8px 0;">🌟 सामान्य दिन</p>
+        <p id="pred-general" style="color:#e2e8f0; font-size:14.5px; line-height:1.7; margin:0;"></p>
+    </div>
+
+    <!-- Career -->
+    <div class="pred-card" style="
+        background:#1e293b;
+        border:1px solid #334155;
+        border-left:4px solid #3b82f6;
+        border-radius:12px;
+        padding:18px;
+        margin-bottom:14px;
+    ">
+        <p style="color:#3b82f6; font-weight:bold; font-size:15px; margin:0 0 8px 0;">💼 करियर और व्यापार</p>
+        <p id="pred-career" style="color:#e2e8f0; font-size:14.5px; line-height:1.7; margin:0;"></p>
+    </div>
+
+    <!-- Love -->
+    <div class="pred-card" style="
+        background:#1e293b;
+        border:1px solid #334155;
+        border-left:4px solid #ec4899;
+        border-radius:12px;
+        padding:18px;
+        margin-bottom:14px;
+    ">
+        <p style="color:#ec4899; font-weight:bold; font-size:15px; margin:0 0 8px 0;">❤️ प्रेम और रिश्ते</p>
+        <p id="pred-love" style="color:#e2e8f0; font-size:14.5px; line-height:1.7; margin:0;"></p>
+    </div>
+
+    <!-- Health -->
+    <div class="pred-card" style="
+        background:#1e293b;
+        border:1px solid #334155;
+        border-left:4px solid #22c55e;
+        border-radius:12px;
+        padding:18px;
+        margin-bottom:14px;
+    ">
+        <p style="color:#22c55e; font-weight:bold; font-size:15px; margin:0 0 8px 0;">🏥 स्वास्थ्य</p>
+        <p id="pred-health" style="color:#e2e8f0; font-size:14.5px; line-height:1.7; margin:0;"></p>
+    </div>
+
+    <!-- Lucky -->
+    <div style="
+        background: linear-gradient(135deg, #1a237e, #0d124a);
+        border-left:4px solid #5c6bc0;
+        border-radius:12px;
+        padding:18px;
+        margin-bottom:14px;
+    ">
+        <p style="color:#a5b4fc; font-weight:bold; font-size:15px; margin:0 0 10px 0;">🍀 आज का शुभ</p>
+        <p id="pred-lucky" style="color:#e2e8f0; font-size:14.5px; line-height:1.7; margin:0;"></p>
+    </div>
+
+    <!-- Upay -->
+    <div style="
+        background: linear-gradient(135deg, #451a1a, #2b1111);
+        border-left:4px solid #f59e0b;
+        border-radius:12px;
+        padding:18px;
+        margin-bottom:20px;
+    ">
+        <p style="color:#f59e0b; font-weight:bold; font-size:15px; margin:0 0 8px 0;">🙏 आज का उपाय</p>
+        <p id="pred-upay" style="color:#e2e8f0; font-size:14.5px; line-height:1.7; margin:0;"></p>
+    </div>
+
+</div>
+
+<!-- Error Section -->
+<div id="error-section" style="display:none; text-align:center; padding:20px;">
+    <p style="color:#ef4444; font-size:14px;" id="error-msg"></p>
+    <button onclick="loadRashifal()" style="
+        background:linear-gradient(45deg,#b71c1c,#e53935);
+        color:white; border:none;
+        padding:10px 25px;
+        border-radius:20px;
+        cursor:pointer;
+        font-size:14px;
+        width:auto;
+        margin-top:10px;
+    ">पुनः प्रयास करें</button>
+</div>
+
+<!-- Other Rashis -->
+<div style="margin-top:10px;">
+    <p style="color:#94a3b8; font-size:13px; margin-bottom:12px; text-align:center;">अन्य राशियाँ देखें:</p>
+    <div style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">
+        {% for r in rashis %}
+        {% if r.id != rashi.id %}
+        <a href="/rashifal/{{ r.id }}/" style="
+            background:#1e293b;
+            border:1px solid #334155;
+            color:#cbd5e1;
+            text-decoration:none;
+            padding:6px 12px;
+            border-radius:20px;
+            font-size:13px;
+        ">{{ r.symbol }} {{ r.name }}</a>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<!-- CTA -->
+<div style="
+    background:linear-gradient(135deg,#1e293b,#0f172a);
+    border:1px dashed #ffca28;
+    border-radius:12px;
+    padding:20px;
+    text-align:center;
+    margin-top:20px;
+">
+    <p style="color:#ffffff; font-size:14px; margin:0 0 12px 0;">
+        🔮 व्यक्तिगत जन्म कुंडली और सटीक भविष्यफल के लिए
+    </p>
+    <a href="/register/" style="
+        background:linear-gradient(45deg,#b71c1c,#e53935);
+        color:white;
+        text-decoration:none;
+        padding:11px 22px;
+        border-radius:25px;
+        font-weight:bold;
+        font-size:14px;
+        display:inline-block;
+    ">निःशुल्क कुंडली बनाएं →</a>
+</div>
+
+<script>
+const rashiId   = "{{ rashi.id }}";
+const rashiName = "{{ rashi.name }}";
+const rashiLord = "{{ rashi.lord }}";
+
+function loadRashifal() {
+    document.getElementById('loading-section').style.display  = 'block';
+    document.getElementById('prediction-section').style.display = 'none';
+    document.getElementById('error-section').style.display   = 'none';
+
+    fetch(`/api/rashifal/?rashi_id=${rashiId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('pred-general').textContent = data.GENERAL || '';
+                document.getElementById('pred-career').textContent  = data.CAREER  || '';
+                document.getElementById('pred-love').textContent    = data.LOVE    || '';
+                document.getElementById('pred-health').textContent  = data.HEALTH  || '';
+                document.getElementById('pred-lucky').textContent   = data.LUCKY   || '';
+                document.getElementById('pred-upay').textContent    = data.UPAY    || '';
+
+                document.getElementById('loading-section').style.display    = 'none';
+                document.getElementById('prediction-section').style.display = 'block';
+            } else {
+                throw new Error(data.error || 'अज्ञात त्रुटि');
+            }
+        })
+        .catch(err => {
+            document.getElementById('loading-section').style.display = 'none';
+            document.getElementById('error-section').style.display   = 'block';
+            document.getElementById('error-msg').textContent =
+                '⚠️ राशिफल लोड नहीं हो सका। ' + err.message;
+        });
+}
+
+// Auto load on page open
+loadRashifal();
+</script>
+
+{% endblock %}

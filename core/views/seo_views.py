@@ -54,3 +54,15 @@ def robots_txt(request):
         f"Sitemap: https://trikal-darshan.onrender.com/sitemap.xml",
     ]
     return HttpResponse("\n".join(lines), content_type="text/plain")
+
+# Add rashifal URLs
+rashi_ids = ['mesh','vrishabh','mithun','kark','sinh',
+             'kanya','tula','vrishchik','dhanu','makar','kumbh','meen']
+
+for rashi_id in rashi_ids:
+    pages.append({
+        'loc': f"{domain}/rashifal/{rashi_id}/",
+        'lastmod': now,
+        'priority': '0.8',
+        'changefreq': 'daily'
+    })
