@@ -16,7 +16,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'trikal_portal.settings')
 
 import django
-# यह चेक करेगा कि Django पहले से लोड तो नहीं है (ताकि views में import करते वक्त एरर न आए)
+# यह चेक करेगा कि Django पहले से लोड तो नहीं है
 if not django.apps.apps.ready: 
     django.setup()
 
@@ -42,7 +42,7 @@ RASHI_NAMES = [
     "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"
 ]
 
-# ── Festival Rules ────────────────────────────────────────────────────
+# ── Festival Rules (Gujarat / Amanta System) ──────────────────────────
 FESTIVAL_RULES = [
     {"name": "एकादशी",          "emoji": "🙏",  "tithi": 11, "paksha": "S", "month": None, "deity": "विष्णु",       "desc": "शुक्ल एकादशी व्रत"},
     {"name": "एकादशी",          "emoji": "🙏",  "tithi": 11, "paksha": "K", "month": None, "deity": "विष्णु",       "desc": "कृष्ण एकादशी व्रत"},
@@ -53,8 +53,8 @@ FESTIVAL_RULES = [
     {"name": "विनायक चतुर्थी",  "emoji": "🐘",  "tithi": 4,  "paksha": "S", "month": None, "deity": "गणेश",          "desc": "विनायक चतुर्थी"},
     {"name": "संकष्टी चतुर्थी", "emoji": "🐘",  "tithi": 4,  "paksha": "K", "month": None, "deity": "गणेश",          "desc": "संकष्टी चतुर्थी"},
     
-    # ── Major Annual Festivals ──
-    {"name": "महाशिवरात्रि",    "emoji": "🔱",  "tithi": 14, "paksha": "K", "month": 12,   "deity": "शिव",           "desc": "फाल्गुन कृष्ण चतुर्दशी"},
+    # ── Major Annual Festivals (Amanta Corrected) ──
+    {"name": "महाशिवरात्रि",    "emoji": "🔱",  "tithi": 14, "paksha": "K", "month": 11,   "deity": "शिव",           "desc": "माघ कृष्ण चतुर्दशी"},
     {"name": "होली",            "emoji": "🎨",  "tithi": 15, "paksha": "S", "month": 12,   "deity": "कृष्ण",         "desc": "फाल्गुन पूर्णिमा"},
     {"name": "राम नवमी",        "emoji": "🏹",  "tithi": 9,  "paksha": "S", "month": 1,    "deity": "राम",            "desc": "चैत्र शुक्ल नवमी"},
     {"name": "हनुमान जयंती",    "emoji": "🙏",  "tithi": 15, "paksha": "S", "month": 1,    "deity": "हनुमान",         "desc": "चैत्र पूर्णिमा"},
@@ -63,14 +63,14 @@ FESTIVAL_RULES = [
     {"name": "गुरु पूर्णिमा",   "emoji": "👨‍🏫", "tithi": 15, "paksha": "S", "month": 4,    "deity": "गुरु",           "desc": "आषाढ़ पूर्णिमा"},
     {"name": "नाग पंचमी",       "emoji": "🐍",  "tithi": 5,  "paksha": "S", "month": 5,    "deity": "नागदेव",         "desc": "श्रावण शुक्ल पंचमी"},
     {"name": "रक्षाबंधन",       "emoji": "🪢",  "tithi": 15, "paksha": "S", "month": 5,    "deity": "यम-यमी",         "desc": "श्रावण पूर्णिमा"},
-    {"name": "जन्माष्टमी",      "emoji": "🦚",  "tithi": 8,  "paksha": "K", "month": 5,    "deity": "कृष्ण",          "desc": "भाद्रपद कृष्ण अष्टमी"},
+    {"name": "जन्माष्टमी",      "emoji": "🦚",  "tithi": 8,  "paksha": "K", "month": 5,    "deity": "कृष्ण",          "desc": "श्रावण कृष्ण अष्टमी"},
     {"name": "गणेश चतुर्थी",    "emoji": "🐘",  "tithi": 4,  "paksha": "S", "month": 6,    "deity": "गणेश",           "desc": "भाद्रपद शुक्ल चतुर्थी"},
     {"name": "नवरात्रि प्रारंभ","emoji": "🙏",  "tithi": 1,  "paksha": "S", "month": 7,    "deity": "दुर्गा",         "desc": "आश्विन शुक्ल प्रतिपदा"},
     {"name": "दशहरा",           "emoji": "🏹",  "tithi": 10, "paksha": "S", "month": 7,    "deity": "राम-दुर्गा",     "desc": "आश्विन शुक्ल दशमी"},
     {"name": "शरद पूर्णिमा",    "emoji": "🌕",  "tithi": 15, "paksha": "S", "month": 7,    "deity": "लक्ष्मी",        "desc": "आश्विन पूर्णिमा"},
-    {"name": "करवा चौथ",        "emoji": "💑",  "tithi": 4,  "paksha": "K", "month": 8,    "deity": "शिव-पार्वती",    "desc": "कार्तिक कृष्ण चतुर्थी"},
-    {"name": "धनतेरस",          "emoji": "💰",  "tithi": 13, "paksha": "K", "month": 8,    "deity": "धन्वंतरि-लक्ष्मी","desc": "कार्तिक कृष्ण त्रयोदशी"},
-    {"name": "दीपावली",         "emoji": "🪔",  "tithi": 15, "paksha": "K", "month": 8,    "deity": "लक्ष्मी",        "desc": "कार्तिक अमावस्या"},
+    {"name": "करवा चौथ",        "emoji": "💑",  "tithi": 4,  "paksha": "K", "month": 7,    "deity": "शिव-पार्वती",    "desc": "आश्विन कृष्ण चतुर्थी"},
+    {"name": "धनतेरस",          "emoji": "💰",  "tithi": 13, "paksha": "K", "month": 7,    "deity": "धन्वंतरि-लक्ष्मी","desc": "आश्विन कृष्ण त्रयोदशी"},
+    {"name": "दीपावली",         "emoji": "🪔",  "tithi": 15, "paksha": "K", "month": 7,    "deity": "लक्ष्मी",        "desc": "आश्विन अमावस्या"},
     {"name": "गोवर्धन पूजा",    "emoji": "🐄",  "tithi": 1,  "paksha": "S", "month": 8,    "deity": "कृष्ण",          "desc": "कार्तिक शुक्ल प्रतिपदा"},
     {"name": "भाई दूज",         "emoji": "👫",  "tithi": 2,  "paksha": "S", "month": 8,    "deity": "यमराज",          "desc": "कार्तिक शुक्ल द्वितीया"},
     {"name": "देव उठनी एकादशी", "emoji": "🙏",  "tithi": 11, "paksha": "S", "month": 8,    "deity": "विष्णु",         "desc": "कार्तिक शुक्ल एकादशी"},
@@ -125,47 +125,43 @@ def get_today_panchang():
         print(f"❌ Panchang error: {e}")
         return None
 
-# ── Festival Matching (यह फंक्शन Views के लिए ज़रूरी है) ─────────
-# ── Festival Matching (Updated to handle both formats) ─────────
+# ── Festival Matching (Simple & Direct) ──────────────────────────────
 def get_today_festivals(panchang_data=None):
     panchang = panchang_data if panchang_data else get_today_panchang()
     if not panchang: return []
 
-    # हिंदी तिथि को नंबर में बदलने का मैप
-    tithi_map = {
-        "प्रतिपदा": 1, "द्वितीया": 2, "तृतीया": 3, "चतुर्थी": 4, "पंचमी": 5,
-        "षष्ठी": 6, "सप्तमी": 7, "अष्टमी": 8, "नवमी": 9, "दशमी": 10,
-        "एकादशी": 11, "द्वादशी": 12, "त्रयोदशी": 13, "चतुर्दशी": 14, 
-        "पूर्णिमा": 15, "अमावस्या": 15
-    }
-
-    # 1. Tithi (तिथि) मैच करें
+    # 1. Tithi (हिंदी को नंबर में बदलें)
     p_tithi = panchang.get('tithi', 1)
     if isinstance(p_tithi, str):
+        tithi_map = {
+            "प्रतिपदा": 1, "द्वितीया": 2, "तृतीया": 3, "चतुर्थी": 4, "पंचमी": 5,
+            "षष्ठी": 6, "सप्तमी": 7, "अष्टमी": 8, "नवमी": 9, "दशमी": 10,
+            "एकादशी": 11, "द्वादशी": 12, "त्रयोदशी": 13, "चतुर्दशी": 14, 
+            "पूर्णिमा": 15, "अमावस्या": 15
+        }
         clean_tithi = p_tithi.split()[0] if ' ' in p_tithi else p_tithi
         p_tithi = tithi_map.get(clean_tithi, 1)
 
-    # 2. Paksha (पक्ष) मैच करें
+    # 2. Paksha (पक्ष को S/K में बदलें)
     p_paksha = panchang.get('paksha', 'S')
     if isinstance(p_paksha, str):
         if "शुक्ल" in p_paksha: p_paksha = "S"
         elif "कृष्ण" in p_paksha: p_paksha = "K"
 
-    # 3. Month (महीना) मैच करें (वेबसाइट से hindu_maas के नाम से आता है)
-    p_month = panchang.get('lunar_month')
-    if not p_month and 'hindu_maas' in panchang:
-        p_month = panchang['hindu_maas']
-        
-    if isinstance(p_month, str):
-        # अगर अधिक मास है तो उसे क्लीन करें
-        clean_month = p_month.replace('अधिक', '').replace('क्षय', '').strip()
-        try:
-            p_month_idx = LUNAR_MONTHS.index(clean_month) + 1
-        except ValueError:
-            p_month_idx = 1
-    else:
-        p_month_idx = (p_month or 0) + 1
+    # 3. Month (महीने का नंबर निकालें)
+    p_month_idx = -1
+    maas_str = panchang.get('hindu_maas', '')
+    if isinstance(maas_str, str) and maas_str:
+        for i, m in enumerate(LUNAR_MONTHS):
+            if m in maas_str:
+                p_month_idx = i + 1
+                break
+                
+    if p_month_idx == -1:
+        p_month = panchang.get('lunar_month', 0)
+        p_month_idx = int(p_month) + 1
 
+    # 4. मैच करें (No Complex Logic!)
     festivals = []
     for rule in FESTIVAL_RULES:
         if rule["tithi"] == p_tithi and rule["paksha"] == p_paksha:
