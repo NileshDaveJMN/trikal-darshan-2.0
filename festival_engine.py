@@ -42,8 +42,9 @@ RASHI_NAMES = [
     "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"
 ]
 
-# ── Festival Rules (Gujarat / Amanta System) ──────────────────────────
+# ── Festival Rules (Master List - Gujarat/Amanta System Corrected) ──
 FESTIVAL_RULES = [
+    # ── सामान्य मासिक व्रत (Generic Monthly) ──
     {"name": "एकादशी",          "emoji": "🙏",  "tithi": 11, "paksha": "S", "month": None, "deity": "विष्णु",       "desc": "शुक्ल एकादशी व्रत"},
     {"name": "एकादशी",          "emoji": "🙏",  "tithi": 11, "paksha": "K", "month": None, "deity": "विष्णु",       "desc": "कृष्ण एकादशी व्रत"},
     {"name": "प्रदोष व्रत",     "emoji": "🕉️", "tithi": 13, "paksha": "S", "month": None, "deity": "शिव",          "desc": "शुक्ल प्रदोष"},
@@ -53,27 +54,109 @@ FESTIVAL_RULES = [
     {"name": "विनायक चतुर्थी",  "emoji": "🐘",  "tithi": 4,  "paksha": "S", "month": None, "deity": "गणेश",          "desc": "विनायक चतुर्थी"},
     {"name": "संकष्टी चतुर्थी", "emoji": "🐘",  "tithi": 4,  "paksha": "K", "month": None, "deity": "गणेश",          "desc": "संकष्टी चतुर्थी"},
     
-    # ── Major Annual Festivals (Amanta Corrected) ──
-    {"name": "महाशिवरात्रि",    "emoji": "🔱",  "tithi": 14, "paksha": "K", "month": 11,   "deity": "शिव",           "desc": "माघ कृष्ण चतुर्दशी"},
-    {"name": "होली",            "emoji": "🎨",  "tithi": 15, "paksha": "S", "month": 12,   "deity": "कृष्ण",         "desc": "फाल्गुन पूर्णिमा"},
-    {"name": "राम नवमी",        "emoji": "🏹",  "tithi": 9,  "paksha": "S", "month": 1,    "deity": "राम",            "desc": "चैत्र शुक्ल नवमी"},
-    {"name": "हनुमान जयंती",    "emoji": "🙏",  "tithi": 15, "paksha": "S", "month": 1,    "deity": "हनुमान",         "desc": "चैत्र पूर्णिमा"},
-    {"name": "अक्षय तृतीया",    "emoji": "🌟",  "tithi": 3,  "paksha": "S", "month": 2,    "deity": "विष्णु-लक्ष्मी", "desc": "वैशाख शुक्ल तृतीया"},
-    {"name": "गंगा दशहरा",      "emoji": "🌊",  "tithi": 10, "paksha": "S", "month": 3,    "deity": "गंगा",           "desc": "ज्येष्ठ शुक्ल दशमी"},
-    {"name": "गुरु पूर्णिमा",   "emoji": "👨‍🏫", "tithi": 15, "paksha": "S", "month": 4,    "deity": "गुरु",           "desc": "आषाढ़ पूर्णिमा"},
-    {"name": "नाग पंचमी",       "emoji": "🐍",  "tithi": 5,  "paksha": "S", "month": 5,    "deity": "नागदेव",         "desc": "श्रावण शुक्ल पंचमी"},
-    {"name": "रक्षाबंधन",       "emoji": "🪢",  "tithi": 15, "paksha": "S", "month": 5,    "deity": "यम-यमी",         "desc": "श्रावण पूर्णिमा"},
-    {"name": "जन्माष्टमी",      "emoji": "🦚",  "tithi": 8,  "paksha": "K", "month": 5,    "deity": "कृष्ण",          "desc": "श्रावण कृष्ण अष्टमी"},
-    {"name": "गणेश चतुर्थी",    "emoji": "🐘",  "tithi": 4,  "paksha": "S", "month": 6,    "deity": "गणेश",           "desc": "भाद्रपद शुक्ल चतुर्थी"},
-    {"name": "नवरात्रि प्रारंभ","emoji": "🙏",  "tithi": 1,  "paksha": "S", "month": 7,    "deity": "दुर्गा",         "desc": "आश्विन शुक्ल प्रतिपदा"},
-    {"name": "दशहरा",           "emoji": "🏹",  "tithi": 10, "paksha": "S", "month": 7,    "deity": "राम-दुर्गा",     "desc": "आश्विन शुक्ल दशमी"},
-    {"name": "शरद पूर्णिमा",    "emoji": "🌕",  "tithi": 15, "paksha": "S", "month": 7,    "deity": "लक्ष्मी",        "desc": "आश्विन पूर्णिमा"},
-    {"name": "करवा चौथ",        "emoji": "💑",  "tithi": 4,  "paksha": "K", "month": 7,    "deity": "शिव-पार्वती",    "desc": "आश्विन कृष्ण चतुर्थी"},
-    {"name": "धनतेरस",          "emoji": "💰",  "tithi": 13, "paksha": "K", "month": 7,    "deity": "धन्वंतरि-लक्ष्मी","desc": "आश्विन कृष्ण त्रयोदशी"},
-    {"name": "दीपावली",         "emoji": "🪔",  "tithi": 15, "paksha": "K", "month": 7,    "deity": "लक्ष्मी",        "desc": "आश्विन अमावस्या"},
-    {"name": "गोवर्धन पूजा",    "emoji": "🐄",  "tithi": 1,  "paksha": "S", "month": 8,    "deity": "कृष्ण",          "desc": "कार्तिक शुक्ल प्रतिपदा"},
-    {"name": "भाई दूज",         "emoji": "👫",  "tithi": 2,  "paksha": "S", "month": 8,    "deity": "यमराज",          "desc": "कार्तिक शुक्ल द्वितीया"},
-    {"name": "देव उठनी एकादशी", "emoji": "🙏",  "tithi": 11, "paksha": "S", "month": 8,    "deity": "विष्णु",         "desc": "कार्तिक शुक्ल एकादशी"},
+    # ── चैत्र (1) ──
+    {"name": "चैत्र नवरात्रि / गुड़ी पड़वा", "emoji": "🚩", "tithi": 1,  "paksha": "S", "month": 1, "deity": "दुर्गा/ब्रह्मा", "desc": "चैत्र शुक्ल प्रतिपदा"},
+    {"name": "गणगौर पूजा",            "emoji": "🌸", "tithi": 3,  "paksha": "S", "month": 1, "deity": "शिव-पार्वती", "desc": "चैत्र शुक्ल तृतीया"},
+    {"name": "यमुना छठ",              "emoji": "🌊", "tithi": 6,  "paksha": "S", "month": 1, "deity": "यमुना", "desc": "चैत्र शुक्ल षष्ठी"},
+    {"name": "राम नवमी",              "emoji": "🏹", "tithi": 9,  "paksha": "S", "month": 1, "deity": "राम", "desc": "चैत्र शुक्ल नवमी"},
+    {"name": "कामदा एकादशी",          "emoji": "🙏", "tithi": 11, "paksha": "S", "month": 1, "deity": "विष्णु", "desc": "चैत्र शुक्ल एकादशी"},
+    {"name": "हनुमान जयंती",          "emoji": "🐒", "tithi": 15, "paksha": "S", "month": 1, "deity": "हनुमान", "desc": "चैत्र पूर्णिमा"},
+    {"name": "वरूथिनी एकादशी",        "emoji": "🙏", "tithi": 11, "paksha": "K", "month": 1, "deity": "विष्णु", "desc": "चैत्र कृष्ण एकादशी"},
+
+    # ── वैशाख (2) ──
+    {"name": "अक्षय तृतीया / परशुराम जयंती","emoji": "🌟", "tithi": 3,  "paksha": "S", "month": 2, "deity": "विष्णु-लक्ष्मी", "desc": "वैशाख शुक्ल तृतीया"},
+    {"name": "सीता नवमी",             "emoji": "👑", "tithi": 9,  "paksha": "S", "month": 2, "deity": "सीता", "desc": "वैशाख शुक्ल नवमी"},
+    {"name": "मोहिनी एकादशी",         "emoji": "🙏", "tithi": 11, "paksha": "S", "month": 2, "deity": "विष्णु", "desc": "वैशाख शुक्ल एकादशी"},
+    {"name": "नरसिंह जयंती",           "emoji": "🦁", "tithi": 14, "paksha": "S", "month": 2, "deity": "नरसिंह", "desc": "वैशाख शुक्ल चतुर्दशी"},
+    {"name": "कूर्म जयंती",             "emoji": "🐢", "tithi": 15, "paksha": "S", "month": 2, "deity": "विष्णु", "desc": "वैशाख पूर्णिमा"},
+    {"name": "अपरा एकादशी",           "emoji": "🙏", "tithi": 11, "paksha": "K", "month": 2, "deity": "विष्णु", "desc": "वैशाख कृष्ण एकादशी"},
+    {"name": "शनि जयंती / वट सावित्री", "emoji": "🪐", "tithi": 15, "paksha": "K", "month": 2, "deity": "शनिदेव/सावित्री", "desc": "वैशाख अमावस्या (अमांत)"},
+
+    # ── ज्येष्ठ (3) ──
+    {"name": "गंगा दशहरा",            "emoji": "🌊", "tithi": 10, "paksha": "S", "month": 3, "deity": "गंगा", "desc": "ज्येष्ठ शुक्ल दशमी"},
+    {"name": "निर्जला एकादशी",        "emoji": "💧", "tithi": 11, "paksha": "S", "month": 3, "deity": "विष्णु", "desc": "ज्येष्ठ शुक्ल एकादशी"},
+    {"name": "वट पूर्णिमा व्रत",          "emoji": "🌳", "tithi": 15, "paksha": "S", "month": 3, "deity": "सावित्री", "desc": "ज्येष्ठ पूर्णिमा"},
+    {"name": "योगिनी एकादशी",         "emoji": "🙏", "tithi": 11, "paksha": "K", "month": 3, "deity": "विष्णु", "desc": "ज्येष्ठ कृष्ण एकादशी"},
+
+    # ── आषाढ़ (4) ──
+    {"name": "देवशयनी एकादशी",        "emoji": "🛌", "tithi": 11, "paksha": "S", "month": 4, "deity": "विष्णु", "desc": "आषाढ़ शुक्ल एकादशी"},
+    {"name": "गुरु पूर्णिमा (व्यास पूजा)", "emoji": "👨‍🏫", "tithi": 15, "paksha": "S", "month": 4, "deity": "गुरु", "desc": "आषाढ़ पूर्णिमा"},
+    {"name": "कामिका एकादशी",         "emoji": "🙏", "tithi": 11, "paksha": "K", "month": 4, "deity": "विष्णु", "desc": "आषाढ़ कृष्ण एकादशी"},
+
+    # ── श्रावण (5) ──
+    {"name": "हरियाली तीज",           "emoji": "🌿", "tithi": 3,  "paksha": "S", "month": 5, "deity": "शिव-पार्वती", "desc": "श्रावण शुक्ल तृतीया"},
+    {"name": "नाग पंचमी",             "emoji": "🐍", "tithi": 5,  "paksha": "S", "month": 5, "deity": "नागदेव", "desc": "श्रावण शुक्ल पंचमी"},
+    {"name": "कल्कि जयंती",           "emoji": "🐎", "tithi": 6,  "paksha": "S", "month": 5, "deity": "विष्णु", "desc": "श्रावण शुक्ल षष्ठी"},
+    {"name": "श्रावण पुत्रदा एकादशी",   "emoji": "🙏", "tithi": 11, "paksha": "S", "month": 5, "deity": "विष्णु", "desc": "श्रावण शुक्ल एकादशी"},
+    {"name": "रक्षाबंधन / हयग्रीव जयंती","emoji": "🪢", "tithi": 15, "paksha": "S", "month": 5, "deity": "यम-यमी/विष्णु", "desc": "श्रावण पूर्णिमा"},
+    {"name": "कजरी तीज",             "emoji": "🍃", "tithi": 3,  "paksha": "K", "month": 5, "deity": "पार्वती", "desc": "श्रावण कृष्ण तृतीया"},
+    {"name": "श्री कृष्ण जन्माष्टमी",     "emoji": "🦚", "tithi": 8,  "paksha": "K", "month": 5, "deity": "कृष्ण", "desc": "श्रावण कृष्ण अष्टमी (अमांत)"},
+    {"name": "अजा एकादशी",            "emoji": "🙏", "tithi": 11, "paksha": "K", "month": 5, "deity": "विष्णु", "desc": "श्रावण कृष्ण एकादशी"},
+
+    # ── भाद्रपद (6) ──
+    {"name": "हरितालिका तीज",         "emoji": "👸", "tithi": 3,  "paksha": "S", "month": 6, "deity": "शिव-पार्वती", "desc": "भाद्रपद शुक्ल तृतीया"},
+    {"name": "गणेश चतुर्थी",           "emoji": "🐘", "tithi": 4,  "paksha": "S", "month": 6, "deity": "गणेश", "desc": "भाद्रपद शुक्ल चतुर्थी"},
+    {"name": "ऋषि पंचमी",             "emoji": "🧘", "tithi": 5,  "paksha": "S", "month": 6, "deity": "सप्तर्षि", "desc": "भाद्रपद शुक्ल पंचमी"},
+    {"name": "राधा अष्टमी",            "emoji": "🌸", "tithi": 8,  "paksha": "S", "month": 6, "deity": "राधा", "desc": "भाद्रपद शुक्ल अष्टमी"},
+    {"name": "पार्श्व (वामन) एकादशी",   "emoji": "🙏", "tithi": 11, "paksha": "S", "month": 6, "deity": "विष्णु/वामन", "desc": "भाद्रपद शुक्ल एकादशी"},
+    {"name": "अनंत चतुर्दशी",          "emoji": "♾️", "tithi": 14, "paksha": "S", "month": 6, "deity": "विष्णु", "desc": "भाद्रपद शुक्ल चतुर्दशी"},
+    {"name": "इन्दिरा एकादशी",         "emoji": "🙏", "tithi": 11, "paksha": "K", "month": 6, "deity": "विष्णु", "desc": "भाद्रपद कृष्ण एकादशी"},
+    {"name": "सर्वपित्री अमावस्या",       "emoji": "🌑", "tithi": 15, "paksha": "K", "month": 6, "deity": "पितृ", "desc": "भाद्रपद अमावस्या (महालया)"},
+
+    # ── आश्विन/आसो (7) ──
+    {"name": "शारदीय नवरात्रि प्रारंभ",   "emoji": "🚩", "tithi": 1,  "paksha": "S", "month": 7, "deity": "शैलपुत्री", "desc": "आश्विन शुक्ल प्रतिपदा"},
+    {"name": "सरस्वती आवाहन",         "emoji": "📚", "tithi": 7,  "paksha": "S", "month": 7, "deity": "सरस्वती", "desc": "आश्विन शुक्ल सप्तमी"},
+    {"name": "दुर्गा अष्टमी (महाअष्टमी)",  "emoji": "🔱", "tithi": 8,  "paksha": "S", "month": 7, "deity": "महागौरी", "desc": "आश्विन शुक्ल अष्टमी"},
+    {"name": "महानवमी",              "emoji": "🔥", "tithi": 9,  "paksha": "S", "month": 7, "deity": "सिद्धिदात्री", "desc": "आश्विन शुक्ल नवमी"},
+    {"name": "विजयादशमी (दशहरा)",     "emoji": "🏹", "tithi": 10, "paksha": "S", "month": 7, "deity": "राम-दुर्गा", "desc": "आश्विन शुक्ल दशमी"},
+    {"name": "पापांकुशा एकादशी",       "emoji": "🙏", "tithi": 11, "paksha": "S", "month": 7, "deity": "विष्णु", "desc": "आश्विन शुक्ल एकादशी"},
+    {"name": "शरद पूर्णिमा (कोजागिरी)", "emoji": "🌕", "tithi": 15, "paksha": "S", "month": 7, "deity": "लक्ष्मी", "desc": "आश्विन पूर्णिमा"},
+    {"name": "करवा चौथ",             "emoji": "💑", "tithi": 4,  "paksha": "K", "month": 7, "deity": "शिव-पार्वती", "desc": "आश्विन कृष्ण चतुर्थी (अमांत)"},
+    {"name": "अहोई अष्टमी",           "emoji": "👩‍👧‍👦", "tithi": 8, "paksha": "K", "month": 7, "deity": "अहोई माता", "desc": "आश्विन कृष्ण अष्टमी (अमांत)"},
+    {"name": "रमा एकादशी",            "emoji": "🙏", "tithi": 11, "paksha": "K", "month": 7, "deity": "विष्णु", "desc": "आश्विन कृष्ण एकादशी (अमांत)"},
+    {"name": "धनतेरस",               "emoji": "💰", "tithi": 13, "paksha": "K", "month": 7, "deity": "धन्वंतरि-लक्ष्मी", "desc": "आश्विन कृष्ण त्रयोदशी (अमांत)"},
+    {"name": "नरक चतुर्दशी (रूप चौदस)","emoji": "🪔", "tithi": 14, "paksha": "K", "month": 7, "deity": "कृष्ण-काली", "desc": "आश्विन कृष्ण चतुर्दशी (अमांत)"},
+    {"name": "दीपावली",              "emoji": "🪔", "tithi": 15, "paksha": "K", "month": 7, "deity": "लक्ष्मी", "desc": "आश्विन अमावस्या"},
+
+    # ── कार्तिक (8) ──
+    {"name": "गोवर्धन पूजा",           "emoji": "🐄", "tithi": 1,  "paksha": "S", "month": 8, "deity": "कृष्ण", "desc": "कार्तिक शुक्ल प्रतिपदा"},
+    {"name": "भाई दूज (यम द्वितीया)",  "emoji": "👫", "tithi": 2,  "paksha": "S", "month": 8, "deity": "यम-यमुना", "desc": "कार्तिक शुक्ल द्वितीया"},
+    {"name": "लाभ पंचमी",            "emoji": "📈", "tithi": 5,  "paksha": "S", "month": 8, "deity": "लक्ष्मी-गणेश", "desc": "कार्तिक शुक्ल पंचमी"},
+    {"name": "छठ पूजा",              "emoji": "🌅", "tithi": 6,  "paksha": "S", "month": 8, "deity": "सूर्य-छठी मैया", "desc": "कार्तिक शुक्ल षष्ठी"},
+    {"name": "गोपाष्टमी",             "emoji": "🐮", "tithi": 8,  "paksha": "S", "month": 8, "deity": "गौमाता-कृष्ण", "desc": "कार्तिक शुक्ल अष्टमी"},
+    {"name": "आंवला (अक्षय) नवमी",     "emoji": "🌳", "tithi": 9,  "paksha": "S", "month": 8, "deity": "विष्णु-आंवला", "desc": "कार्तिक शुक्ल नवमी"},
+    {"name": "देव उठनी एकादशी",       "emoji": "🙏", "tithi": 11, "paksha": "S", "month": 8, "deity": "विष्णु", "desc": "कार्तिक शुक्ल एकादशी"},
+    {"name": "तुलसी विवाह",           "emoji": "🪴", "tithi": 12, "paksha": "S", "month": 8, "deity": "विष्णु-तुलसी", "desc": "कार्तिक शुक्ल द्वादशी"},
+    {"name": "वैकुंठ चतुर्दशी",         "emoji": "🕉️", "tithi": 14, "paksha": "S", "month": 8, "deity": "शिव-विष्णु", "desc": "कार्तिक शुक्ल चतुर्दशी"},
+    {"name": "कार्तिक पूर्णिमा (देव दिवाली)","emoji": "🪔", "tithi": 15, "paksha": "S", "month": 8, "deity": "शिव (त्रिपुरारी)", "desc": "कार्तिक पूर्णिमा"},
+    {"name": "उत्पन्ना एकादशी",       "emoji": "🙏", "tithi": 11, "paksha": "K", "month": 8, "deity": "विष्णु", "desc": "कार्तिक कृष्ण एकादशी"},
+
+    # ── मार्गशीर्ष (9) ──
+    {"name": "विवाह पंचमी",           "emoji": "💒", "tithi": 5,  "paksha": "S", "month": 9, "deity": "राम-सीता", "desc": "मार्गशीर्ष शुक्ल पंचमी"},
+    {"name": "गीता जयंती / मोक्षदा एकादशी","emoji": "📖", "tithi": 11, "paksha": "S", "month": 9, "deity": "कृष्ण/विष्णु", "desc": "मार्गशीर्ष शुक्ल एकादशी"},
+    {"name": "दत्तात्रेय जयंती",         "emoji": "🕉️", "tithi": 15, "paksha": "S", "month": 9, "deity": "दत्तात्रेय", "desc": "मार्गशीर्ष पूर्णिमा"},
+    {"name": "सफला एकादशी",           "emoji": "🙏", "tithi": 11, "paksha": "K", "month": 9, "deity": "विष्णु", "desc": "मार्गशीर्ष कृष्ण एकादशी"},
+
+    # ── पौष (10) ──
+    {"name": "पौष पुत्रदा एकादशी",     "emoji": "🙏", "tithi": 11, "paksha": "S", "month": 10,"deity": "विष्णु", "desc": "पौष शुक्ल एकादशी"},
+    {"name": "शाकंभरी पूर्णिमा",        "emoji": "🌿", "tithi": 15, "paksha": "S", "month": 10,"deity": "शाकंभरी माता", "desc": "पौष पूर्णिमा"},
+    {"name": "षटतिला एकादशी",         "emoji": "🙏", "tithi": 11, "paksha": "K", "month": 10,"deity": "विष्णु", "desc": "पौष कृष्ण एकादशी"},
+    {"name": "मौनी अमावस्या",         "emoji": "🤫", "tithi": 15, "paksha": "K", "month": 10,"deity": "विष्णु/शिव", "desc": "पौष अमावस्या"},
+
+    # ── माघ (11) ──
+    {"name": "माघ गुप्त नवरात्रि प्रारंभ", "emoji": "🚩", "tithi": 1,  "paksha": "S", "month": 11,"deity": "दुर्गा", "desc": "माघ शुक्ल प्रतिपदा"},
+    {"name": "वसंत पंचमी",            "emoji": "🌼", "tithi": 5,  "paksha": "S", "month": 11,"deity": "सरस्वती", "desc": "माघ शुक्ल पंचमी"},
+    {"name": "रथ (अचला) सप्तमी",      "emoji": "🌞", "tithi": 7,  "paksha": "S", "month": 11,"deity": "सूर्यदेव", "desc": "माघ शुक्ल सप्तमी"},
+    {"name": "भीष्म अष्टमी",            "emoji": "🏹", "tithi": 8,  "paksha": "S", "month": 11,"deity": "भीष्म पितामह", "desc": "माघ शुक्ल अष्टमी"},
+    {"name": "जया एकादशी",            "emoji": "🙏", "tithi": 11, "paksha": "S", "month": 11,"deity": "विष्णु", "desc": "माघ शुक्ल एकादशी"},
+    {"name": "माघ पूर्णिमा (रविदास जयंती)","emoji": "🌕", "tithi": 15, "paksha": "S", "month": 11,"deity": "विष्णु/रविदास", "desc": "माघ पूर्णिमा"},
+    {"name": "विजया एकादशी",          "emoji": "🙏", "tithi": 11, "paksha": "K", "month": 11,"deity": "विष्णु", "desc": "माघ कृष्ण एकादशी"},
+    {"name": "महाशिवरात्रि",          "emoji": "🔱", "tithi": 14, "paksha": "K", "month": 11,"deity": "शिव", "desc": "माघ कृष्ण चतुर्दशी (अमांत)"},
+
+    # ── फाल्गुन (12) ──
+    {"name": "आमलकी एकादशी",          "emoji": "🌳", "tithi": 11, "paksha": "S", "month": 12,"deity": "विष्णु-आंवला", "desc": "फाल्गुन शुक्ल एकादशी"},
+    {"name": "होलिका दहन / पूर्णिमा",  "emoji": "🔥", "tithi": 15, "paksha": "S", "month": 12,"deity": "विष्णु-प्रहलाद", "desc": "फाल्गुन पूर्णिमा"},
+    {"name": "पापमोचनी एकादशी",       "emoji": "🙏", "tithi": 11, "paksha": "K", "month": 12,"deity": "विष्णु", "desc": "फाल्गुन कृष्ण एकादशी (अमांत)"},
 ]
 
 # ── Panchang Calculation ──────────────────────────────────────────
