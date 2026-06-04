@@ -126,25 +126,47 @@ def get_today_panchang():
         return None
 
 # ── Festival Matching (यह फंक्शन Views के लिए ज़रूरी है) ─────────
+# ── Festival Matching (Updated to handle both formats) ─────────
 def get_today_festivals(panchang_data=None):
     panchang = panchang_data if panchang_data else get_today_panchang()
     if not panchang: return []
 
-    festivals = []
-    # Handle direct panchang dictionary from views vs local generator
+    # हिंदी तिथि को नंबर में बदलने का मैप
+    tithi_map = {
+        "प्रतिपदा": 1, "द्वितीया": 2, "तृतीया": 3, "चतुर्थी": 4, "पंचमी": 5,
+        "षष्ठी": 6, "सप्तमी": 7, "अष्टमी": 8, "नवमी": 9, "दशमी": 10,
+        "एकादशी": 11, "द्वादशी": 12, "त्रयोदशी": 13, "चतुर्दशी": 14, 
+        "पूर्णिमा": 15, "अमावस्या": 15
+    }
+
+    # 1. Tithi (तिथि) मैच करें
     p_tithi = panchang.get('tithi', 1)
+    if isinstance(p_tithi, str):
+        clean_tithi = p_tithi.split()[0] if ' ' in p_tithi else p_tithi
+        p_tithi = tithi_map.get(clean_tithi, 1)
+
+    # 2. Paksha (पक्ष) मैच करें
     p_paksha = panchang.get('paksha', 'S')
-    
-    # If lunar_month is integer (from this file), use it + 1. If it's a string (from panchang_engine), map it.
+    if isinstance(p_paksha, str):
+        if "शुक्ल" in p_paksha: p_paksha = "S"
+        elif "कृष्ण" in p_paksha: p_paksha = "K"
+
+    # 3. Month (महीना) मैच करें (वेबसाइट से hindu_maas के नाम से आता है)
     p_month = panchang.get('lunar_month')
+    if not p_month and 'hindu_maas' in panchang:
+        p_month = panchang['hindu_maas']
+        
     if isinstance(p_month, str):
+        # अगर अधिक मास है तो उसे क्लीन करें
+        clean_month = p_month.replace('अधिक', '').replace('क्षय', '').strip()
         try:
-            p_month_idx = LUNAR_MONTHS.index(p_month) + 1
+            p_month_idx = LUNAR_MONTHS.index(clean_month) + 1
         except ValueError:
             p_month_idx = 1
     else:
         p_month_idx = (p_month or 0) + 1
 
+    festivals = []
     for rule in FESTIVAL_RULES:
         if rule["tithi"] == p_tithi and rule["paksha"] == p_paksha:
             if rule["month"] is None or rule["month"] == p_month_idx:
