@@ -89,6 +89,14 @@ IS_PYDROID = 'pydroid3' in sys.executable or 'ru.iiec.pydroid3' in sys.prefix
 
 if IS_PYDROID:
     # मोबाइल के लिए लोकल SQLite डेटाबेस
+import sys
+import dj_database_url  # सुनिश्चित करें कि यह ऊपर import किया गया हो
+
+# चेक करें कि क्या कोड मोबाइल (Pydroid) पर चल रहा है
+IS_PYDROID = 'pydroid3' in sys.executable or 'ru.iiec.pydroid3' in sys.prefix
+
+if IS_PYDROID:
+    # 1. Pydroid के लिए लोकल SQLite डेटाबेस (जिससे आपका Pydroid क्रैश नहीं होगा)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -96,16 +104,13 @@ if IS_PYDROID:
         }
     }
 else:
-    # लाइव प्रोडक्शन सर्वर (Render/PythonAnywhere) के लिए आपका पुराना PostgreSQL
+    # 2. Render (Live Server) के लिए आपका ओरिजिनल कोड
     DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': os.getenv('DB_NAME', 'your_db_name'),
-            'USER': os.getenv('DB_USER', 'your_db_user'),
-            'PASSWORD': os.getenv('DB_PASSWORD', 'your_db_password'),
-            'HOST': os.getenv('DB_HOST', 'your_db_host'),
-            'PORT': os.getenv('DB_PORT', '5432'),
-        }
+        'default': dj_database_url.config(
+            default=RENDER_DB_URL, # यह वेरिएबल आपकी फाइल में ऊपर कहीं डिफाइन होगा
+            conn_max_age=0,
+            conn_health_checks=True,
+        )
     }
 
 
