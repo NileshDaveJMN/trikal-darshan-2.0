@@ -120,7 +120,7 @@ def handle_updates():
                                 "🔮 *त्रिकाल दर्शन बॉट में स्वागत है!*\n\n"
                                 "अपना अकाउंट जोड़ने के लिए कृपया वेबसाइट पर जाएं "
                                 "और 'Telegram Bot से जुड़ें' बटन दबाएं।\n\n"
-                                "🌐 trikaldarshan.pythonanywhere.com"
+                                "🌐 https://trikal-darshan.onrender.com"
                             ))
 
                     elif text == "/status":
