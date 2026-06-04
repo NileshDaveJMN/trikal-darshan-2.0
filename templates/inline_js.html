@@ -26,7 +26,14 @@ function showView(event, viewId) {
     // बटन को एक्टिव दिखाएं
     if (event && event.currentTarget) {
         event.currentTarget.classList.add('active');
+    } else if (!event) {
+        // URL या नोटिफिकेशन से ऑटो-ट्रिगर होने पर सही बटन को हाईलाइट करें
+        var btnIndex = ['view-user', 'view-kundali', 'view-milan', 'view-panchang', 'view-rashifal'].indexOf(viewId);
+        if (btnIndex >= 0 && tabs[btnIndex]) {
+            tabs[btnIndex].classList.add('active');
+        }
     }
+
     // सब-टैब बार (लग्न, दशा) को सिर्फ कुंडली पर दिखाएं
     var subTabsBar = document.getElementById('sub-tabs-bar');
     if (subTabsBar) {
@@ -37,7 +44,23 @@ function showView(event, viewId) {
             subTabsBar.style.display = 'none';
         }
     }
+
+    // Profile tab init
+    if (viewId === 'view-user' && typeof initPushButton === 'function') {
+        setTimeout(initPushButton, 100);
+    }
 }
+
+// ==========================================
+// URL Parameter Handler (Push Notifications के लिए)
+// ==========================================
+document.addEventListener('DOMContentLoaded', function() {
+    var urlParams = new URLSearchParams(window.location.search);
+    var tabToOpen = urlParams.get('tab');
+    if (tabToOpen) {
+        showView(null, tabToOpen);
+    }
+});
 
 // ==========================================
 // 2. कुंडली के अंदर वाले सब-टैब बदलने का कोड
@@ -169,7 +192,6 @@ function captureChartAndDownload() {
             }, 400);
         });
 
-        // Bahar click karne par suggestions band karo
         document.addEventListener('click', function(e) {
             var box = document.getElementById('city_suggestions');
             var input = document.getElementById('city_input');
@@ -183,7 +205,7 @@ function captureChartAndDownload() {
 
 <script>
 // ==========================================
-// PUSH NOTIFICATIONS
+// 5. PUSH NOTIFICATIONS
 // ==========================================
 var PUSH_VAPID_KEY = '';
 
@@ -274,7 +296,6 @@ function doSubscribe() {
 
 function doUnsubscribe() {
     navigator.serviceWorker.register('/static/sw.js')
-
         .then(function(reg) { return reg.pushManager.getSubscription(); })
         .then(function(sub) {
             if (sub) {
@@ -306,35 +327,22 @@ function initPushButton() {
             updatePushBtn(!!sub);
         });
     });
-
-    // btn.onclick = doSubscribe; <--- इस लाइन को हटा दें
 }
 
-// Profile tab khulne par init karo
-var _origShowView = typeof showView === 'function' ? showView : null;
-showView = function(event, viewId) {
-    if (_origShowView) _origShowView(event, viewId);
-    if (viewId === 'view-user') {
-        setTimeout(initPushButton, 100);
-    }
-};
 // ==========================================
-// दैनिक राशिफल प्राप्त करने का AJAX कोड
+// 6. दैनिक राशिफल प्राप्त करने का AJAX कोड
 // ==========================================
 function fetchRashifal(rashiId, rashiName) {
-    // UI रिसेट करें
     document.getElementById('rashifal-result').style.display = 'none';
     document.getElementById('rashifal-error').style.display = 'none';
     document.getElementById('rashifal-loading').style.display = 'block';
 
-    // API कॉल (बिना पेज रीलोड किए)
     fetch(`/api/rashifal/?rashi_id=${rashiId}`)
         .then(response => response.json())
         .then(data => {
             document.getElementById('rashifal-loading').style.display = 'none';
             
             if (data.success) {
-                // डेटा भरें
                 document.getElementById('res-title').innerText = "✨ " + rashiName + " राशिफल ✨";
                 document.getElementById('res-general').innerText = data.GENERAL || 'विवरण उपलब्ध नहीं';
                 document.getElementById('res-career').innerText = data.CAREER || 'विवरण उपलब्ध नहीं';
@@ -343,10 +351,8 @@ function fetchRashifal(rashiId, rashiName) {
                 document.getElementById('res-lucky').innerText = data.LUCKY || 'विवरण उपलब्ध नहीं';
                 document.getElementById('res-upay').innerText = data.UPAY || 'विवरण उपलब्ध नहीं';
                 
-                // रिजल्ट दिखाएं
                 document.getElementById('rashifal-result').style.display = 'block';
             } else {
-                // एरर दिखाएं
                 document.getElementById('rashifal-error').innerText = data.error || "सर्वर से उत्तर प्राप्त नहीं हुआ।";
                 document.getElementById('rashifal-error').style.display = 'block';
             }
@@ -359,7 +365,7 @@ function fetchRashifal(rashiId, rashiName) {
         });
 }
 
-// Page load par bhi try karo
+// Page load par init karo
 document.addEventListener('DOMContentLoaded', function() {
     initPushButton();
 });
