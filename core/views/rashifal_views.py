@@ -1,13 +1,14 @@
-# Add this function inside core/views/rashifal_views.py
-
 import swisseph as swe
-import pytz, datetime, os, requests, random, re
+import pytz, datetime, os, requests, random, re, time
 
 GEMINI_API_KEYS = []
 for i in range(1, 10):
     key = os.getenv(f"GEMINI_API_KEYS{i}", "").strip()
     if key:
         GEMINI_API_KEYS.append(key)
+
+# नया मॉडल जो आपके दूसरे फंक्शन में चल रहा है
+GEMINI_MODEL = "gemini-3-flash-preview"
 
 RASHI_LIST = [
     {"id": "mesh",      "name": "मेष",      "symbol": "♈", "lord": "मंगल",  "idx": 0},
@@ -59,25 +60,38 @@ def _get_transit_summary():
         return f"ग्रह स्थिति उपलब्ध नहीं: {e}"
 
 
-def _call_gemini(prompt):
-    """Try all Gemini API keys"""
+def _call_gemini(prompt, max_retries=3):
+    """Try Gemini API keys with updated model and retry logic"""
+    if not GEMINI_API_KEYS: 
+        return None
+        
     keys = GEMINI_API_KEYS.copy()
     random.shuffle(keys)
-    for key in keys:
-        url = (f"https://generativelanguage.googleapis.com/v1beta/"
-               f"models/gemini-2.0-flash:generateContent?key={key}")
+
+    for attempt, api_key in enumerate(keys[:max_retries], 1):
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}"
         try:
-            r = requests.post(
-                url,
-                json={"contents": [{"parts": [{"text": prompt}]}]},
-                timeout=25, verify=False
+            resp = requests.post(
+                url, 
+                json={
+                    "contents": [{"parts": [{"text": prompt}]}], 
+                    "generationConfig": {"temperature": 0.75}
+                }, 
+                timeout=30, 
+                verify=False
             )
-            if r.status_code == 200:
-                text = (r.json()["candidates"][0]["content"]["parts"][0]["text"]
-                        .replace("**", "").replace("##", ""))
-                return text
-        except Exception:
-            continue
+            
+            if resp.status_code == 200:
+                # Safe parsing using .get() to prevent KeyError
+                text = resp.json().get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
+                # Remove Markdown stars and hashes safely
+                return re.sub(r'[*#]', '', text) if text else None
+            elif resp.status_code == 429: 
+                # Handle Too Many Requests
+                time.sleep(2)
+        except Exception: 
+            time.sleep(1)
+            
     return None
 
 
