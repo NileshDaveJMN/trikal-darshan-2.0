@@ -55,33 +55,42 @@
     }
 </style>
 
-<!-- 📍 शहर चुनने का फॉर्म -->
-<div style="background: #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
-    <h3 style="color: #d4af37; margin-top: 0; margin-bottom: 15px; font-size: 18px; text-align: center;">📍 वर्तमान शहर का पंचांग</h3>
-    
-    <form id="panchang-city-form" onsubmit="return validatePanchangCity(event);" style="display: flex; flex-direction: column; gap: 15px;">
-        
-        <input type="hidden" name="date" id="panchang_date_input" value="{{ current_date_value }}">
-        
-        <div style="position:relative; width: 100%;">
-            <input type="text" name="city" id="panchang_city_input" autocomplete="off" placeholder="शहर खोजें (उदा: Gandhinagar, Surat)..." value="{{ p_data.current_city|default:'नई दिल्ली' }}" required
-                   style="width: 100%; padding: 12px; background: #0f172a; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; outline: none; font-size: 15px; box-sizing: border-box;">
-            
-            <div id="panchang_city_suggestions"></div>
+<!-- 📍 1. शहर बदलने वाला Collapsed Tab -->
+<details class="premium-accordion" style="margin-bottom: 15px;">
+    <summary>📍 वर्तमान शहर: {{ p_data.current_city|truncatechars:20 }}</summary>
+    <div class="accordion-content">
+        <!-- आपका शहर सर्च करने वाला इनपुट और बटन (अपनी मौजूदा IDs के हिसाब से इसे रखें) -->
+        <div style="position:relative;">
+            <input type="text" id="panchang_city_input" placeholder="नया शहर खोजें..." style="width: 100%; padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 8px; margin-bottom: 15px; outline: none;">
         </div>
-        
-        <input type="hidden" name="lat" id="panchang_lat_input" value="{{ request.GET.lat|default:'28.5839' }}">
-        <input type="hidden" name="lon" id="panchang_lon_input" value="{{ request.GET.lon|default:'77.2090' }}">
-        
-        <small id="panchang_city_status" style="text-align: center;"></small>
+        <button class="primary-btn" style="width: 100%; background: #24a1de; color: #fff; padding: 12px; border: none; border-radius: 8px; cursor: pointer;">पंचांग सेट करें</button>
+        <p style="color: #94a3b8; font-size: 13px; margin-top: 15px; text-align: center;">अभी आप <strong>{{ p_data.current_city }}</strong> का पंचांग देख रहे हैं।</p>
+    </div>
+</details>
 
-        <button type="submit" style="background: #24a1de; color: #ffffff; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.3s; width: 100%;">पंचांग सेट करें</button>
-    </form>
+<!-- 🎉 2. आज का त्योहार / व्रत कार्ड -->
+<div class="card" style="text-align: left; background: #131c2c; border: 1px solid #334155; border-left: 4px solid #ffca28; margin-bottom: 20px; padding: 15px;">
+    <h3 style="margin-top: 0; margin-bottom: 12px; color: #ffca28; font-size: 16px;">🎉 आज का त्योहार / व्रत</h3>
     
-    <p style="color: #94a3b8; text-align: center; margin-top: 15px; font-size: 14px; margin-bottom: 0;">
-        अभी आप <strong>{{ p_data.current_city|default:"नई दिल्ली" }}</strong> का पंचांग देख रहे हैं।
-    </p>
+    {% if today_festivals %}
+        {% for fest in today_festivals %}
+        <div style="margin-bottom: {% if not forloop.last %}15px{% else %}0{% endif %};">
+            <span style="font-size: 22px; vertical-align: top;">{{ fest.emoji }}</span>
+            <div style="display: inline-block; margin-left: 8px;">
+                <strong style="color: #fff; font-size: 16px;">{{ fest.name }}</strong>
+                <p style="color: #cbd5e1; font-size: 13px; margin: 3px 0 0 0;">{{ fest.desc }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p style="color: #94a3b8; font-size: 14px; margin: 0; display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 18px;">✨</span> आज कोई विशेष पर्व या व्रत नहीं है।
+        </p>
+    {% endif %}
 </div>
+
+<!-- इसके नीचे आपका पुराना डेट सेलेक्टर (04/06/2026) और तिथियों वाला ग्रिड वैसा ही रहेगा -->
+
 
 <!-- 📅 तारीख नेविगेशन -->
 <div style="display: flex; align-items: center; justify-content: space-between; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 10px; box-sizing: border-box; width: 100%; margin-bottom: 20px;">
