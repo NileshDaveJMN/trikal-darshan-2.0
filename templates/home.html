@@ -9,7 +9,6 @@
     {% include 'inline_css.html' %}
     <meta name="google-site-verification" content="z7IB1Eh9lzeoYMzNWxXA6Q4fJTAXCHwLPXk2l5HG2qU" />
 </head>
-<meta name="google-site-verification" content="z7IB1Eh9lzeoYMzNWxXA6Q4fJTAXCHwLPXk2l5HG2qU" />
 <body>
 
 <div class="app-container">
@@ -21,14 +20,14 @@
             <div class="user-badge">🪙 K: 0 | M: 0</div>
         {% endif %}
     </div>
-        <div class="primary-tabs">
+    
+    <div class="primary-tabs">
         <button class="p-tab-btn active" onclick="showView(event, 'view-user')">👤 प्रोफाइल</button>
         <button class="p-tab-btn" onclick="showView(event, 'view-kundali')">📜 कुंडली</button>
         <button class="p-tab-btn" onclick="showView(event, 'view-milan')">💑 मिलान</button>
         <button class="p-tab-btn" onclick="showView(event, 'view-panchang')">📅 पंचांग</button>
         <button class="p-tab-btn" onclick="showView(event, 'view-rashifal')">🔮 राशिफल</button> 
     </div>
-
 
     <div class="sub-tabs-bar" id="sub-tabs-bar" style="display:none;">
         <button class="sub-tab active" onclick="switchSubTab(this, 'panel-lagna')">लग्न कुंडली</button>
@@ -45,16 +44,15 @@
             <div class="card" style="text-align:center;">
                 <h3 style="margin-bottom: 25px;">👤 यूज़र प्रोफाइल</h3>
                 {% if user.is_authenticated %}
-<div style="margin: 0 0 20px 0;">
-  <button id="push-toggle-btn" onclick="doSubscribe()"
-    style="background:linear-gradient(45deg,#b71c1c,#e53935);color:white;border:none;padding:13px 20px;border-radius:20px;font-size:15px;cursor:pointer;width:100%;font-weight:bold;">
-    🔔 दैनिक सूचनाएं पाएं
-  </button>
-</div>
-{% endif %}
+                <div style="margin: 0 0 20px 0;">
+                  <button id="push-toggle-btn" onclick="doSubscribe()"
+                    style="background:linear-gradient(45deg,#b71c1c,#e53935);color:white;border:none;padding:13px 20px;border-radius:20px;font-size:15px;cursor:pointer;width:100%;font-weight:bold;">
+                    🔔 दैनिक सूचनाएं पाएं
+                  </button>
+                </div>
+                {% endif %}
                 
                 {% if user.is_authenticated %}
-                                       <!-- ======= दैनिक राशिफल सेक्शन ======= -->
                     {% if user.userprofile.daily_horoscope_text %}
                     <details class="premium-accordion" style="margin-bottom: 25px;">
                         <summary>🔮 आपका आज का राशिफल ({{ user.userprofile.horoscope_date|date:"d M Y" }})</summary>
@@ -63,9 +61,6 @@
                         </div>
                     </details>
                     {% endif %}
-                    <!-- =================================== -->
-
-                    <!-- =================================== -->
 
                     <div style="background: #131c2c; border: 1px solid #334155; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
                         <p style="color: #cbd5e1; font-size: 15px; margin-bottom: 10px;">
@@ -89,7 +84,6 @@
                         </div>
                     </div>
 
-                                        <!-- ======= क्रेडिट्स रिचार्ज सेक्शन ======= -->
                     <details class="premium-accordion" style="margin-bottom: 25px;">
                         <summary>💎 क्रेडिट्स रिचार्ज करें</summary>
                         <div class="accordion-content">
@@ -97,7 +91,6 @@
                                 <img src="{% static 'images/my_qr.jpg' %}" alt="UPI QR" style="width: 160px; border: 2px solid #ffca28; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 0 15px rgba(255, 202, 40, 0.1);">
                                 <p style="color: #cbd5e1; font-size: 14px; margin-bottom: 5px;">UPI ID: <strong style="color: #ffca28; letter-spacing: 0.5px;">nileshdave1511-2@oksbi</strong></p>
                             </div>
-
                             <form id="rechargeForm" method="POST" action="{% url 'submit_payment' %}">
                                 {% csrf_token %}
                                 <label style="color: #94a3b8; font-size: 13px; margin-bottom: 5px; display: block; text-align: left;">पैकेज चुनें:</label>
@@ -106,16 +99,12 @@
                                     <option value="MILAN_51">💑 3 मिलान क्रेडिट्स - ₹51</option>
                                     <option value="COMBO_101">🔥 कॉम्बो (5 कुंडली + 5 मिलान) - ₹101</option>
                                 </select>
-
                                 <label style="color: #94a3b8; font-size: 13px; margin-bottom: 5px; display: block; text-align: left;">UTR / रेफरेंस नंबर:</label>
                                 <input type="text" id="reference" name="reference" placeholder="पेमेंट का 12 अंकों का UTR डालें..." style="width: 100%; padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 8px; margin-bottom: 20px; outline: none;" required>
-                                
                                 <button type="submit" style="width: 100%; background: #ffca28; color: #0f172a; border: none; padding: 14px; font-size: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 15px rgba(255, 202, 40, 0.4); text-transform: uppercase; letter-spacing: 0.5px;">✅ पेमेंट कन्फर्म करें</button>
                             </form>
                         </div>
                     </details>
-                    <!-- ======================================= -->
-
 
                     {% if not user.userprofile.telegram_chat_id %}
                     <div style="background: #131c2c; border: 1px dashed #24a1de; margin-bottom: 16px; text-align: center; padding: 16px; border-radius: 12px;">
@@ -148,8 +137,6 @@
 
         <!-- ================= कुंडली सेक्शन ================= -->
         <div id="view-kundali" class="view-panel">
-
-
             {% if user.is_authenticated and saved_kundalis %}
             <details class="premium-accordion" {% if not res %}open{% endif %}>
                 <summary>📂 सेव की गई कुंडलियां</summary>
@@ -174,7 +161,8 @@
                 </div>
             </details>
             {% endif %}
-                        <div id="kundali-input-section" class="card" {% if res or saved_kundalis %}style="display:none;"{% endif %}>
+            
+            <div id="kundali-input-section" class="card" {% if res or saved_kundalis %}style="display:none;"{% endif %}>
                 <h3>विवरण दर्ज करें</h3>
                 <form method="POST" action="{% url 'home' %}" onsubmit="return validateCity();">
                     {% csrf_token %}
@@ -208,12 +196,10 @@
                     <button type="submit" class="primary-btn" style="margin-top:20px;">कुंडली बनाएं ➔</button>
                 </form>
 
-                <!-- City Validation Script -->
                 <script>
                 function validateCity() {
                     var lat = document.getElementById("lat_input").value;
                     var lon = document.getElementById("lon_input").value;
-                    
                     if (!lat || !lon || lat === "" || lon === "") {
                         alert("⚠️ कृपया केवल नाम टाइप न करें। सही गणना के लिए नीचे आने वाली लिस्ट में से अपने शहर का चयन करें।");
                         document.getElementById("city_status").innerHTML = '<span style="color:#ff4757; font-size:13px; font-weight:bold;">कृपया लिस्ट में से शहर चुनें!</span>';
@@ -225,32 +211,20 @@
                 </script>
             </div>
 
-
-            
-                        {% if res %}
+            {% if res %}
             <script>
             document.addEventListener('DOMContentLoaded', function() {
-                // 1. Profile ki jagah Kundali tab ko active karein
                 var mainTabs = document.querySelectorAll('.p-tab-btn');
                 mainTabs.forEach(function(btn) { btn.classList.remove('active'); });
-                if(mainTabs.length > 1) { mainTabs[1].classList.add('active'); } // Kundali button
-                
+                if(mainTabs.length > 1) { mainTabs[1].classList.add('active'); } 
                 showView(null, 'view-kundali');
-                
-                // 2. Sub-tabs bar dikhayein aur sirf Lagna Kundali ko active karein
                 document.getElementById('sub-tabs-bar').style.display = 'flex';
-                
                 var subTabs = document.querySelectorAll('.sub-tab');
-                if(subTabs.length > 0) {
-                    switchSubTab(subTabs[0], 'panel-lagna');
-                } else {
-                    switchSubTab(null, 'panel-lagna');
-                }
+                if(subTabs.length > 0) { switchSubTab(subTabs[0], 'panel-lagna'); } 
+                else { switchSubTab(null, 'panel-lagna'); }
             });
             </script>
             {% endif %}
-
-
 
             <div id="kundali-result-section" {% if res %}style="display:block;"{% else %}style="display:none;"{% endif %}>
                 {% if res %}
@@ -297,8 +271,7 @@
                         </div>
                     {% endif %}
                 </div>
-
-                <div id="panel-ai" class="sub-panel" style="display:none;">
+                 <div id="panel-ai" class="sub-panel" style="display:none;">
                     {% if user.is_authenticated %}
                         {% include 'tabs/ai_tab.html' %}
                     {% else %}
@@ -331,8 +304,8 @@
                     </button>
                 </form>
                 {% endif %}
-            </div> <!-- kundali-result-section बंद -->
-        </div> <!-- view-kundali बंद -->
+            </div> 
+        </div>
 
         <!-- ================= मिलान सेक्शन ================= -->
         <div id="view-milan" class="view-panel" style="display:none;">
@@ -340,14 +313,33 @@
         </div>
 
         <!-- ================= पंचांग सेक्शन ================= -->
-      <!-- ================= पंचांग सेक्शन ================= -->
-<div id="view-panchang" class="view-panel" style="display:none;">
-    {% include 'panchang.html' %}
-</div>
+        <div id="view-panchang" class="view-panel" style="display:none;">
+            {% include 'panchang.html' %}
+        </div>
+
+        <!-- ================= राशिफल सेक्शन ================= -->
         <div id="view-rashifal" class="view-panel" style="display:none;">
             <div class="card" style="text-align:center;">
-                <h3 style="margin-bottom: 10px;">आज का दैनिक राशिफल</h3>
-                <p style="color: #94a3b8; font-size: 14px; margin-bottom: 25px;">अपनी राशि चुनें और AI द्वारा जनरेटेड वैदिक ज्योतिष पर आधारित आज का फलित जानें:</p>
+                <h3 style="margin-bottom: 15px;">आज का दैनिक राशिफल</h3>
+
+                <!-- 🌟 नया पर्सनल राशिफल बैनर 🌟 -->
+                {% if not user.is_authenticated %}
+                <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px dashed #ffca28; border-radius: 12px; padding: 15px; margin-bottom: 25px;">
+                    <p style="color: #cbd5e1; font-size: 14px; margin-top: 0; margin-bottom: 12px; line-height: 1.5;">
+                        ✨ <strong>व्यक्तिगत राशिफल:</strong> पर्सनल राशिफल के लिए साइन-इन करें और अपनी प्रोफाइल में पाएं रोज़ का सटीक राशिफल!
+                    </p>
+                    <a href="{% url 'login' %}" style="text-decoration:none;">
+                        <button class="primary-btn" style="background: #ffca28; color: #0f172a; padding: 8px 20px; font-size: 14px; width: auto; font-weight: bold; border: none; border-radius: 20px; box-shadow: 0 4px 10px rgba(255,202,40,0.3); cursor: pointer;">लॉगइन / साइन-अप करें</button>
+                    </a>
+                </div>
+                {% else %}
+                <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px solid #334155; border-left: 4px solid #24a1de; border-radius: 12px; padding: 15px; margin-bottom: 25px; text-align: left; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                    <span style="color: #e2e8f0; font-size: 14px; line-height: 1.4;">✨ आपका आज का <strong>व्यक्तिगत राशिफल</strong> तैयार है!</span>
+                    <button onclick="showView(event, 'view-user')" style="background: #24a1de; color: #fff; border: none; padding: 8px 15px; border-radius: 15px; font-size: 12px; cursor: pointer; font-weight: bold; white-space: nowrap;">प्रोफाइल देखें ➔</button>
+                </div>
+                {% endif %}
+
+                <p style="color: #94a3b8; font-size: 14px; margin-bottom: 25px;">अपनी चंद्र राशि चुनें और AI द्वारा जनरेटेड सामान्य फलित जानें:</p>
                 
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px; margin-bottom: 20px;">
                     {% for r in rashis %}
@@ -368,13 +360,11 @@
 
                 <div id="rashifal-result" style="display: none; text-align: left; background: #131c2c; padding: 20px; border-radius: 10px; border: 1px solid #334155; margin-top: 20px;">
                     <h3 id="res-title" style="text-align: center; color: #ffca28; margin-bottom: 15px; border-bottom: 1px dashed #334155; padding-bottom: 10px;"></h3>
-                    
                     <div style="margin-bottom: 12px;"><strong style="color:#2ecc71;">🌟 सामान्य:</strong> <span id="res-general" style="color:#e2e8f0; font-size: 14px; line-height: 1.6;"></span></div>
                     <div style="margin-bottom: 12px;"><strong style="color:#3498db;">💼 करियर:</strong> <span id="res-career" style="color:#e2e8f0; font-size: 14px; line-height: 1.6;"></span></div>
                     <div style="margin-bottom: 12px;"><strong style="color:#e74c3c;">❤️ प्रेम:</strong> <span id="res-love" style="color:#e2e8f0; font-size: 14px; line-height: 1.6;"></span></div>
                     <div style="margin-bottom: 12px;"><strong style="color:#9b59b6;">⚕️ स्वास्थ्य:</strong> <span id="res-health" style="color:#e2e8f0; font-size: 14px; line-height: 1.6;"></span></div>
                     <div style="margin-bottom: 12px;"><strong style="color:#f1c40f;">🎯 शुभ:</strong> <span id="res-lucky" style="color:#e2e8f0; font-size: 14px; line-height: 1.6;"></span></div>
-                    
                     <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed #334155;">
                         <strong style="color:#e67e22;">✨ उपाय:</strong> 
                         <span id="res-upay" style="color:#ffca28; font-size: 15px; font-weight: bold; line-height: 1.6;"></span>
@@ -383,7 +373,6 @@
             </div>
         </div>
 
-
     </div> <!-- main-viewport बंद -->
 </div> <!-- app-container बंद -->
 
@@ -391,3 +380,5 @@
 
 </body>
 </html>
+
+     

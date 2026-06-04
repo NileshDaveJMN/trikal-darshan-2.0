@@ -61,11 +61,9 @@
     <div class="accordion-content">
         <div style="position:relative;">
             <input type="text" id="panchang_city_input" autocomplete="off" value="{{ p_data.current_city|default:'' }}" placeholder="नया शहर खोजें..." style="width: 100%; padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 8px; margin-bottom: 15px; outline: none;">
-            <!-- सजेशन बॉक्स (यह मिसिंग था) -->
             <div id="panchang_city_suggestions"></div>
         </div>
         
-        <!-- हिडन फील्ड्स (ये मिसिंग थे, इनके बिना शहर सेट नहीं हो सकता) -->
         <input type="hidden" id="panchang_lat_input" value="{{ p_data.lat|default:'28.5839' }}">
         <input type="hidden" id="panchang_lon_input" value="{{ p_data.lon|default:'77.2090' }}">
         <small id="panchang_city_status"></small>
@@ -96,14 +94,12 @@
     {% endif %}
 </div>
 
-
 <!-- 📅 तारीख नेविगेशन -->
 <div style="display: flex; align-items: center; justify-content: space-between; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 10px; box-sizing: border-box; width: 100%; margin-bottom: 20px;">
     <button type="button" onclick="loadPanchangDate('{{ p_data.prev_date }}')" style="background: #0f172a; color: #d4af37; border: 1px solid #334155; padding: 8px 15px; border-radius: 8px; font-weight: bold; font-size: 18px; flex-shrink: 0; text-align: center; cursor: pointer;">
         &#8592;
     </button>
     <div style="flex-grow: 1; padding: 0 15px; box-sizing: border-box;">
-        <!-- id="panchang_date_input" मिसिंग था, इसे लगा दिया गया है -->
         <input type="date" id="panchang_date_input" value="{{ current_date_value }}" 
                style="width: 100%; background: #0f172a; color: #d4af37; border: 1px solid #334155; border-radius: 8px; padding: 8px; font-weight: bold; font-family: inherit; outline: none; cursor: pointer; text-align: center; font-size: 16px; box-sizing: border-box;"
                onchange="loadPanchangDate(this.value)">
@@ -185,6 +181,7 @@
         </div>
     </div>
 </div>
+
 <!-- ℹ️ इन्फो मोडल -->
 <div id="infoModal" class="modal" style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7);">
     <div class="modal-content" style="margin: 30% auto; padding: 20px; width: 80%;">
@@ -195,25 +192,21 @@
 </div>
 
 <script>
-    // 1. फॉर्म वैलिडेशन
     function validatePanchangCity(event) {
         if(event) { event.preventDefault(); }
         var lat = document.getElementById("panchang_lat_input").value;
         var lon = document.getElementById("panchang_lon_input").value;
-        
         if (!lat || !lon || lat === "" || lon === "") {
             alert("⚠️ कृपया केवल नाम टाइप न करें। सही गणना के लिए नीचे आने वाली लिस्ट में से अपने शहर का चयन करें।");
             document.getElementById("panchang_city_status").innerHTML = '<span style="color:#ff4757; font-size:13px; font-weight:bold;">कृपया लिस्ट में से शहर चुनें!</span>';
             document.getElementById("panchang_city_input").focus();
             return false; 
         }
-
         var dateStr = document.getElementById('panchang_date_input').value;
         loadPanchangDate(dateStr);
         return false; 
     }
 
-    // 2. Nominatim API 
     function setupPanchangNominatim() {
         var debounceTimer = null;
         var input = document.getElementById('panchang_city_input');
@@ -224,12 +217,7 @@
 
         function fetchPanchangCities(query) {
             var box = document.getElementById('panchang_city_suggestions');
-            if (query.length < 2) {
-                box.innerHTML = '';
-                box.style.display = 'none';
-                return;
-            }
-
+            if (query.length < 2) { box.innerHTML = ''; box.style.display = 'none'; return; }
             fetch('https://nominatim.openstreetmap.org/search?format=json&limit=6&addressdetails=1&q=' + encodeURIComponent(query), {
                 headers: { 'Accept-Language': 'hi,en' }
             })
@@ -238,39 +226,27 @@
                 box.innerHTML = '';
                 if (!data || data.length === 0) {
                     box.innerHTML = '<div style="padding:10px; color:#aab4be; font-size:13px;">कोई शहर नहीं मिला</div>';
-                    box.style.display = 'block';
-                    return;
+                    box.style.display = 'block'; return;
                 }
-
                 data.forEach(function(item) {
                     var div = document.createElement('div');
                     div.className = 'city-suggestion-item';
                     div.textContent = item.display_name;
-                    
                     div.addEventListener('click', function() {
                         document.getElementById('panchang_city_input').value = item.display_name;
                         document.getElementById('panchang_lat_input').value = item.lat;
                         document.getElementById('panchang_lon_input').value = item.lon;
-                        box.innerHTML = '';
-                        box.style.display = 'none';
+                        box.innerHTML = ''; box.style.display = 'none';
                         document.getElementById('panchang_city_status').innerHTML = '<span style="color:#4caf50; font-size:13px;">✓ शहर चुना गया</span>';
-                        
                         fetch('/api/save-location/', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ lat: item.lat, lon: item.lon, city: item.display_name })
                         })
                         .then(response => response.json())
-                        .then(data => {
-                            var dateStr = document.getElementById('panchang_date_input').value;
-                            loadPanchangDate(dateStr);
-                        })
-                        .catch(err => {
-                            var dateStr = document.getElementById('panchang_date_input').value;
-                            loadPanchangDate(dateStr);
-                        });
+                        .then(data => { loadPanchangDate(document.getElementById('panchang_date_input').value); })
+                        .catch(err => { loadPanchangDate(document.getElementById('panchang_date_input').value); });
                     });
-                    
                     box.appendChild(div);
                 });
                 box.style.display = 'block';
@@ -285,20 +261,17 @@
             document.getElementById('panchang_lat_input').value = '';
             document.getElementById('panchang_lon_input').value = '';
             document.getElementById('panchang_city_status').innerHTML = '';
-
             clearTimeout(debounceTimer);
             debounceTimer = setTimeout(function() { fetchPanchangCities(new_input.value.trim()); }, 400);
         });
 
         document.addEventListener('click', function(e) {
             var box = document.getElementById('panchang_city_suggestions');
-            if (box && e.target !== new_input && !box.contains(e.target)) {
-                box.style.display = 'none';
-            }
+            if (box && e.target !== new_input && !box.contains(e.target)) { box.style.display = 'none'; }
         });
     }
 
-    // 3. AJAX Pnachang Loader
+    // 🌟 3. AJAX Pnachang Loader (With Loading Spinner) 🌟
     function loadPanchangDate(dateStr) {
         if(!dateStr) return;
         
@@ -308,37 +281,52 @@
         
         let targetUrl = `/panchang/?date=${dateStr}&lat=${lat}&lon=${lon}&city=${encodeURIComponent(city)}`;
         
+        const container = document.getElementById('view-panchang');
+        
+        if(container) {
+            // शानदार स्पिनर ओवरले जोड़े
+            let overlay = document.createElement('div');
+            overlay.id = 'panchang-spinner';
+            overlay.innerHTML = '<div style="font-size:35px; animation: spin 1.5s linear infinite; margin-bottom:15px;">⏳</div><div>पंचांग लोड हो रहा है...</div>';
+            overlay.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.85); z-index:999; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:12px; color:#ffca28; font-weight:bold; font-size:16px; backdrop-filter:blur(3px);';
+            
+            container.style.position = 'relative';
+            container.appendChild(overlay);
+            container.style.pointerEvents = 'none';
+        }
+        
         fetch(targetUrl)
         .then(response => response.text())
         .then(html => {
-            const container = document.getElementById('view-panchang');
             if(container) {
                 container.innerHTML = html;
+                container.style.pointerEvents = 'auto';
                 applyChoghadiyaColors();
                 setupPanchangNominatim(); 
             } else {
                 window.location.href = targetUrl;
             }
         })
-        .catch(err => console.error("Error loading panchang:", err));
-    }
-
-    // 4. Choghadiya Colors
-    function applyChoghadiyaColors() {
-        let ch_names = document.querySelectorAll('.ch-name-text');
-        ch_names.forEach(el => {
-            let text = el.innerText.trim();
-            if (['शुभ', 'अमृत', 'लाभ'].includes(text)) {
-                el.style.color = '#d4af37'; 
-            } else if (['रोग', 'उद्वेग', 'काल'].includes(text)) {
-                el.style.color = '#ff8787'; 
-            } else {
-                el.style.color = '#94a3b8'; 
+        .catch(err => {
+            console.error("Error loading panchang:", err);
+            if(container) {
+                container.style.pointerEvents = 'auto';
+                let spinner = document.getElementById('panchang-spinner');
+                if(spinner) spinner.remove();
             }
         });
     }
 
-    // 5. Muhurat Info Box
+    function applyChoghadiyaColors() {
+        let ch_names = document.querySelectorAll('.ch-name-text');
+        ch_names.forEach(el => {
+            let text = el.innerText.trim();
+            if (['शुभ', 'अमृत', 'लाभ'].includes(text)) { el.style.color = '#d4af37'; } 
+            else if (['रोग', 'उद्वेग', 'काल'].includes(text)) { el.style.color = '#ff8787'; } 
+            else { el.style.color = '#94a3b8'; }
+        });
+    }
+
     function showInfo(type) {
         const modal = document.getElementById('infoModal');
         const header = document.getElementById('modalHeader');
@@ -358,7 +346,6 @@
     }
     function closeModal() { document.getElementById('infoModal').style.display = 'none'; }
 
-    // Init
     document.addEventListener("DOMContentLoaded", function() {
         applyChoghadiyaColors();
         setupPanchangNominatim();
