@@ -1,5 +1,5 @@
 from core.views.rashifal_views import rashifal_home, rashifal_detail
-from core.views.seo_views import sitemap_xml, robots_txt
+from core.views.seo_views import sitemap_xml
 from django.views.generic import TemplateView
 from core.views.kundali_views import home, download_kundali_pdf, api_get_ai_analysis, user_profile_view
 from django.contrib import admin
@@ -32,8 +32,6 @@ urlpatterns = [
     path('logout/',   user_logout,   name='logout'),
     path('profile/',  user_profile_view, name='user_profile'),
     path('sitemap.xml', sitemap_xml, name='sitemap'),
-    path('robots.txt',  robots_txt,  name='robots'),
-
 
     # Main
     path('',          home,          name='home'),
