@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from engines.panchang_engine import get_panchang_data
+from festival_engine import get_today_festivals
 
 
 def panchang(request):
@@ -44,6 +45,9 @@ def panchang(request):
 
     # 3. Panchang data
     p_data = get_panchang_data(target_dt, not date_str, float(user_lat), float(user_lon))
+    today_festivals = []
+    if p_data:
+        today_festivals = get_today_festivals(p_data)
 
     if p_data:
         p_data['current_city'] = current_city
@@ -61,6 +65,7 @@ def panchang(request):
 
     return render(request, 'panchang.html', {
         'p_data':             p_data,
+        'today_festivals': today_festivals,
         'current_date_value': current_date_value,
         'current_lat':        user_lat,
         'current_lon':        user_lon,

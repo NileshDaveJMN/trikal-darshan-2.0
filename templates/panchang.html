@@ -73,9 +73,9 @@
     </div>
 </details>
 
-<!-- 🎉 2. आज का त्योहार / व्रत कार्ड -->
+<!-- 🎉 2. चयनित तिथि का त्योहार / व्रत कार्ड -->
 <div class="card" style="text-align: left; background: #131c2c; border: 1px solid #334155; border-left: 4px solid #ffca28; margin-bottom: 20px; padding: 15px;">
-    <h3 style="margin-top: 0; margin-bottom: 12px; color: #ffca28; font-size: 16px;">🎉 आज का त्योहार / व्रत</h3>
+    <h3 style="margin-top: 0; margin-bottom: 12px; color: #ffca28; font-size: 16px;">🎉 पर्व / व्रत ({{ p_data.date_str }})</h3>
     
     {% if today_festivals %}
         {% for fest in today_festivals %}
@@ -89,10 +89,11 @@
         {% endfor %}
     {% else %}
         <p style="color: #94a3b8; font-size: 14px; margin: 0; display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 18px;">✨</span> आज कोई विशेष पर्व या व्रत नहीं है।
+            <span style="font-size: 18px;">✨</span> इस दिन कोई विशेष पर्व या व्रत नहीं है।
         </p>
     {% endif %}
 </div>
+
 
 <!-- 📅 तारीख नेविगेशन -->
 <div style="display: flex; align-items: center; justify-content: space-between; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 10px; box-sizing: border-box; width: 100%; margin-bottom: 20px;">
