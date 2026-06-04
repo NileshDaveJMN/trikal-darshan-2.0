@@ -185,7 +185,6 @@
         </div>
     </div>
 </div>
-
 <!-- ℹ️ इन्फो मोडल -->
 <div id="infoModal" class="modal" style="display:none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7);">
     <div class="modal-content" style="margin: 30% auto; padding: 20px; width: 80%;">
@@ -198,10 +197,7 @@
 <script>
     // 1. फॉर्म वैलिडेशन
     function validatePanchangCity(event) {
-        if(event) {
-            event.preventDefault(); 
-        }
-
+        if(event) { event.preventDefault(); }
         var lat = document.getElementById("panchang_lat_input").value;
         var lon = document.getElementById("panchang_lon_input").value;
         
@@ -251,7 +247,6 @@
                     div.className = 'city-suggestion-item';
                     div.textContent = item.display_name;
                     
-                    // 🌟 जब यूज़र लिस्ट से शहर चुने 🌟
                     div.addEventListener('click', function() {
                         document.getElementById('panchang_city_input').value = item.display_name;
                         document.getElementById('panchang_lat_input').value = item.lat;
@@ -260,25 +255,17 @@
                         box.style.display = 'none';
                         document.getElementById('panchang_city_status').innerHTML = '<span style="color:#4caf50; font-size:13px;">✓ शहर चुना गया</span>';
                         
-                        // 🌟 API को कॉल करके शहर सेव करवाएं 🌟
                         fetch('/api/save-location/', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                lat: item.lat,
-                                lon: item.lon,
-                                city: item.display_name
-                            })
+                            body: JSON.stringify({ lat: item.lat, lon: item.lon, city: item.display_name })
                         })
                         .then(response => response.json())
                         .then(data => {
-                            console.log("Location Saved DB:", data);
-                            // सेव होने के बाद पंचांग लोड करें
                             var dateStr = document.getElementById('panchang_date_input').value;
                             loadPanchangDate(dateStr);
                         })
                         .catch(err => {
-                            console.error("Save error:", err);
                             var dateStr = document.getElementById('panchang_date_input').value;
                             loadPanchangDate(dateStr);
                         });
@@ -300,9 +287,7 @@
             document.getElementById('panchang_city_status').innerHTML = '';
 
             clearTimeout(debounceTimer);
-            debounceTimer = setTimeout(function() {
-                fetchPanchangCities(new_input.value.trim());
-            }, 400);
+            debounceTimer = setTimeout(function() { fetchPanchangCities(new_input.value.trim()); }, 400);
         });
 
         document.addEventListener('click', function(e) {
@@ -360,4 +345,22 @@
         const body = document.getElementById('modalBody');
         let titles = {'rahukaal': 'राहुकाल (अशुभ)', 'yamaganda': 'यमगंड (अशुभ)', 'gulika': 'गुलिक काल (सामान्य)', 'abhijit': 'अभिजित मुहूर्त (शुभ)'};
         let desc = {
-            'rahukaal': 'यह दिन का वह समय है जिसे शु
+            'rahukaal': 'यह दिन का वह समय है जिसे शुभ कार्यों के लिए वर्जित माना जाता है। इसमें यात्रा या नया काम शुरू न करें।',
+            'yamaganda': 'यमगंड काल में मृत्यु तुल्य कष्ट की संभावना मानी जाती है। इसमें भी महत्वपूर्ण कार्य टालने चाहिए।',
+            'gulika': 'गुलिक काल में किए गए कार्य बार-बार दोहराने पड़ते हैं। यह मिला-जुला फल देता है।',
+            'abhijit': 'यह दिन का सबसे शुभ समय होता है। इसमें कोई भी शुभ कार्य बिना पंचांग देखे शुरू किया जा सकता है।'
+        };
+        if(titles[type]){
+            header.innerText = titles[type];
+            body.innerText = desc[type];
+            modal.style.display = 'block';
+        }
+    }
+    function closeModal() { document.getElementById('infoModal').style.display = 'none'; }
+
+    // Init
+    document.addEventListener("DOMContentLoaded", function() {
+        applyChoghadiyaColors();
+        setupPanchangNominatim();
+    });
+</script>
