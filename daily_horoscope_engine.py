@@ -25,7 +25,10 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'trikal_portal.settings')
 import django
 django.setup()
 
-from core.models import UserProfile, SavedKundali
+# 🚀 यहाँ DailyRashifal और rashifal_views के फंक्शन्स इम्पोर्ट किए गए हैं
+from core.models import UserProfile, SavedKundali, DailyRashifal
+from core.views.rashifal_views import RASHI_LIST, _generate_rashifal, _get_transit_summary
+
 from engines.kundali_engine import get_vimshottari_dasha
 import swisseph as swe
 import pytz
@@ -231,6 +234,39 @@ def call_gemini(prompt: str, max_retries: int = 3):
         except Exception: time.sleep(1)
     return None
 
+
+# 🚀 NAYA FUNCTION: 12 राशियों का जनरल राशिफल जनरेट करने के लिए
+def pre_generate_12_rashifal():
+    print("\n  🌟 जनरेटिंग 12 राशियों का सामान्य राशिफल (Pre-caching)...")
+    today = datetime.date.today()
+    transit_text = _get_transit_summary()
+
+    for rashi in RASHI_LIST:
+        if DailyRashifal.objects.filter(date=today, rashi_id=rashi["id"]).exists():
+            print(f"     ✅ {rashi['name']} - पहले से डेटाबेस में मौजूद है।")
+            continue
+
+        print(f"     ⏳ {rashi['name']} राशि जनरेट हो रही है...")
+        data = _generate_rashifal(rashi["name"], rashi["lord"], transit_text)
+        
+        if data:
+            DailyRashifal.objects.create(
+                date=today,
+                rashi_id=rashi["id"],
+                general=data.get("GENERAL", ""),
+                career=data.get("CAREER", ""),
+                love=data.get("LOVE", ""),
+                health=data.get("HEALTH", ""),
+                lucky=data.get("LUCKY", ""),
+                upay=data.get("UPAY", "")
+            )
+            print(f"     ✅ {rashi['name']} सफलतापूर्वक सेव हो गया।")
+        else:
+            print(f"     ❌ {rashi['name']} फेल हो गया!")
+            
+        # API रेट लिमिट से बचने के लिए 2 सेकंड का गैप
+        time.sleep(2)
+
 # Main Engine Process
 def process_one_user(profile: UserProfile, today_transit: dict, today_jd: float) -> bool:
     user_name = profile.user.first_name or profile.user.username
@@ -263,8 +299,9 @@ def process_one_user(profile: UserProfile, today_transit: dict, today_jd: float)
     profile.daily_horoscope_text = rashifal_text
     profile.horoscope_date = datetime.date.today()
     profile.save(update_fields=["daily_horoscope_text", "horoscope_date"])
-    print("     ✅ राशिफल डेटाबेस में सफलतापूर्वक सेव हो गया (वेबसाइट के लिए)।")
+    print("     ✅ पर्सनल राशिफल डेटाबेस में सफलतापूर्वक सेव हो गया।")
     return True
+
 
 def generate_daily_horoscopes():
     print("\n" + "━" * 60)
@@ -275,6 +312,11 @@ def generate_daily_horoscopes():
         print("  ❌ GEMINI_API_KEYS नहीं मिलीं! .env चेक करें।")
         return
 
+    # 🚀 सबसे पहले जनरल 12 राशियों का राशिफल जनरेट करें
+    pre_generate_12_rashifal()
+
+    # उसके बाद यूज़र्स का पर्सनल राशिफल जनरेट करें
+    print("\n  🚀 अब यूज़र्स का व्यक्तिगत राशिफल जनरेट हो रहा है...")
     today_jd = _dt_to_jd(datetime.datetime.now(pytz.timezone("Asia/Kolkata")), "Asia/Kolkata")
     today_transit = calculate_transit_positions(today_jd)
 
@@ -288,7 +330,7 @@ def generate_daily_horoscopes():
         time.sleep(0.5)
 
     print("\n" + "━" * 60)
-    print(f"  ✅ जनरेट हुए: {sent} | ❌ विफल: {failed}")
+    print(f"  ✅ पर्सनल राशिफल जनरेट हुए: {sent} | ❌ विफल: {failed}")
     print("━" * 60 + "\n")
 
 if __name__ == "__main__":
