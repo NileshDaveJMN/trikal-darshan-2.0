@@ -1,221 +1,196 @@
-"""
-core/views/trikal_api_views.py
-
-Render par chal rahe bot ke liye API endpoints.
-Secret key se secure hai — koi bhi call nahi kar sakta.
-"""
-
-import json
-import os
-import datetime
-import threading
+import os, sys, datetime, requests, random, re, time
+import swisseph as swe
+import pytz
 from pathlib import Path
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.contrib.auth.models import User
-from core.models import UserProfile, SavedKundali
 
-# .env se secret key load karo
-_env = Path(__file__).parent.parent.parent / '.env'
-if _env.exists():
-    for _line in _env.read_text(encoding='utf-8').splitlines():
+# ── Django Setup (For Background Tasks) ────────────────────────────────
+_env_path = Path(__file__).parent / '.env'
+if _env_path.exists():
+    for _line in _env_path.read_text(encoding='utf-8').splitlines():
         _line = _line.strip()
         if _line and '=' in _line and not _line.startswith('#'):
             _k, _v = _line.split('=', 1)
             os.environ.setdefault(_k.strip(), _v.strip())
 
-# Render bot ka secret — .env mein add karo: BOT_API_SECRET=koi_bhi_random_string
-BOT_SECRET = os.getenv("BOT_API_SECRET", "trikal-secret-2026")
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'trikal_portal.settings')
 
+import django
+# यह चेक करेगा कि Django पहले से लोड तो नहीं है (ताकि views में import करते वक्त एरर न आए)
+if not django.apps.apps.ready: 
+    django.setup()
 
-def check_secret(request):
-    """Request mein secret check karo"""
-    secret = request.headers.get("X-Bot-Secret", "")
-    return secret == BOT_SECRET
+from core.models import UserProfile, PushSubscription
+from core.views.push_views import send_push_to_user
 
+# ── Gemini Setup ──────────────────────────────────────────────────────
+GEMINI_API_KEYS = []
+for i in range(1, 10):
+    key = os.getenv(f"GEMINI_API_KEYS{i}", "").strip()
+    if key:
+        GEMINI_API_KEYS.append(key)
+GEMINI_MODEL = "gemini-3-flash-preview"
 
-# ─────────────────────────────────────────────
-#  API 1 — Chat ID Save karo
-#  POST /api/bot/save-chat-id/
-# ─────────────────────────────────────────────
-@csrf_exempt
-def api_save_chat_id(request):
-    """
-    Render bot se chat_id aata hai — DB mein save karo.
-    Body: {"username": "Newnilesh", "chat_id": "8943971061"}
-    """
-    if request.method != "POST":
-        return JsonResponse({"ok": False, "error": "POST only"}, status=405)
+# ── Lunar Month Names (Amanta System) ────────────────────────────────
+LUNAR_MONTHS = [
+    "चैत्र", "वैशाख", "ज्येष्ठ", "आषाढ़", "श्रावण", "भाद्रपद",
+    "आश्विन", "कार्तिक", "मार्गशीर्ष", "पौष", "माघ", "फाल्गुन"
+]
 
-    if not check_secret(request):
-        return JsonResponse({"ok": False, "error": "Unauthorized"}, status=401)
+RASHI_NAMES = [
+    "मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या",
+    "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"
+]
 
-    try:
-        data = json.loads(request.body.decode("utf-8"))
-        username = data.get("username", "").strip()
-        chat_id  = str(data.get("chat_id", "")).strip()
-
-        if not username or not chat_id:
-            return JsonResponse({"ok": False, "error": "username aur chat_id dono chahiye"})
-
-        user = User.objects.get(username=username)
-        profile = user.userprofile
-        profile.telegram_chat_id = chat_id
-        profile.save(update_fields=["telegram_chat_id"])
-
-        print(f"✅ API: {username} → chat_id {chat_id} saved")
-        return JsonResponse({
-            "ok": True,
-            "message": f"{username} ka chat_id save ho gaya",
-            "display_name": user.first_name or user.username
-        })
-
-    except User.DoesNotExist:
-        return JsonResponse({"ok": False, "error": f"User nahi mila"}, status=404)
-    except Exception as e:
-        return JsonResponse({"ok": False, "error": str(e)}, status=500)
-
-
-# ─────────────────────────────────────────────
-#  API 2 — Pending Horoscope Users list
-#  GET /api/bot/pending-horoscope/
-# ─────────────────────────────────────────────
-def api_pending_horoscope(request):
-    """
-    Jin users ka aaj ka horoscope nahi bheja — unki list do.
-    Render bot ye call karta hai subah.
-    """
-    if not check_secret(request):
-        return JsonResponse({"ok": False, "error": "Unauthorized"}, status=401)
-
-    today = datetime.date.today()
-
-    profiles = (
-        UserProfile.objects
-        .select_related("user")
-        .exclude(telegram_chat_id__isnull=True)
-        .exclude(telegram_chat_id__exact="")
-    )
-
-    pending = []
-    for p in profiles:
-        if p.horoscope_date != today:
-            # Primary kundali
-            kundali = (
-                SavedKundali.objects
-                .filter(user=p.user)
-                .order_by("created_at")
-                .first()
-            )
-            if not kundali:
-                continue
-
-            pending.append({
-                "username":         p.user.username,
-                "display_name":     p.user.first_name or p.user.username,
-                "chat_id":          p.telegram_chat_id,
-                "telegram_chat_id": p.telegram_chat_id,
-                "profession":       p.profession or "",
-                "primary_focus":    p.primary_focus or "",
-                "current_challenge": p.current_challenge or "",
-                "relationship_status": p.relationship_status or "",
-                "finance_focus":    p.finance_focus or "",
-                "kundali": {
-                    "name":   kundali.name,
-                    "day":    kundali.day,
-                    "month":  kundali.month,
-                    "year":   kundali.year,
-                    "hour":   kundali.hour,
-                    "minute": kundali.minute,
-                    "second": getattr(kundali, "second", 0),
-                    "lat":    kundali.lat,
-                    "lon":    kundali.lon,
-                    "city":   kundali.city,
-                }
-            })
-
-    return JsonResponse({
-        "ok": True,
-        "today": str(today),
-        "count": len(pending),
-        "users": pending
-    })
-
-
-# ─────────────────────────────────────────────
-#  API 3 — Horoscope Save karo (bhejne ke baad)
-#  POST /api/bot/save-horoscope/
-# ─────────────────────────────────────────────
-@csrf_exempt
-def api_save_horoscope(request):
-    """
-    Render bot ne Telegram par horoscope bhej diya —
-    ab DB mein save karo.
-    Body: {"username": "Newnilesh", "horoscope_text": "..."}
-    """
-    if request.method != "POST":
-        return JsonResponse({"ok": False, "error": "POST only"}, status=405)
-
-    if not check_secret(request):
-        return JsonResponse({"ok": False, "error": "Unauthorized"}, status=401)
-
-    try:
-        data = json.loads(request.body.decode("utf-8"))
-        username = data.get("username", "").strip()
-        text     = data.get("horoscope_text", "").strip()
-
-        user    = User.objects.get(username=username)
-        profile = user.userprofile
-        profile.daily_horoscope_text = text
-        profile.horoscope_date       = datetime.date.today()
-        profile.save(update_fields=["daily_horoscope_text", "horoscope_date"])
-
-        return JsonResponse({"ok": True, "message": f"{username} ka horoscope save ho gaya"})
-
-    except User.DoesNotExist:
-        return JsonResponse({"ok": False, "error": "User nahi mila"}, status=404)
-    except Exception as e:
-        return JsonResponse({"ok": False, "error": str(e)}, status=500)
-
-@csrf_exempt
-def api_send_daily_horoscope(request):
-    if not check_secret(request):
-        return JsonResponse({"ok": False}, status=401)
-        
-    def run_horoscope_and_festival():
-        try:
-            import sys, os
-            root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            if root not in sys.path:
-                sys.path.insert(0, root)
-                
-            # --- Step 1: Rashifal Generate & Pre-cache ---
-            from daily_horoscope_engine import generate_daily_horoscopes
-            generate_daily_horoscopes()
-            
-            # --- Step 2: Send Horoscope Push Notifications ---
-            from core.models import UserProfile, PushSubscription
-            from core.views.push_views import send_push_to_user
-            
-            profiles = UserProfile.objects.select_related("user").all()
-            for profile in profiles:
-                subs = PushSubscription.objects.filter(user=profile.user, is_active=True)
-                if subs.exists() and profile.daily_horoscope_text:
-                    name = profile.user.first_name or profile.user.username
-                    text = profile.daily_horoscope_text[:100] + "..."
-                    send_push_to_user(profile.user, f"🔮 {name} जी, आज का राशिफल", text, "/")
-                    print(f"  📲 Horoscope Push sent: {profile.user.username}")
-
-            # --- Step 3: 🚀 Festival Notification Engine ---
-            print("\n  🎉 फेस्टिवल चेक कर रहे हैं...")
-            from festival_engine import send_festival_notifications
-            send_festival_notifications()
-
-        except Exception as e:
-            print(f"Background task error: {e}")
-            import traceback; traceback.print_exc()
-            
-    import threading
-    threading.Thread(target=run_horoscope_and_festival, daemon=True).start()
+# ── Festival Rules ────────────────────────────────────────────────────
+FESTIVAL_RULES = [
+    {"name": "एकादशी",          "emoji": "🙏",  "tithi": 11, "paksha": "S", "month": None, "deity": "विष्णु",       "desc": "शुक्ल एकादशी व्रत"},
+    {"name": "एकादशी",          "emoji": "🙏",  "tithi": 11, "paksha": "K", "month": None, "deity": "विष्णु",       "desc": "कृष्ण एकादशी व्रत"},
+    {"name": "प्रदोष व्रत",     "emoji": "🕉️", "tithi": 13, "paksha": "S", "month": None, "deity": "शिव",          "desc": "शुक्ल प्रदोष"},
+    {"name": "प्रदोष व्रत",     "emoji": "🕉️", "tithi": 13, "paksha": "K", "month": None, "deity": "शिव",          "desc": "कृष्ण प्रदोष"},
+    {"name": "पूर्णिमा",        "emoji": "🌕",  "tithi": 15, "paksha": "S", "month": None, "deity": "चंद्र",        "desc": "पूर्णिमा तिथि"},
+    {"name": "अमावस्या",        "emoji": "🌑",  "tithi": 15, "paksha": "K", "month": None, "deity": "पितृ",          "desc": "अमावस्या तिथि"},
+    {"name": "विनायक चतुर्थी",  "emoji": "🐘",  "tithi": 4,  "paksha": "S", "month": None, "deity": "गणेश",          "desc": "विनायक चतुर्थी"},
+    {"name": "संकष्टी चतुर्थी", "emoji": "🐘",  "tithi": 4,  "paksha": "K", "month": None, "deity": "गणेश",          "desc": "संकष्टी चतुर्थी"},
     
-    return JsonResponse({"ok": True, "message": "Horoscope and Festival generation started!"})
+    # ── Major Annual Festivals ──
+    {"name": "महाशिवरात्रि",    "emoji": "🔱",  "tithi": 14, "paksha": "K", "month": 12,   "deity": "शिव",           "desc": "फाल्गुन कृष्ण चतुर्दशी"},
+    {"name": "होली",            "emoji": "🎨",  "tithi": 15, "paksha": "S", "month": 12,   "deity": "कृष्ण",         "desc": "फाल्गुन पूर्णिमा"},
+    {"name": "राम नवमी",        "emoji": "🏹",  "tithi": 9,  "paksha": "S", "month": 1,    "deity": "राम",            "desc": "चैत्र शुक्ल नवमी"},
+    {"name": "हनुमान जयंती",    "emoji": "🙏",  "tithi": 15, "paksha": "S", "month": 1,    "deity": "हनुमान",         "desc": "चैत्र पूर्णिमा"},
+    {"name": "अक्षय तृतीया",    "emoji": "🌟",  "tithi": 3,  "paksha": "S", "month": 2,    "deity": "विष्णु-लक्ष्मी", "desc": "वैशाख शुक्ल तृतीया"},
+    {"name": "गंगा दशहरा",      "emoji": "🌊",  "tithi": 10, "paksha": "S", "month": 3,    "deity": "गंगा",           "desc": "ज्येष्ठ शुक्ल दशमी"},
+    {"name": "गुरु पूर्णिमा",   "emoji": "👨‍🏫", "tithi": 15, "paksha": "S", "month": 4,    "deity": "गुरु",           "desc": "आषाढ़ पूर्णिमा"},
+    {"name": "नाग पंचमी",       "emoji": "🐍",  "tithi": 5,  "paksha": "S", "month": 5,    "deity": "नागदेव",         "desc": "श्रावण शुक्ल पंचमी"},
+    {"name": "रक्षाबंधन",       "emoji": "🪢",  "tithi": 15, "paksha": "S", "month": 5,    "deity": "यम-यमी",         "desc": "श्रावण पूर्णिमा"},
+    {"name": "जन्माष्टमी",      "emoji": "🦚",  "tithi": 8,  "paksha": "K", "month": 5,    "deity": "कृष्ण",          "desc": "भाद्रपद कृष्ण अष्टमी"},
+    {"name": "गणेश चतुर्थी",    "emoji": "🐘",  "tithi": 4,  "paksha": "S", "month": 6,    "deity": "गणेश",           "desc": "भाद्रपद शुक्ल चतुर्थी"},
+    {"name": "नवरात्रि प्रारंभ","emoji": "🙏",  "tithi": 1,  "paksha": "S", "month": 7,    "deity": "दुर्गा",         "desc": "आश्विन शुक्ल प्रतिपदा"},
+    {"name": "दशहरा",           "emoji": "🏹",  "tithi": 10, "paksha": "S", "month": 7,    "deity": "राम-दुर्गा",     "desc": "आश्विन शुक्ल दशमी"},
+    {"name": "शरद पूर्णिमा",    "emoji": "🌕",  "tithi": 15, "paksha": "S", "month": 7,    "deity": "लक्ष्मी",        "desc": "आश्विन पूर्णिमा"},
+    {"name": "करवा चौथ",        "emoji": "💑",  "tithi": 4,  "paksha": "K", "month": 8,    "deity": "शिव-पार्वती",    "desc": "कार्तिक कृष्ण चतुर्थी"},
+    {"name": "धनतेरस",          "emoji": "💰",  "tithi": 13, "paksha": "K", "month": 8,    "deity": "धन्वंतरि-लक्ष्मी","desc": "कार्तिक कृष्ण त्रयोदशी"},
+    {"name": "दीपावली",         "emoji": "🪔",  "tithi": 15, "paksha": "K", "month": 8,    "deity": "लक्ष्मी",        "desc": "कार्तिक अमावस्या"},
+    {"name": "गोवर्धन पूजा",    "emoji": "🐄",  "tithi": 1,  "paksha": "S", "month": 8,    "deity": "कृष्ण",          "desc": "कार्तिक शुक्ल प्रतिपदा"},
+    {"name": "भाई दूज",         "emoji": "👫",  "tithi": 2,  "paksha": "S", "month": 8,    "deity": "यमराज",          "desc": "कार्तिक शुक्ल द्वितीया"},
+    {"name": "देव उठनी एकादशी", "emoji": "🙏",  "tithi": 11, "paksha": "S", "month": 8,    "deity": "विष्णु",         "desc": "कार्तिक शुक्ल एकादशी"},
+]
+
+# ── Panchang Calculation ──────────────────────────────────────────
+def get_today_panchang():
+    try:
+        from datetime import timedelta
+        now    = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
+        dt_utc = now - timedelta(hours=5, minutes=30)
+        jd_ut  = swe.julday(
+            dt_utc.year, dt_utc.month, dt_utc.day,
+            dt_utc.hour + dt_utc.minute / 60.0 + dt_utc.second / 3600.0
+        )
+        swe.set_sid_mode(swe.SIDM_LAHIRI)
+
+        res_sun,  _ = swe.calc_ut(jd_ut, swe.SUN,  swe.FLG_SWIEPH | swe.FLG_SIDEREAL)
+        res_moon, _ = swe.calc_ut(jd_ut, swe.MOON, swe.FLG_SWIEPH | swe.FLG_SIDEREAL)
+        sun_lon  = res_sun[0]
+        moon_lon = res_moon[0]
+
+        tithi_idx = int(((moon_lon - sun_lon) % 360) / 12.0)
+        paksha    = "S" if tithi_idx < 15 else "K"
+        tithi_num = (tithi_idx % 15) + 1                       
+
+        moon_sun_diff       = (moon_lon - sun_lon) % 360
+        days_since_amavasya = moon_sun_diff / 12.190749
+        amavasya_sun_lon    = (sun_lon - (days_since_amavasya * 0.9856)) % 360
+        lunar_month_idx     = int(amavasya_sun_lon / 30)       
+
+        tithi_names = [
+            "प्रतिपदा", "द्वितीया",  "तृतीया",    "चतुर्थी",   "पंचमी",
+            "षष्ठी",    "सप्तमी",    "अष्टमी",    "नवमी",      "दशमी",
+            "एकादशी",   "द्वादशी",   "त्रयोदशी",  "चतुर्दशी",  "पूर्णिमा",
+            "प्रतिपदा", "द्वितीया",  "तृतीया",    "चतुर्थी",   "पंचमी",
+            "षष्ठी",    "सप्तमी",    "अष्टमी",    "नवमी",      "दशमी",
+            "एकादशी",   "द्वादशी",   "त्रयोदशी",  "चतुर्दशी",  "अमावस्या"
+        ]
+
+        return {
+            "tithi":       tithi_num,
+            "tithi_idx":   tithi_idx,
+            "tithi_name":  tithi_names[tithi_idx],
+            "paksha":      paksha,
+            "lunar_month": lunar_month_idx,   
+            "moon_rashi":  int(moon_lon / 30),
+            "nakshatra":   int(moon_lon / (360 / 27.0)),
+        }
+
+    except Exception as e:
+        print(f"❌ Panchang error: {e}")
+        return None
+
+# ── Festival Matching (यह फंक्शन Views के लिए ज़रूरी है) ─────────
+def get_today_festivals(panchang_data=None):
+    panchang = panchang_data if panchang_data else get_today_panchang()
+    if not panchang: return []
+
+    festivals = []
+    # Handle direct panchang dictionary from views vs local generator
+    p_tithi = panchang.get('tithi', 1)
+    p_paksha = panchang.get('paksha', 'S')
+    
+    # If lunar_month is integer (from this file), use it + 1. If it's a string (from panchang_engine), map it.
+    p_month = panchang.get('lunar_month')
+    if isinstance(p_month, str):
+        try:
+            p_month_idx = LUNAR_MONTHS.index(p_month) + 1
+        except ValueError:
+            p_month_idx = 1
+    else:
+        p_month_idx = (p_month or 0) + 1
+
+    for rule in FESTIVAL_RULES:
+        if rule["tithi"] == p_tithi and rule["paksha"] == p_paksha:
+            if rule["month"] is None or rule["month"] == p_month_idx:
+                festivals.append(rule)
+
+    return festivals
+
+# ── Main Background Task ─────────────────────────────────────────────
+def send_festival_notifications():
+    print("\n" + "─" * 55)
+    print("  🎊 Festival Notification Engine")
+    print("─" * 55)
+
+    panchang = get_today_panchang()
+    if not panchang: return
+
+    festivals = get_today_festivals(panchang)
+    if not festivals:
+        print("  ℹ️  आज कोई विशेष पर्व नहीं है")
+        return
+
+    festival = festivals[0]
+    print(f"  🔔 Sending Push for: {festival['emoji']} {festival['name']}")
+
+    profiles = UserProfile.objects.select_related("user").all()
+    sent = 0
+
+    for profile in profiles:
+        subs = PushSubscription.objects.filter(user=profile.user, is_active=True)
+        if not subs.exists(): continue
+
+        user_name  = profile.user.first_name or profile.user.username
+        
+        remedy = f"{user_name} जी, आज {festival['name']} के शुभ अवसर पर {festival['deity']} की पूजा करें और उनका आशीर्वाद प्राप्त करें। यह दिन आपके लिए शुभ फल लेकर आएगा। 🙏"
+        preview = remedy[:90] + "..."
+
+        send_push_to_user(
+            profile.user,
+            f"{festival['emoji']} {festival['name']} की शुभकामनाएं!",
+            preview,
+            "/?tab=view-panchang"
+        )
+        sent += 1
+
+    print(f"  📲 Sent: {sent}")
+    print("─" * 55)
+
+if __name__ == "__main__":
+    send_festival_notifications()
