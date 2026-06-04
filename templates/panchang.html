@@ -59,11 +59,18 @@
 <details class="premium-accordion" style="margin-bottom: 15px;">
     <summary>📍 वर्तमान शहर: {{ p_data.current_city|truncatechars:20 }}</summary>
     <div class="accordion-content">
-        <!-- आपका शहर सर्च करने वाला इनपुट और बटन (अपनी मौजूदा IDs के हिसाब से इसे रखें) -->
         <div style="position:relative;">
-            <input type="text" id="panchang_city_input" placeholder="नया शहर खोजें..." style="width: 100%; padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 8px; margin-bottom: 15px; outline: none;">
+            <input type="text" id="panchang_city_input" autocomplete="off" value="{{ p_data.current_city|default:'' }}" placeholder="नया शहर खोजें..." style="width: 100%; padding: 12px; background: #0f172a; color: #fff; border: 1px solid #334155; border-radius: 8px; margin-bottom: 15px; outline: none;">
+            <!-- सजेशन बॉक्स (यह मिसिंग था) -->
+            <div id="panchang_city_suggestions"></div>
         </div>
-        <button class="primary-btn" style="width: 100%; background: #24a1de; color: #fff; padding: 12px; border: none; border-radius: 8px; cursor: pointer;">पंचांग सेट करें</button>
+        
+        <!-- हिडन फील्ड्स (ये मिसिंग थे, इनके बिना शहर सेट नहीं हो सकता) -->
+        <input type="hidden" id="panchang_lat_input" value="{{ p_data.lat|default:'28.5839' }}">
+        <input type="hidden" id="panchang_lon_input" value="{{ p_data.lon|default:'77.2090' }}">
+        <small id="panchang_city_status"></small>
+
+        <button type="button" onclick="validatePanchangCity(event)" class="primary-btn" style="width: 100%; background: #24a1de; color: #fff; padding: 12px; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px;">पंचांग सेट करें</button>
         <p style="color: #94a3b8; font-size: 13px; margin-top: 15px; text-align: center;">अभी आप <strong>{{ p_data.current_city }}</strong> का पंचांग देख रहे हैं।</p>
     </div>
 </details>
@@ -89,8 +96,6 @@
     {% endif %}
 </div>
 
-<!-- इसके नीचे आपका पुराना डेट सेलेक्टर (04/06/2026) और तिथियों वाला ग्रिड वैसा ही रहेगा -->
-
 
 <!-- 📅 तारीख नेविगेशन -->
 <div style="display: flex; align-items: center; justify-content: space-between; background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 10px; box-sizing: border-box; width: 100%; margin-bottom: 20px;">
@@ -98,7 +103,8 @@
         &#8592;
     </button>
     <div style="flex-grow: 1; padding: 0 15px; box-sizing: border-box;">
-        <input type="date" value="{{ current_date_value }}" 
+        <!-- id="panchang_date_input" मिसिंग था, इसे लगा दिया गया है -->
+        <input type="date" id="panchang_date_input" value="{{ current_date_value }}" 
                style="width: 100%; background: #0f172a; color: #d4af37; border: 1px solid #334155; border-radius: 8px; padding: 8px; font-weight: bold; font-family: inherit; outline: none; cursor: pointer; text-align: center; font-size: 16px; box-sizing: border-box;"
                onchange="loadPanchangDate(this.value)">
     </div>
@@ -354,22 +360,4 @@
         const body = document.getElementById('modalBody');
         let titles = {'rahukaal': 'राहुकाल (अशुभ)', 'yamaganda': 'यमगंड (अशुभ)', 'gulika': 'गुलिक काल (सामान्य)', 'abhijit': 'अभिजित मुहूर्त (शुभ)'};
         let desc = {
-            'rahukaal': 'यह दिन का वह समय है जिसे शुभ कार्यों के लिए वर्जित माना जाता है। इसमें यात्रा या नया काम शुरू न करें।',
-            'yamaganda': 'यमगंड काल में मृत्यु तुल्य कष्ट की संभावना मानी जाती है। इसमें भी महत्वपूर्ण कार्य टालने चाहिए।',
-            'gulika': 'गुलिक काल में किए गए कार्य बार-बार दोहराने पड़ते हैं। यह मिला-जुला फल देता है।',
-            'abhijit': 'यह दिन का सबसे शुभ समय होता है। इसमें कोई भी शुभ कार्य बिना पंचांग देखे शुरू किया जा सकता है।'
-        };
-        if(titles[type]){
-            header.innerText = titles[type];
-            body.innerText = desc[type];
-            modal.style.display = 'block';
-        }
-    }
-    function closeModal() { document.getElementById('infoModal').style.display = 'none'; }
-
-    // Init
-    document.addEventListener("DOMContentLoaded", function() {
-        applyChoghadiyaColors();
-        setupPanchangNominatim();
-    });
-</script>
+            'rahukaal': 'यह दिन का वह समय है जिसे शु
