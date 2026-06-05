@@ -248,8 +248,7 @@ def home(request, k_id=None):
         'today_festivals': today_festivals,
         'current_date_value': target_dt.strftime("%Y-%m-%d"),
         'rashis': RASHI_LIST,
-        'user_notifications': user_notifications
-        'learn_categories': learn_categories,
+        'user_notifications': user_notifications,        'learn_categories': learn_categories,
 
     }
             
