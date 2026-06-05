@@ -51,6 +51,8 @@ def panchang(request):
 
     if p_data:
         p_data['current_city'] = current_city
+        p_data['lat']          = user_lat      # ✅ FIX: template ko sahi lat mile
+        p_data['lon']          = user_lon      # ✅ FIX: template ko sahi lon mile
 
     current_date_value = target_dt.strftime("%Y-%m-%d")
 
