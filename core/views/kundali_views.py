@@ -16,8 +16,8 @@ except (ImportError, OSError):
     HTML = None
     WEASYPRINT_AVAILABLE = False
 
+# 🚀 यहाँ नए मॉडल्स UserNotification और LearnCategory जोड़े गए हैं
 from core.models import SavedKundali, TabSettings, AIQuestionHistory, KundaliMilanHistory, UserProfile, UserNotification, LearnCategory
-
 from core.views.rashifal_views import RASHI_LIST
 from festival_engine import get_today_festivals
 from engines.dosha_analyzer import analyze_doshas, recommend_gemstone
@@ -53,17 +53,16 @@ def home(request, k_id=None):
         try: update_analytics('kundali') 
         except: pass
         
-        res = None
+    res = None
     saved_kundalis = []
     saved_milans = []
-    user_notifications = [] # नया
-    learn_categories = LearnCategory.objects.prefetch_related('items').all() # नया (यह सबके लिए खुलेगा)
+    user_notifications = [] # 🚀 नया
+    learn_categories = LearnCategory.objects.prefetch_related('items').all() # 🚀 नया
     
     if request.user.is_authenticated:
         saved_kundalis = SavedKundali.objects.filter(user=request.user).order_by('-created_at')
         saved_milans = KundaliMilanHistory.objects.filter(user=request.user).order_by('-created_at')
-        user_notifications = UserNotification.objects.filter(user=request.user).order_by('-created_at')[:50] # नया (सिर्फ 50 नए मैसेज)
-
+        user_notifications = UserNotification.objects.filter(user=request.user).order_by('-created_at')[:50] # 🚀 नया
 
     if request.method == 'POST':
         def s_int(v): return int(v) if v and str(v).strip() else 0
@@ -230,6 +229,7 @@ def home(request, k_id=None):
         p_data['current_city'] = current_city
         today_festivals = get_today_festivals(p_data)
 
+    # 🚀 Context में कॉमा (,) की गलती सुधार ली गई है
     context = {
         'tabs': tab_settings,  
         'res': res, 
@@ -248,8 +248,8 @@ def home(request, k_id=None):
         'today_festivals': today_festivals,
         'current_date_value': target_dt.strftime("%Y-%m-%d"),
         'rashis': RASHI_LIST,
-        'user_notifications': user_notifications,        'learn_categories': learn_categories,
-
+        'user_notifications': user_notifications,
+        'learn_categories': learn_categories,
     }
             
     return render(request, 'home.html', context)
