@@ -237,6 +237,10 @@
                         document.getElementById('panchang_city_input').value = item.display_name;
                         document.getElementById('panchang_lat_input').value = item.lat;
                         document.getElementById('panchang_lon_input').value = item.lon;
+                        // ✅ Global state भी update करो ताकि date navigation सही काम करे
+                        window._panchangLat  = item.lat;
+                        window._panchangLon  = item.lon;
+                        window._panchangCity = item.display_name;
                         box.innerHTML = ''; box.style.display = 'none';
                         document.getElementById('panchang_city_status').innerHTML = '<span style="color:#4caf50; font-size:13px;">✓ शहर चुना गया</span>';
                         fetch('/api/save-location/', {
@@ -259,6 +263,8 @@
         }
 
         new_input.addEventListener('input', function() {
+            // Hidden inputs clear करो (नया शहर select होने तक invalid हैं)
+            // लेकिन window._panchang* को मत छुओ — date change पर वो fallback काम आएंगे
             document.getElementById('panchang_lat_input').value = '';
             document.getElementById('panchang_lon_input').value = '';
             document.getElementById('panchang_city_status').innerHTML = '';
@@ -273,13 +279,28 @@
     }
 
        // 🌟 3. AJAX Panchang Loader (With Bug Fix & State Preservation) 🌟
+
+    // ✅ Persistent state — date change होने पर भी lat/lon बना रहे
+    window._panchangLat  = window._panchangLat  || document.getElementById('panchang_lat_input')?.value  || '28.5839';
+    window._panchangLon  = window._panchangLon  || document.getElementById('panchang_lon_input')?.value  || '77.2090';
+    window._panchangCity = window._panchangCity || document.getElementById('panchang_city_input')?.value  || 'नई दिल्ली';
+
     function loadPanchangDate(dateStr) {
         if(!dateStr) return;
-        
-        // 1. AJAX कॉल करने से पहले वर्तमान शहर और Lat/Lon सेव कर लें
-        let lat = document.getElementById('panchang_lat_input').value || '28.5839';
-        let lon = document.getElementById('panchang_lon_input').value || '77.2090';
-        let city = document.getElementById('panchang_city_input').value || 'नई दिल्ली';
+
+        // 1. Hidden inputs की current values check करो —
+        //    अगर भरी हैं तो global state update करो, वरना global state use करो
+        let latVal  = document.getElementById('panchang_lat_input')?.value;
+        let lonVal  = document.getElementById('panchang_lon_input')?.value;
+        let cityVal = document.getElementById('panchang_city_input')?.value;
+
+        if (latVal  && latVal.trim()  !== '') window._panchangLat  = latVal.trim();
+        if (lonVal  && lonVal.trim()  !== '') window._panchangLon  = lonVal.trim();
+        if (cityVal && cityVal.trim() !== '') window._panchangCity = cityVal.trim();
+
+        let lat  = window._panchangLat;
+        let lon  = window._panchangLon;
+        let city = window._panchangCity;
         
         let targetUrl = `/panchang/?date=${dateStr}&lat=${lat}&lon=${lon}&city=${encodeURIComponent(city)}`;
         
@@ -304,28 +325,7 @@
                 // 2. नया HTML लोड करें (जिसमें बैकएंड ने शायद Lat/Lon खो दिया हो)
                 container.innerHTML = html;
                 container.style.pointerEvents = 'auto';
-                
-                // 🌟 3. बग फिक्स: नया HTML रेंडर होने के तुरंत बाद अपना पुराना डेटा वापस चिपका दें!
-                let newLatInput = document.getElementById('panchang_lat_input');
-                let newLonInput = document.getElementById('panchang_lon_input');
-                let newCityInput = document.getElementById('panchang_city_input');
-                
-                // अगर नए HTML में फील्ड्स हैं, तो उन्हें पुरानी वैल्यू दे दो
-                if (newLatInput) newLatInput.value = lat;
-                if (newLonInput) newLonInput.value = lon;
-                if (newCityInput) newCityInput.value = city;
-
-                applyChoghadiyaColors();
-                setupPanchangNominatim(); 
-            } else {
-                window.location.href = targetUrl;
-            }
-        })
-        .catch(err => {
-            console.error("Error loading panchang:", err);
-            if(container) {
-                container.style.pointerEvents = 'auto';
-                let spinner = document.getElementById('panchang-spinner');
+           let spinner = document.getElementById('panchang-spinner');
                 if(spinner) spinner.remove();
             }
         });
