@@ -57,6 +57,7 @@ def home(request, k_id=None):
     saved_kundalis = []
     saved_milans = []
     user_notifications = [] # 🚀 नया
+    unread_notifications_count = 0
     learn_categories = LearnCategory.objects.prefetch_related('items').all() # 🚀 नया
     
     if request.user.is_authenticated:
@@ -250,7 +251,7 @@ def home(request, k_id=None):
         'current_date_value': target_dt.strftime("%Y-%m-%d"),
         'rashis': RASHI_LIST,
         'user_notifications': user_notifications,
-        unread_notifications_count': unread_notifications_count,
+        'unread_notifications_count': unread_notifications_count,
         'learn_categories': learn_categories,
     }
             
