@@ -32,9 +32,10 @@ def panchang(request):
             pass
 
     # URL params override karte hain (user ne manually change ki)
-    user_lat    = request.GET.get('lat', default_lat)
-    user_lon    = request.GET.get('lon', default_lon)
-    current_city = request.GET.get('city', default_city)
+    # ✅ Empty string check: agar lat/lon URL mein hai par empty hai to default use karo
+    user_lat    = request.GET.get('lat', '').strip() or default_lat
+    user_lon    = request.GET.get('lon', '').strip() or default_lon
+    current_city = request.GET.get('city', '').strip() or default_city
 
     # 2. Date
     if date_str:
@@ -44,15 +45,22 @@ def panchang(request):
         target_dt = datetime.now()
 
     # 3. Panchang data
-    p_data = get_panchang_data(target_dt, not date_str, float(user_lat), float(user_lon))
+    # ✅ Safety: float() crash na ho agar koi bhi value invalid ho
+    try:
+        lat_f = float(user_lat)
+        lon_f = float(user_lon)
+    except (ValueError, TypeError):
+        lat_f = float(default_lat)
+        lon_f = float(default_lon)
+    p_data = get_panchang_data(target_dt, not date_str, lat_f, lon_f)
     today_festivals = []
     if p_data:
         today_festivals = get_today_festivals(p_data)
 
     if p_data:
         p_data['current_city'] = current_city
-        p_data['lat']          = user_lat   # ✅ template hidden input ko sahi lat mile
-        p_data['lon']          = user_lon   # ✅ template hidden input ko sahi lon mile
+        p_data['lat']          = str(lat_f)   # ✅ template hidden input ko sahi lat mile
+        p_data['lon']          = str(lon_f)   # ✅ template hidden input ko sahi lon mile
 
     current_date_value = target_dt.strftime("%Y-%m-%d")
 
