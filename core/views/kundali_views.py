@@ -63,6 +63,7 @@ def home(request, k_id=None):
         saved_kundalis = SavedKundali.objects.filter(user=request.user).order_by('-created_at')
         saved_milans = KundaliMilanHistory.objects.filter(user=request.user).order_by('-created_at')
         user_notifications = UserNotification.objects.filter(user=request.user).order_by('-created_at')[:50] # 🚀 नया
+        unread_notifications_count = UserNotification.objects.filter(user=request.user, is_read=False).count()
 
     if request.method == 'POST':
         def s_int(v): return int(v) if v and str(v).strip() else 0
@@ -249,6 +250,7 @@ def home(request, k_id=None):
         'current_date_value': target_dt.strftime("%Y-%m-%d"),
         'rashis': RASHI_LIST,
         'user_notifications': user_notifications,
+        unread_notifications_count': unread_notifications_count,
         'learn_categories': learn_categories,
     }
             
@@ -365,3 +367,9 @@ def save_onboarding(request):
 
 def ping(request):
     return HttpResponse("ok", content_type="text/plain")
+
+def mark_notifications_read(request):
+    if request.user.is_authenticated and request.method == "POST":
+        UserNotification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return JsonResponse({"status": "ok"})
+    return JsonResponse({"status": "error"})

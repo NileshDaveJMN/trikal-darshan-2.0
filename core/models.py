@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+import datetime
 
 class SavedKundali(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -31,7 +32,7 @@ class AIQuestionHistory(models.Model):
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     phone_number = models.CharField(max_length=15, blank=True)
-    is_premium = models.BooleanField(default=False)
+    is_premium = models.BooleanField(default=False) # VIP Subscription ke liye
     
     # Credit System
     kundali_credits = models.IntegerField("Kundali Credits", default=1)
@@ -46,11 +47,6 @@ class UserProfile(models.Model):
     activity_level = models.CharField(max_length=100, blank=True, null=True)
     travel_habit = models.CharField(max_length=100, blank=True, null=True)
     
-    # Telegram
-    telegram_chat_id = models.CharField(max_length=100, blank=True, null=True)
-    daily_horoscope_text = models.TextField(blank=True, null=True)
-    horoscope_date = models.DateField(blank=True, null=True)
-
     # 🌟 Default Location (Panchang ke liye)
     default_city = models.CharField(max_length=100, blank=True, null=True)
     default_lat  = models.FloatField(blank=True, null=True)
@@ -100,8 +96,6 @@ class TabSettings(models.Model):
 
     def __str__(self):
         return "सभी टैब्स की सेटिंग"
-import datetime
-from django.db import models
 
 class DailyRashifal(models.Model):
     date = models.DateField(default=datetime.date.today)
@@ -119,7 +113,6 @@ class DailyRashifal(models.Model):
         
     def __str__(self):
         return f"{self.rashi_id} - {self.date}"
-
 
 class KundaliMilanHistory(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
@@ -170,8 +163,6 @@ class PushSubscription(models.Model):
             }
         }
 
-from django.db import models
-
 # 1. प्लेलिस्ट या लाइब्रेरी टॉपिक बनाने के लिए (Category)
 class LearnCategory(models.Model):
     CATEGORY_TYPES = (
@@ -206,6 +197,7 @@ class LearnItem(models.Model):
 
     def __str__(self):
         return self.title
+
 class UserNotification(models.Model):
     NOTIFICATION_TYPES = (
         ('DAILY', 'दैनिक राशिफल'),

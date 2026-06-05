@@ -27,7 +27,18 @@
         <button class="p-tab-btn" onclick="showView(event, 'view-milan')">💑 मिलान</button>
         <button class="p-tab-btn" onclick="showView(event, 'view-panchang')">📅 पंचांग</button>
         <button class="p-tab-btn" onclick="showView(event, 'view-rashifal')">🔮 राशिफल</button> 
-        <button class="p-tab-btn" onclick="showView(event, 'view-notifications')">🔔 सूचनाएं</button>
+        <a href="#" onclick="showView(event, 'view-notifications'); markNotificationsAsRead();" class="nav-item tab-link" data-target="view-notifications">
+    <div style="position: relative; display: inline-block;">
+        <span class="nav-icon">🔔</span>
+        {% if unread_notifications_count > 0 %}
+            <span id="notif-badge" style="position: absolute; top: -5px; right: -10px; background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
+                {{ unread_notifications_count }}
+            </span>
+        {% endif %}
+    </div>
+    <span class="nav-text">सूचनाएं</span>
+</a>
+
         <button class="p-tab-btn" onclick="showView(event, 'view-learn')">📚 गुरुकुल</button>
     </div>
 
@@ -191,6 +202,22 @@
                     }
                     return true; 
                 }
+                function markNotificationsAsRead() {
+    const badge = document.getElementById('notif-badge');
+    if (badge) {
+        badge.style.display = 'none'; // लाल बैज तुरंत गायब करें
+        
+        // बैकग्राउंड में सर्वर को अपडेट करें
+        fetch('/api/notifications/mark-read/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            }
+        }).catch(err => console.log('Notification read update failed', err));
+    }
+}
+
                 </script>
             </div>
 
@@ -364,14 +391,31 @@
                     {% if user_notifications %}
                         <div style="display: flex; flex-direction: column; gap: 15px;">
                         {% for notif in user_notifications %}
-                            <div style="background: #1e293b; border: 1px solid #334155; border-left: 4px solid {% if notif.notification_type == 'DAILY' %}#f1c40f{% elif notif.notification_type == 'FESTIVAL' %}#e74c3c{% else %}#3498db{% endif %}; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                                    <strong style="color: #e2e8f0; font-size: 16px;">{{ notif.title }}</strong>
-                                    <span style="color: #94a3b8; font-size: 12px; background: #0f172a; padding: 3px 8px; border-radius: 10px;">{{ notif.created_at|date:"d M, y" }}</span>
-                                </div>
-                                <div style="color: #cbd5e1; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">{{ notif.message }}</div>
-                            </div>
-                        {% endfor %}
+<div style="
+    background: {% if not notif.is_read %}linear-gradient(135deg, #1e293b, #0f172a){% else %}#131c2c{% endif %}; 
+    border-left: 4px solid {% if not notif.is_read %}#ffca28{% else %}#475569{% endif %}; 
+    border-radius: 12px; 
+    padding: 16px; 
+    margin-bottom: 12px; 
+    opacity: {% if not notif.is_read %}1{% else %}0.6{% endif %};
+    box-shadow: {% if not notif.is_read %}0 4px 12px rgba(0,0,0,0.15){% else %}none{% endif %};
+">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <h4 style="color: {% if not notif.is_read %}#ffca28{% else %}#94a3b8{% endif %}; margin: 0; font-size: 15px; font-weight: bold;">
+            {{ notif.title }}
+        </h4>
+        <span style="color: #64748b; font-size: 11px; background: #0f172a; padding: 3px 8px; border-radius: 8px;">
+            {{ notif.created_at|date:"d M, y" }}
+        </span>
+    </div>
+    <div style="color: {% if not notif.is_read %}#cbd5e1{% else %}#94a3b8{% endif %}; font-size: 13.5px; line-height: 1.6;">
+        {{ notif.message|linebreaksbr }}
+    </div>
+</div>
+{% empty %}
+<!-- (खाली होने वाला पुराना कोड यहाँ रहने दें) -->
+{% endfor %}
+
                         </div>
                     {% else %}
                         <p style="text-align: center; color: #94a3b8; padding: 30px;">अभी आपके लिए कोई नई सूचना या राशिफल नहीं है।</p>

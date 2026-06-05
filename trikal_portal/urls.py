@@ -11,6 +11,7 @@ from core.views.admin_views import admin_view, admin_leads, contact
 from core.views.rashifal_views import rashifal_home, rashifal_detail, api_rashifal
 from core.views.seo_views import sitemap_xml
 from core.views.push_views import get_vapid_public_key, save_push_subscription, delete_push_subscription, admin_send_notification
+from core.views.kundali_views import home, download_kundali_pdf, api_get_ai_analysis, user_profile_view, save_onboarding, ping, kundali_calculation, mark_notifications_read
 
 # 🚀 सिर्फ नया क्रॉन जॉब वाला फंक्शन इम्पोर्ट किया है (पुराने टेलीग्राम वाले हटा दिए)
 from core.views.trikal_api_views import api_send_daily_horoscope
@@ -61,6 +62,8 @@ urlpatterns = [
     path('api/push/unsubscribe/', delete_push_subscription, name='push_unsubscribe'),
     path('api/push/send/', admin_send_notification, name='push_send'),
     path('api/push/test/', admin_send_notification, name='push_test'),
+    path('api/notifications/mark-read/', mark_notifications_read, name='mark_notifications_read'),
+
 
     # Rashifal
     path('rashifal/',                rashifal_home,   name='rashifal'),
