@@ -25,8 +25,8 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'trikal_portal.settings')
 import django
 django.setup()
 
-# 🚀 यहाँ DailyRashifal और rashifal_views के फंक्शन्स इम्पोर्ट किए गए हैं
-from core.models import UserProfile, SavedKundali, DailyRashifal
+# 🚀 नए मॉडल UserNotification को यहाँ इम्पोर्ट किया गया है
+from core.models import UserProfile, SavedKundali, DailyRashifal, UserNotification
 from core.views.rashifal_views import RASHI_LIST, _generate_rashifal, _get_transit_summary
 
 from engines.kundali_engine import get_vimshottari_dasha
@@ -234,8 +234,6 @@ def call_gemini(prompt: str, max_retries: int = 3):
         except Exception: time.sleep(1)
     return None
 
-
-# 🚀 NAYA FUNCTION: 12 राशियों का जनरल राशिफल जनरेट करने के लिए
 def pre_generate_12_rashifal():
     print("\n  🌟 जनरेटिंग 12 राशियों का सामान्य राशिफल (Pre-caching)...")
     today = datetime.date.today()
@@ -264,10 +262,8 @@ def pre_generate_12_rashifal():
         else:
             print(f"     ❌ {rashi['name']} फेल हो गया!")
             
-        # API रेट लिमिट से बचने के लिए 2 सेकंड का गैप
         time.sleep(2)
 
-# Main Engine Process
 def process_one_user(profile: UserProfile, today_transit: dict, today_jd: float) -> bool:
     user_name = profile.user.first_name or profile.user.username
     print(f"\n  👤 {user_name} ({profile.user.username})")
@@ -296,26 +292,29 @@ def process_one_user(profile: UserProfile, today_transit: dict, today_jd: float)
         print("     ❌ Gemini से जवाब नहीं मिला।")
         return False
 
-    profile.daily_horoscope_text = rashifal_text
-    profile.horoscope_date = datetime.date.today()
-    profile.save(update_fields=["daily_horoscope_text", "horoscope_date"])
-    print("     ✅ पर्सनल राशिफल डेटाबेस में सफलतापूर्वक सेव हो गया।")
+    # 🚀 यहाँ से हमने नया UserNotification सेव करने का लॉजिक जोड़ दिया है
+    today_str = datetime.date.today().strftime("%d %b %Y")
+    UserNotification.objects.create(
+        user=profile.user,
+        title=f"🔮 आज का राशिफल ({today_str})",
+        message=rashifal_text,
+        notification_type='DAILY'
+    )
+    
+    print("     ✅ राशिफल नए Notification इनबॉक्स में सफलतापूर्वक सेव हो गया।")
     return True
-
 
 def generate_daily_horoscopes():
     print("\n" + "━" * 60)
-    print("  🔮 त्रिकाल दर्शन — Daily Horoscope Engine v3.1 (Web Only)")
+    print("  🔮 त्रिकाल दर्शन — Daily Horoscope Engine v3.2 (Inbox Ready)")
     print("━" * 60)
 
     if not GEMINI_API_KEYS:
         print("  ❌ GEMINI_API_KEYS नहीं मिलीं! .env चेक करें।")
         return
 
-    # 🚀 सबसे पहले जनरल 12 राशियों का राशिफल जनरेट करें
     pre_generate_12_rashifal()
 
-    # उसके बाद यूज़र्स का पर्सनल राशिफल जनरेट करें
     print("\n  🚀 अब यूज़र्स का व्यक्तिगत राशिफल जनरेट हो रहा है...")
     today_jd = _dt_to_jd(datetime.datetime.now(pytz.timezone("Asia/Kolkata")), "Asia/Kolkata")
     today_transit = calculate_transit_positions(today_jd)

@@ -27,6 +27,8 @@
         <button class="p-tab-btn" onclick="showView(event, 'view-milan')">💑 मिलान</button>
         <button class="p-tab-btn" onclick="showView(event, 'view-panchang')">📅 पंचांग</button>
         <button class="p-tab-btn" onclick="showView(event, 'view-rashifal')">🔮 राशिफल</button> 
+        <button class="p-tab-btn" onclick="showView(event, 'view-notifications')">🔔 सूचनाएं</button>
+        <button class="p-tab-btn" onclick="showView(event, 'view-learn')">📚 गुरुकुल</button>
     </div>
 
     <div class="sub-tabs-bar" id="sub-tabs-bar" style="display:none;">
@@ -53,14 +55,6 @@
                 {% endif %}
                 
                 {% if user.is_authenticated %}
-                    {% if user.userprofile.daily_horoscope_text %}
-                    <details class="premium-accordion" style="margin-bottom: 25px;">
-                        <summary>🔮 आपका आज का राशिफल ({{ user.userprofile.horoscope_date|date:"d M Y" }})</summary>
-                        <div class="accordion-content">
-                            <div style="text-align: left; background: #131c2c; border: 1px solid #334155; border-left: 4px solid #ffca28; padding: 15px; border-radius: 8px; color: #e2e8f0; font-size: 15px; line-height: 1.6; white-space: pre-wrap;">{{ user.userprofile.daily_horoscope_text }}</div>
-                        </div>
-                    </details>
-                    {% endif %}
 
                     <div style="background: #131c2c; border: 1px solid #334155; padding: 20px; border-radius: 10px; margin-bottom: 20px; text-align: left;">
                         <p style="color: #cbd5e1; font-size: 15px; margin-bottom: 10px;">
@@ -106,18 +100,7 @@
                         </div>
                     </details>
 
-                    {% if not user.userprofile.telegram_chat_id %}
-                    <div style="background: #131c2c; border: 1px dashed #24a1de; margin-bottom: 16px; text-align: center; padding: 16px; border-radius: 12px;">
-                        <p style="color: #cbd5e1; font-size: 14px; margin-top: 0; margin-bottom: 12px; line-height: 1.4;">
-                            🌅 रोज़ सुबह सीधे अपने <strong>Telegram</strong> पर अपना पर्सनल सटीक राशिफल पाना चाहते हैं?
-                        </p>
-                        <a href="https://t.me/Trikal_darshan_bot?start={{ user.username }}" target="_blank" style="text-decoration: none;">
-                            <button type="button" class="primary-btn" style="background: #24a1de; color: #fff; border: none; width: auto; padding: 10px 24px; font-size: 14px; border-radius: 25px; font-weight: bold; box-shadow: 0 4px 12px rgba(36, 161, 222, 0.4); cursor: pointer;">
-                                ✈️ Telegram Bot से जुड़ें (FREE)
-                            </button>
-                        </a>
-                    </div>
-                    {% endif %}
+                    
 
                     <a href="{% url 'logout' %}" style="text-decoration:none;">
                         <button class="primary-btn" style="background: transparent; color: #ff4757; border: 1px solid #ff4757;">🚪 लॉगआऊट</button>
@@ -136,7 +119,7 @@
         </div>
 
         <!-- ================= कुंडली सेक्शन ================= -->
-        <div id="view-kundali" class="view-panel">
+        <div id="view-kundali" class="view-panel" style="display:none;">
             {% if user.is_authenticated and saved_kundalis %}
             <details class="premium-accordion" {% if not res %}open{% endif %}>
                 <summary>📂 सेव की गई कुंडलियां</summary>
@@ -271,7 +254,7 @@
                         </div>
                     {% endif %}
                 </div>
-                 <div id="panel-ai" class="sub-panel" style="display:none;">
+                 div id="panel-ai" class="sub-panel" style="display:none;">
                     {% if user.is_authenticated %}
                         {% include 'tabs/ai_tab.html' %}
                     {% else %}
@@ -322,7 +305,6 @@
             <div class="card" style="text-align:center;">
                 <h3 style="margin-bottom: 15px;">आज का दैनिक राशिफल</h3>
 
-                <!-- 🌟 नया पर्सनल राशिफल बैनर 🌟 -->
                 {% if not user.is_authenticated %}
                 <div style="background: linear-gradient(135deg, #1e293b, #0f172a); border: 1px dashed #ffca28; border-radius: 12px; padding: 15px; margin-bottom: 25px;">
                     <p style="color: #cbd5e1; font-size: 14px; margin-top: 0; margin-bottom: 12px; line-height: 1.5;">
@@ -373,6 +355,97 @@
             </div>
         </div>
 
+        <!-- ================= 🔔 सूचनाएं (Notifications) सेक्शन ================= -->
+        <div id="view-notifications" class="view-panel" style="display:none;">
+            <div class="card">
+                <h3 style="margin-bottom: 20px; text-align: center;">🔔 आपकी सूचनाएं</h3>
+                {% if user.is_authenticated %}
+                    {% if user_notifications %}
+                        <div style="display: flex; flex-direction: column; gap: 15px;">
+                        {% for notif in user_notifications %}
+                            <div style="background: #1e293b; border: 1px solid #334155; border-left: 4px solid {% if notif.notification_type == 'DAILY' %}#f1c40f{% elif notif.notification_type == 'FESTIVAL' %}#e74c3c{% else %}#3498db{% endif %}; padding: 15px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <strong style="color: #e2e8f0; font-size: 16px;">{{ notif.title }}</strong>
+                                    <span style="color: #94a3b8; font-size: 12px; background: #0f172a; padding: 3px 8px; border-radius: 10px;">{{ notif.created_at|date:"d M, y" }}</span>
+                                </div>
+                                <div style="color: #cbd5e1; font-size: 14px; line-height: 1.6; white-space: pre-wrap;">{{ notif.message }}</div>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    {% else %}
+                        <p style="text-align: center; color: #94a3b8; padding: 30px;">अभी आपके लिए कोई नई सूचना या राशिफल नहीं है।</p>
+                    {% endif %}
+                {% else %}
+                    <div style="text-align:center; padding: 30px 10px;">
+                        <p style="color: #94a3b8; margin-bottom: 15px; font-size: 15px;">अपना व्यक्तिगत राशिफल और सूचनाएं देखने के लिए लॉगिन करें।</p>
+                        <a href="{% url 'login' %}" style="text-decoration:none;"><button class="primary-btn" style="width: auto; padding: 10px 25px;">लॉगइन / साइन-अप</button></a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ================= 📚 गुरुकुल (Learn) सेक्शन ================= -->
+        <div id="view-learn" class="view-panel" style="display:none;">
+            <style>
+                .learn-container { padding: 10px; font-family: sans-serif; background: transparent; color: #e2e8f0; }
+                .section-title { color: #d4af37; font-size: 18px; border-bottom: 2px solid #334155; padding-bottom: 10px; margin-top: 20px; margin-bottom: 15px; }
+                .folder-accordion { background: #1e293b; border: 1px solid #334155; border-radius: 12px; margin-bottom: 15px; overflow: hidden; }
+                .folder-accordion summary { padding: 15px; font-size: 15px; font-weight: bold; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: space-between; list-style: none; }
+                .folder-accordion summary::-webkit-details-marker { display: none; }
+                .folder-accordion[open] summary { border-bottom: 1px solid #334155; background: #2d3f55; }
+                .content-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; padding: 15px; background: #0f172a; }
+                .item-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 15px; }
+                .card-video { border-left: 4px solid #ff4757; }
+                .card-pdf { border-left: 4px solid #24a1de; }
+                .item-icon { font-size: 26px; margin-bottom: 10px; }
+                .item-title { font-size: 15px; color: #e2e8f0; margin: 0 0 5px 0; font-weight: bold; }
+                .item-desc { font-size: 13px; color: #94a3b8; margin-bottom: 15px; line-height: 1.4; }
+                .btn-read { display: block; padding: 8px 15px; border-radius: 6px; font-size: 14px; font-weight: bold; text-decoration: none; text-align: center; width: 100%; box-sizing: border-box; }
+                .btn-video { background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid #ff4757; }
+                .btn-pdf { background: rgba(36, 161, 222, 0.1); color: #24a1de; border: 1px solid #24a1de; }
+            </style>
+
+            <div class="learn-container card">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <h2 style="color: #fff; margin: 0; font-size: 22px;">🎓 त्रिकाल गुरुकुल</h2>
+                    <p style="color: #94a3b8; font-size: 14px;">ज्योतिष सीखें, पीडीएफ पढ़ें और वीडियो देखें</p>
+                </div>
+
+                {% if learn_categories %}
+                    {% for cat in learn_categories %}
+                        <h3 class="section-title">
+                            {% if cat.category_type == 'PLAYLIST' %}▶️{% else %}📚{% endif %} {{ cat.name }}
+                        </h3>
+                        
+                        <details class="folder-accordion">
+                            <summary>
+                                <span>📂 {{ cat.name }} सामग्री</span>
+                                <span style="font-size: 12px; background: {% if cat.category_type == 'PLAYLIST' %}#ff4757{% else %}#24a1de{% endif %}; padding: 2px 8px; border-radius: 10px;">{{ cat.items.count }} Items</span>
+                            </summary>
+                            <div class="content-grid">
+                                {% for item in cat.items.all %}
+                                    <div class="item-card {% if cat.category_type == 'PLAYLIST' %}card-video{% else %}card-pdf{% endif %}">
+                                        <div class="item-icon">{{ item.cover_emoji }}</div>
+                                        <h4 class="item-title">{{ item.title }}</h4>
+                                        <p class="item-desc">{{ item.description }}</p>
+                                        {% if cat.category_type == 'PLAYLIST' and item.video_url %}
+                                            <a href="{{ item.video_url }}" target="_blank" class="btn-read btn-video">▶ वीडियो देखें</a>
+                                        {% elif cat.category_type == 'LIBRARY' and item.pdf_file %}
+                                            <a href="{{ item.pdf_file.url }}" target="_blank" class="btn-read btn-pdf">⬇ PDF पढ़ें</a>
+                                        {% endif %}
+                                    </div>
+                                {% empty %}
+                                    <p style="padding: 15px; color: #94a3b8; font-size: 14px;">इस सेक्शन में जल्द ही सामग्री अपलोड की जाएगी।</p>
+                                {% endfor %}
+                            </div>
+                        </details>
+                    {% endfor %}
+                {% else %}
+                    <p style="text-align: center; color: #94a3b8; margin-top: 30px; font-size: 15px;">गुरुकुल में अभी कोई सामग्री अपलोड नहीं की गई है।</p>
+                {% endif %}
+            </div>
+        </div>
+
     </div> <!-- main-viewport बंद -->
 </div> <!-- app-container बंद -->
 
@@ -380,5 +453,3 @@
 
 </body>
 </html>
-
-     

@@ -206,3 +206,24 @@ class LearnItem(models.Model):
 
     def __str__(self):
         return self.title
+class UserNotification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('DAILY', 'दैनिक राशिफल'),
+        ('GOCHAR', 'गोचर परिवर्तन'),
+        ('DASHA', 'दशा परिवर्तन'),
+        ('FESTIVAL', 'त्यौहार / विशेष उपाय'),
+        ('SYSTEM', 'सिस्टम अलर्ट'),
+    )
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=200, verbose_name="शीर्षक (Title)")
+    message = models.TextField(verbose_name="संदेश (Message)")
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES, default='DAILY')
+    is_read = models.BooleanField(default=False, verbose_name="क्या पढ़ लिया गया?")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at'] # इससे सबसे नए नोटिफिकेशन हमेशा ऊपर दिखेंगे
+
+    def __str__(self):
+        return f"[{self.get_notification_type_display()}] {self.user.username} - {self.title}"
