@@ -64,8 +64,8 @@
             <div id="panchang_city_suggestions"></div>
         </div>
         
-        <input type="hidden" id="panchang_lat_input" value="{{ p_data.lat|default:'28.5839' }}">
-        <input type="hidden" id="panchang_lon_input" value="{{ p_data.lon|default:'77.2090' }}">
+        <input type="hidden" id="panchang_lat_input" value="{{ p_data.lat }}">
+        <input type="hidden" id="panchang_lon_input" value="{{ p_data.lon }}">
         <small id="panchang_city_status"></small>
 
         <button type="button" onclick="validatePanchangCity(event)" class="primary-btn" style="width: 100%; background: #24a1de; color: #fff; padding: 12px; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px;">पंचांग सेट करें</button>
@@ -281,11 +281,12 @@
        // 🌟 3. AJAX Panchang Loader (With Bug Fix & State Preservation) 🌟
 
     // ✅ Persistent state — date change होने पर भी lat/lon बना रहे
-    window._panchangLat  = window._panchangLat  || document.getElementById('panchang_lat_input')?.value  || '28.5839';
-    window._panchangLon  = window._panchangLon  || document.getElementById('panchang_lon_input')?.value  || '77.2090';
-    window._panchangCity = window._panchangCity || document.getElementById('panchang_city_input')?.value  || 'नई दिल्ली';
+    // ✅ Hidden inputs ab hamesha server se sahi lat/lon leke aate hain (p_data.lat / p_data.lon)
+    window._panchangLat  = window._panchangLat  || document.getElementById('panchang_lat_input')?.value  || '';
+    window._panchangLon  = window._panchangLon  || document.getElementById('panchang_lon_input')?.value  || '';
+    window._panchangCity = window._panchangCity || document.getElementById('panchang_city_input')?.value  || '';
 
-    function loadPanchangDate(dateStr) {
+function loadPanchangDate(dateStr) {
         if(!dateStr) return;
 
         // 1. Hidden inputs की current values check करो —
