@@ -28,27 +28,15 @@
         <button class="p-tab-btn" onclick="showView(event, 'view-panchang')">📅 पंचांग</button>
         <button class="p-tab-btn" onclick="showView(event, 'view-rashifal')">🔮 राशिफल</button> 
         <a href="#" onclick="showView(event, 'view-notifications'); markNotificationsAsRead();" class="nav-item tab-link" data-target="view-notifications" style="position: relative; text-decoration: none;">
-    <span class="nav-icon">🔔</span>
-    <span class="nav-text">सूचनाएं</span>
+            <span class="nav-icon">🔔</span>
+            <span class="nav-text">सूचनाएं</span>
     
-    {% if unread_notifications_count > 0 %}
-        <span id="notif-badge" style="position: absolute; top: 4px; right: 10px; background: #e74c3c; color: white; border-radius: 12px; padding: 1px 6px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 10;">
-            {{ unread_notifications_count }}
-        </span>
-    {% endif %}
-</a>
-
-        <div style="position: relative; display: inline-block;">
-        <span class="nav-icon">🔔</span>
-        {% if unread_notifications_count > 0 %}
-            <span id="notif-badge" style="position: absolute; top: -5px; right: -10px; background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">
-                {{ unread_notifications_count }}
-            </span>
-        {% endif %}
-    </div>
-    <span class="nav-text">सूचनाएं</span>
-</a>
-
+                {% if unread_notifications_count > 0 %}
+                    <span id="notif-badge" style="position: absolute; top: 4px; right: 10px; background: #e74c3c; color: white; border-radius: 12px; padding: 1px 6px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 10;">
+                        {{ unread_notifications_count }}
+                    </span>
+                {% endif %}
+        </a>
         <button class="p-tab-btn" onclick="showView(event, 'view-learn')">📚 गुरुकुल</button>
     </div>
 
