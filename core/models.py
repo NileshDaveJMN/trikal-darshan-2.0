@@ -169,3 +169,40 @@ class PushSubscription(models.Model):
                 "auth": self.auth,
             }
         }
+
+from django.db import models
+
+# 1. प्लेलिस्ट या लाइब्रेरी टॉपिक बनाने के लिए (Category)
+class LearnCategory(models.Model):
+    CATEGORY_TYPES = (
+        ('PLAYLIST', '🎥 वीडियो प्लेलिस्ट'),
+        ('LIBRARY', '📚 ई-लाइब्रेरी (PDF टॉपिक)'),
+    )
+    name = models.CharField(max_length=100, verbose_name="कैटेगरी का नाम (जैसे: बेसिक ज्योतिष)")
+    category_type = models.CharField(max_length=20, choices=CATEGORY_TYPES, verbose_name="प्रकार")
+    order = models.IntegerField(default=0, verbose_name="क्रम (Order) - ऊपर दिखाने के लिए 1 लिखें")
+
+    class Meta:
+        ordering = ['order', 'name']
+
+    def __str__(self):
+        return f"[{self.get_category_type_display()}] {self.name}"
+
+# 2. उस प्लेलिस्ट/टॉपिक के अंदर वीडियो या PDF डालने के लिए (Item)
+class LearnItem(models.Model):
+    category = models.ForeignKey(LearnCategory, on_delete=models.CASCADE, related_name='items', verbose_name="किस प्लेलिस्ट/लाइब्रेरी में डालें?")
+    title = models.CharField(max_length=200, verbose_name="टाइटल")
+    description = models.TextField(verbose_name="विवरण")
+    cover_emoji = models.CharField(max_length=10, default="📕", verbose_name="आइकॉन (Emoji)")
+    
+    pdf_file = models.FileField(upload_to='jyotish_books/', blank=True, null=True, verbose_name="PDF फाइल")
+    video_url = models.URLField(blank=True, null=True, verbose_name="वीडियो लिंक")
+    
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
+
+    def __str__(self):
+        return self.title

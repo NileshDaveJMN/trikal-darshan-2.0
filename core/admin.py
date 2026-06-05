@@ -103,3 +103,24 @@ class LeadAdmin(admin.ModelAdmin):
 class AIQuestionHistoryAdmin(admin.ModelAdmin):
     list_display = ('kundali', 'question', 'created_at')
     search_fields = ('question', 'kundali__name')
+
+from django.contrib import admin
+from .models import LearnCategory, LearnItem
+
+# यह क्लास एडमिन पैनल में कैटेगरी के अंदर ही वीडियो/PDF जोड़ने का ऑप्शन देगी
+class LearnItemInline(admin.TabularInline):
+    model = LearnItem
+    extra = 1
+
+@admin.register(LearnCategory)
+class LearnCategoryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category_type', 'order')
+    list_filter = ('category_type',)
+    search_fields = ('name',)
+    inlines = [LearnItemInline] # इससे फोल्डर के अंदर ही आइटम दिखेंगे
+
+@admin.register(LearnItem)
+class LearnItemAdmin(admin.ModelAdmin):
+    list_display = ('title', 'category', 'is_active', 'created_at')
+    list_filter = ('category__category_type', 'is_active', 'category')
+    search_fields = ('title', 'description')
