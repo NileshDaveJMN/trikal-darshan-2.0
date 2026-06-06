@@ -186,7 +186,7 @@ class LearnItem(models.Model):
     description = models.TextField(verbose_name="विवरण")
     cover_emoji = models.CharField(max_length=10, default="📕", verbose_name="आइकॉन (Emoji)")
     
-    pdf_file = models.FileField(upload_to='jyotish_books/', blank=True, null=True, verbose_name="PDF फाइल")
+    pdf_file = models.URLField(blank=True, null=True, verbose_name="PDF Google Drive Link")
     video_url = models.URLField(blank=True, null=True, verbose_name="वीडियो लिंक")
     
     is_active = models.BooleanField(default=True)
