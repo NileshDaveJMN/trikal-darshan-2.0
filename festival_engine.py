@@ -19,8 +19,81 @@ import django
 if not django.apps.apps.ready: 
     django.setup()
 
-from core.models import UserProfile, PushSubscription
+from core.models import UserProfile, PushSubscription, SavedKundali, UserNotification
 from core.views.push_views import send_push_to_user
+
+import random
+import requests
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# Gemini Setup
+GEMINI_API_KEYS = []
+for _i in range(1, 10):
+    _k = os.environ.get(f"GEMINI_API_KEYS{_i}", "").strip()
+    if _k: GEMINI_API_KEYS.append(_k)
+GEMINI_MODEL = "gemini-2.0-flash-exp"
+
+def _call_gemini_festival(prompt):
+    if not GEMINI_API_KEYS: return ""
+    keys = GEMINI_API_KEYS.copy()
+    random.shuffle(keys)
+    for api_key in keys[:3]:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}"
+        try:
+            resp = requests.post(url, json={
+                "contents": [{"parts": [{"text": prompt}]}],
+                "generationConfig": {"temperature": 0.8, "maxOutputTokens": 300}
+            }, timeout=25, verify=False)
+            if resp.status_code == 200:
+                text = resp.json().get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
+                import re
+                return re.sub(r'[*#]', '', text) if text else ""
+            elif resp.status_code == 429:
+                import time; time.sleep(2)
+        except Exception:
+            import time; time.sleep(1)
+    return ""
+
+def build_festival_remedy_prompt(user_name, profile, festival, natal_pos, lagna_idx, dasha):
+    import datetime
+    today_str = datetime.date.today().strftime("%d %B %Y")
+    RASHI_NAMES = ["मेष","वृषभ","मिथुन","कर्क","सिंह","कन्या","तुला","वृश्चिक","धनु","मकर","कुंभ","मीन"]
+    chandra_rashi = natal_pos.get("चंद्र", {}).get("rashi", "अज्ञात")
+    chandra_nak   = natal_pos.get("चंद्र", {}).get("nakshatra", "")
+    lagna_name    = RASHI_NAMES[lagna_idx] if 0 <= lagna_idx < 12 else "अज्ञात"
+    guru   = natal_pos.get("गुरु",  {}).get("rashi", "")
+    shukra = natal_pos.get("शुक्र", {}).get("rashi", "")
+    shani  = natal_pos.get("शनि",  {}).get("rashi", "")
+    festival_name  = festival.get("name", "")
+    festival_deity = festival.get("deity", "भगवान")
+    festival_desc  = festival.get("desc", "")
+    community      = festival.get("community", "Hindu")
+    lines = [
+        f"आज की तारीख: {today_str}",
+        "आप एक श्रेष्ठ वैदिक ज्योतिषी और धर्मशास्त्री हैं।",
+        "",
+        f"आज का पर्व: {festival_name} ({festival_desc})",
+        f"देवता: {festival_deity} | समुदाय: {community}",
+        "",
+        "उपयोगकर्ता की जन्म-कुंडली:",
+        f"  नाम: {user_name}",
+        f"  जन्म लग्न: {lagna_name}",
+        f"  चंद्र राशि: {chandra_rashi} ({chandra_nak})",
+        f"  महादशा: {dasha.get('md','अज्ञात')} | अंतर्दशा: {dasha.get('ad','अज्ञात')}",
+        f"  पेशा: {profile.profession or 'सामान्य'}",
+        f"  जीवन फोकस: {profile.primary_focus or 'सामान्य'}",
+        f"  गुरु: {guru} | शुक्र: {shukra} | शनि: {shani}",
+        "",
+        "नियम:",
+        "1. सिर्फ 3-4 पंक्तियाँ — छोटा, सटीक और व्यक्तिगत।",
+        f"2. '{user_name} जी,' से शुरू करें।",
+        "3. इस पर्व पर उनकी कुंडली के अनुसार कौन सा विशेष उपाय/पूजा सबसे लाभकारी होगा — स्पष्ट बताएं।",
+        "4. उपाय व्यावहारिक हो — घर पर आसानी से हो सके।",
+        "5. अंत में एक छोटा मंत्र दें जो इस पर्व और देवता से संबंधित हो।",
+    ]
+    return "\n".join(lines)
+
 
 # ── Lunar Month Names (Amanta System) ────────────────────────────────
 LUNAR_MONTHS = [
@@ -362,21 +435,37 @@ def get_today_festivals(panchang_data=None):
 # ── Main Background Task ─────────────────────────────────────────────
 def send_festival_notifications():
     print("\n" + "─" * 55)
-    print("  🎊 Festival Notification Engine")
+    print("  🎊 Festival Notification Engine (AI-Powered)")
     print("─" * 55)
 
     panchang = get_today_panchang()
     if not panchang: return
 
-    festivals = get_today_festivals(panchang)
+    tithi_festivals = get_today_festivals(panchang)
     solar_festivals = get_today_solar_festivals()
-    all_festivals = festivals + solar_festivals
-    if not festivals:
+    all_festivals   = tithi_festivals + solar_festivals
+
+    if not all_festivals:
         print("  ℹ️  आज कोई विशेष पर्व नहीं है")
         return
 
-    festival = festivals[0]
-    print(f"  🔔 Sending Push for: {festival['emoji']} {festival['name']}")
+    print(f"  🎉 आज के पर्व: {len(all_festivals)}")
+    for f in all_festivals:
+        print(f"     {f.get('emoji','')} {f['name']}")
+
+    festival = all_festivals[0]
+    print(f"\n  🔔 Main festival: {festival['emoji']} {festival['name']}")
+
+    # Kundali calculation imports
+    try:
+        from daily_horoscope_engine import (
+            calculate_natal_positions, calculate_lagna, build_dasha_info
+        )
+        ai_available = True
+        print("  ✅ AI engine loaded")
+    except Exception as e:
+        print(f"  ⚠️ AI import failed: {e}")
+        ai_available = False
 
     profiles = UserProfile.objects.select_related("user").all()
     sent = 0
@@ -384,15 +473,58 @@ def send_festival_notifications():
     for profile in profiles:
         subs = PushSubscription.objects.filter(user=profile.user, is_active=True)
         if not subs.exists(): continue
-        
-        user_name  = profile.user.first_name or profile.user.username
-        remedy = f"{user_name} जी, आज {festival['name']} के शुभ अवसर पर {festival['deity']} की पूजा करें और उनका आशीर्वाद प्राप्त करें। यह दिन आपके लिए शुभ फल लेकर आएगा। 🙏"
-        preview = remedy[:90] + "..."
 
-        send_push_to_user(profile.user, f"{festival['emoji']} {festival['name']} की शुभकामनाएं!", preview, "/?tab=view-panchang")
+        user_name = profile.user.first_name or profile.user.username
+        community = festival.get("community", "Hindu")
+        ai_msg = ""
+
+        # AI-personalized remedy
+        if ai_available and community in ["Hindu", "Jain", "Buddhist", "Sikh"]:
+            try:
+                kundali = SavedKundali.objects.filter(user=profile.user).order_by("created_at").first()
+                if kundali:
+                    natal_pos, natal_jd = calculate_natal_positions(kundali)
+                    lagna_idx = calculate_lagna(natal_jd, kundali.lat, kundali.lon)
+                    dasha = build_dasha_info(kundali)
+                    prompt = build_festival_remedy_prompt(user_name, profile, festival, natal_pos, lagna_idx, dasha)
+                    ai_msg = _call_gemini_festival(prompt)
+                    if ai_msg:
+                        print(f"  🤖 AI remedy generated for {user_name}")
+            except Exception as e:
+                print(f"  ⚠️ AI error for {user_name}: {e}")
+
+        # Fallback message
+        if not ai_msg:
+            if community == "National":
+                ai_msg = f"{user_name} जी, आज {festival.get('emoji','')} {festival['name']} है। जय हिंद! 🇮🇳"
+            elif community in ["Sikh", "Jain", "Buddhist", "Christian"]:
+                ai_msg = f"{user_name} जी, {festival.get('emoji','')} {festival['name']} की हार्दिक शुभकामनाएं! इस पावन अवसर पर आपके जीवन में सुख-शांति आए। 🙏"
+            else:
+                deity = festival.get("deity", "भगवान")
+                ai_msg = f"{user_name} जी, आज {festival['name']} पर {deity} की विशेष पूजा करें। यह दिन आपके लिए शुभ फलदायी हो। 🙏"
+
+        # UserNotification mein save karo
+        try:
+            UserNotification.objects.create(
+                user=profile.user,
+                title=f"{festival.get('emoji','')} {festival['name']} की शुभकामनाएं!",
+                message=ai_msg,
+                notification_type="FESTIVAL"
+            )
+        except Exception as e:
+            print(f"  ⚠️ Notification save error: {e}")
+
+        # Push notification bhejo
+        preview = ai_msg[:100] + "..."
+        send_push_to_user(
+            profile.user,
+            f"{festival.get('emoji','')} {festival['name']} की शुभकामनाएं!",
+            preview,
+            "/?tab=view-notifications"
+        )
         sent += 1
 
-    print(f"  📲 Sent: {sent}")
+    print(f"\n  📲 Total sent: {sent}")
     print("─" * 55)
 
 if __name__ == "__main__":
