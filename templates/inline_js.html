@@ -59,6 +59,15 @@ document.addEventListener('DOMContentLoaded', function() {
     var tabToOpen = urlParams.get('tab');
     if (tabToOpen) {
         showView(null, tabToOpen);
+        
+        // 🚀 नया फिक्स: नोटिफिकेशन टैब खुलते ही रेड बैज को रीड मार्क कर दें
+        if (tabToOpen === 'view-notifications') {
+            setTimeout(function() {
+                if (typeof markNotificationsAsRead === 'function') {
+                    markNotificationsAsRead();
+                }
+            }, 500); // 0.5 सेकंड का डिले ताकि पेज अच्छे से लोड हो जाए
+        }
     }
 });
 

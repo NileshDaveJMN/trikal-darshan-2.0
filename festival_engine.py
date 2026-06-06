@@ -289,18 +289,6 @@ SOLAR_FESTIVALS = [
 ]
 
 
-def get_today_solar_festivals():
-    """Fixed/Solar date festivals check karo"""
-    today = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
-    today_day   = today.day
-    today_month = today.month
-    matched = []
-    for f in SOLAR_FESTIVALS:
-        if f["day"] is None:
-            continue  # tithi-based hain, skip
-        if f["day"] == today_day and f["month"] == today_month:
-            matched.append(f)
-    return matched
 
 
 def get_tithi_at_hour(date_obj, hour_float):
@@ -365,26 +353,41 @@ def get_today_panchang():
         return None
 
 # ── Auto Time-Shift Festival Matching ─────────────────────────────────
+def get_today_solar_festivals(date_obj=None):
+    """Fixed/Solar date festivals check karo (Fix: Ab ye user ki selected date par kaam karega)"""
+    if not date_obj:
+        date_obj = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
+    
+    today_day   = date_obj.day
+    today_month = date_obj.month
+    matched = []
+    for f in SOLAR_FESTIVALS:
+        if f["day"] is None:
+            continue
+        if f["day"] == today_day and f["month"] == today_month:
+            matched.append(f)
+    return matched
+
 def get_today_festivals(panchang_data=None):
     panchang = panchang_data if panchang_data else get_today_panchang()
     if not panchang: return []
 
     current_date = parse_panchang_date(panchang)
-
-    # 1. Tithi (हिंदी को नंबर में बदलें)
+    
+    # ... (आपका Tithi, Paksha, Month निकालने वाला पुराना कोड यहाँ रहने दें) ...
+    # (लाइन 165 से 184 तक का कोड सेम रहेगा)
+    
     p_tithi = panchang.get('tithi', 1)
     if isinstance(p_tithi, str):
         tithi_map = {"प्रतिपदा": 1, "द्वितीया": 2, "तृतीया": 3, "चतुर्थी": 4, "पंचमी": 5, "षष्ठी": 6, "सप्तमी": 7, "अष्टमी": 8, "नवमी": 9, "दशमी": 10, "एकादशी": 11, "द्वादशी": 12, "त्रयोदशी": 13, "चतुर्दशी": 14, "पूर्णिमा": 15, "अमावस्या": 15}
         clean_tithi = p_tithi.split()[0] if ' ' in p_tithi else p_tithi
         p_tithi = tithi_map.get(clean_tithi, 1)
 
-    # 2. Paksha (पक्ष को S/K में बदलें)
     p_paksha = panchang.get('paksha', 'S')
     if isinstance(p_paksha, str):
         if "शुक्ल" in p_paksha: p_paksha = "S"
         elif "कृष्ण" in p_paksha: p_paksha = "K"
 
-    # 3. Month (महीने का नंबर निकालें)
     p_month_idx = -1
     maas_str = panchang.get('hindu_maas', '')
     if isinstance(maas_str, str) and maas_str:
@@ -396,20 +399,12 @@ def get_today_festivals(panchang_data=None):
         p_month = panchang.get('lunar_month', 0)
         p_month_idx = int(p_month) + 1
 
-    # समय के स्लॉट्स (Hours in 24h format)
-    slot_hours = {
-        "predawn": 4.0,   # सुबह 4 बजे
-        "afternoon": 14.0, # दोपहर 2 बजे
-        "evening": 19.0,   # शाम 7 बजे
-        "midnight": 23.5   # रात 11:30 बजे
-    }
+    slot_hours = {"predawn": 4.0, "afternoon": 14.0, "evening": 19.0, "midnight": 23.5}
     
-    # 4. मैच करें (Dynamic Checking)
     slot_cache = {}
     festivals = []
     
     for rule in FESTIVAL_RULES:
-        # अगर महीना ही मैच नहीं हो रहा, तो फालतू में कैलकुलेशन ना करें (Speed Optimization)
         if rule["month"] is not None and rule["month"] != p_month_idx:
             continue
             
@@ -417,20 +412,19 @@ def get_today_festivals(panchang_data=None):
         req_paksha = rule["paksha"]
         time_slot = rule.get("time_slot")
         
-        # अगर त्योहार का कोई खास 'कर्म काल' है, तो बैकग्राउंड में उसी समय की तिथि निकालें
         if time_slot and time_slot in slot_hours:
             if time_slot not in slot_cache:
                 slot_cache[time_slot] = get_tithi_at_hour(current_date, slot_hours[time_slot])
-            
             calc_tithi, calc_paksha = slot_cache[time_slot]
             if req_tithi == calc_tithi and req_paksha == calc_paksha:
                 festivals.append(rule)
         else:
-            # वरना नॉर्मल सुबह वाली 'उदया तिथि' से ही चेक कर लें
             if req_tithi == p_tithi and req_paksha == p_paksha:
                 festivals.append(rule)
 
-    return festivals
+    # 🚀 FIX: अब Solar (तारीख वाले) त्यौहार भी पंचांग लिस्ट में जुड़ेंगे!
+    solar_festivals = get_today_solar_festivals(current_date)
+    return festivals + solar_festivals
 
 # ── Main Background Task ─────────────────────────────────────────────
 def send_festival_notifications():

@@ -26,17 +26,26 @@ def check_secret(request):
 
 @csrf_exempt
 def api_send_daily_horoscope(request):
-    """
-    Cron-job द्वारा हिट किया जाने वाला फंक्शन।
-    """
     if not check_secret(request):
-        return JsonResponse({"ok": False, "error": "Unauthorized"}, status=401)
-        
+        return JsonResponse({"ok": False}, status=401)
     def run_horoscope():
         try:
-            # 1. राशिफल जनरेट करें (engine अब UserNotification में ऑटोमैटिक सेव करेगा)
+            import sys, os
+            root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+            if root not in sys.path:
+                sys.path.insert(0, root)
+                
+            # Step 1: Rashifal generate karo
             from daily_horoscope_engine import generate_daily_horoscopes
             generate_daily_horoscopes()
+
+            # 🚀 Step 1.5: Festival Engine चलाएं (नया फिक्स)
+            try:
+                from festival_engine import send_festival_notifications
+                send_festival_notifications()
+            except Exception as fe:
+                print(f"Festival engine error: {fe}")
+
 
             # 2. पुश नोटिफिकेशन भेजें
             from core.views.push_views import send_push_to_user
