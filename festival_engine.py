@@ -4,6 +4,8 @@ import pytz
 from pathlib import Path
 
 # ── Django Setup (For Background Tasks) ────────────────────────────────
+# ── Django Setup (For Background Tasks) ────────────────────────────────
+from pathlib import Path
 _env_path = Path(__file__).parent / '.env'
 if _env_path.exists():
     for _line in _env_path.read_text(encoding='utf-8').splitlines():
@@ -12,11 +14,12 @@ if _env_path.exists():
             _k, _v = _line.split('=', 1)
             os.environ.setdefault(_k.strip(), _v.strip())
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+import django
+from django.apps import apps  # 🚀 यह इम्पोर्ट ज़रूरी है
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'trikal_portal.settings')
 
-import django
-if not django.apps.apps.ready: 
+if not apps.ready: 
     django.setup()
 
 from core.models import UserProfile, PushSubscription, SavedKundali, UserNotification
