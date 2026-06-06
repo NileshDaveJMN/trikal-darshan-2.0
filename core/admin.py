@@ -124,3 +124,32 @@ class LearnItemAdmin(admin.ModelAdmin):
     list_display = ('title', 'category', 'is_active', 'created_at')
     list_filter = ('category__category_type', 'is_active', 'category')
     search_fields = ('title', 'description')
+
+# =====================================================
+# core/admin.py
+# =====================================================
+from django.contrib import admin
+from .models import UserNotification
+
+@admin.register(UserNotification)
+class UserNotificationAdmin(admin.Admin):
+    # एडमिन की लिस्ट में कौन-कौन से कॉलम दिखेंगे
+    list_display = ('title', 'user', 'notification_type', 'is_read', 'created_at')
+    
+    # दाईं तरफ फिल्टर लगाने का ऑप्शन (नया/पुराना, यूज़र वाइज, टाइप वाइज)
+    list_filter = ('is_read', 'notification_type', 'created_at')
+    
+    # सर्च करने के लिए फील्ड्स
+    search_fields = ('title', 'message', 'user__username')
+    
+    # लिस्ट में ही 'is_read' को एडिट करने का मौका दें (Quick check)
+    list_editable = ('is_read',)
+    
+    # डिफ़ॉल्ट सॉर्टिंग (नया सबसे ऊपर)
+    ordering = ('-created_at',)
+
+    # एडमिन में दिखने वाला नाम (Optional, model Meta में भी कर सकते हैं)
+    # def get_queryset(self, request):
+    #     queryset = super().get_queryset(request)
+    #     return queryset
+

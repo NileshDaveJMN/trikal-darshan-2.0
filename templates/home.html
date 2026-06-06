@@ -427,33 +427,58 @@
             </div>
         </div>
 
-        <!-- ================= 📚 गुरुकुल (Learn) सेक्शन ================= -->
-        <div id="view-learn" class="view-panel" style="display:none;">
+        <!-- ========================================================================================= -->
+        <!-- 📚 गुरुकुल (Learn) सेक्शन - UPDATED UI Fix -->
+        <!-- ========================================================================================= -->
+        <div id="view-learn" class="view-panel dashboard-content" style="display:none; max-width: 600px; margin: 0 auto; padding: 0 10px;">
+            
             <style>
-                .learn-container { padding: 10px; font-family: sans-serif; background: transparent; color: #e2e8f0; }
-                .section-title { color: #d4af37; font-size: 18px; border-bottom: 2px solid #334155; padding-bottom: 10px; margin-top: 20px; margin-bottom: 15px; }
-                .folder-accordion { background: #1e293b; border: 1px solid #334155; border-radius: 12px; margin-bottom: 15px; overflow: hidden; }
-                .folder-accordion summary { padding: 15px; font-size: 15px; font-weight: bold; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: space-between; list-style: none; }
+                /* गुरुकुल के लिए विशिष्ट स्टाइल्स */
+                .learn-container { font-family: sans-serif; background: transparent; color: #e2e8f0; }
+                .section-title { color: #d4af37; font-size: 18px; border-bottom: 2px solid #334155; padding-bottom: 10px; margin-top: 20px; margin-bottom: 15px; font-weight: bold; }
+                .folder-accordion { background: #1e293b; border: 1px solid #334155; border-radius: 12px; margin-bottom: 15px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+                .folder-accordion summary { padding: 15px; font-size: 15px; font-weight: bold; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: space-between; list-style: none; outline: none; }
                 .folder-accordion summary::-webkit-details-marker { display: none; }
                 .folder-accordion[open] summary { border-bottom: 1px solid #334155; background: #2d3f55; }
                 .content-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; padding: 15px; background: #0f172a; }
-                .item-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 15px; }
+                .item-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 15px; transition: transform 0.2s, box-shadow 0.2s; }
+                .item-card:active { transform: scale(0.98); }
                 .card-video { border-left: 4px solid #ff4757; }
                 .card-pdf { border-left: 4px solid #24a1de; }
                 .item-icon { font-size: 26px; margin-bottom: 10px; }
-                .item-title { font-size: 15px; color: #e2e8f0; margin: 0 0 5px 0; font-weight: bold; }
-                .item-desc { font-size: 13px; color: #94a3b8; margin-bottom: 15px; line-height: 1.4; }
-                .btn-read { display: block; padding: 8px 15px; border-radius: 6px; font-size: 14px; font-weight: bold; text-decoration: none; text-align: center; width: 100%; box-sizing: border-box; }
+                .item-title { font-size: 15px; color: #e2e8f0; margin: 0 0 5px 0; font-weight: bold; line-height: 1.4; }
+                .item-desc { font-size: 13px; color: #94a3b8; margin-bottom: 15px; line-height: 1.5; }
+                .btn-read { display: block; padding: 10px 15px; border-radius: 6px; font-size: 14px; font-weight: bold; text-decoration: none; text-align: center; width: 100%; box-sizing: border-box; transition: background 0.2s; }
                 .btn-video { background: rgba(255, 71, 87, 0.1); color: #ff4757; border: 1px solid #ff4757; }
+                .btn-video:active { background: rgba(255, 71, 87, 0.2); }
                 .btn-pdf { background: rgba(36, 161, 222, 0.1); color: #24a1de; border: 1px solid #24a1de; }
+                .btn-pdf:active { background: rgba(36, 161, 222, 0.2); }
             </style>
 
-            <div class="learn-container card">
-                <div style="text-align: center; margin-bottom: 20px;">
-                    <h2 style="color: #fff; margin: 0; font-size: 22px;">🎓 त्रिकाल गुरुकुल</h2>
-                    <p style="color: #94a3b8; font-size: 14px;">ज्योतिष सीखें, पीडीएफ पढ़ें और वीडियो देखें</p>
+            <!-- 🚀 मुख्य कार्ड कंटेनर: CSS fixes यहाँ लागू किए गए हैं -->
+            <div class="learn-container card" style="
+                margin-top: 15px !important; /* 🚀 ऊपर चिपकाए रखने के लिए */
+                min-height: calc(100vh - 120px); /* 🚀 मोबाइल पर पूरी स्क्रीन कवर करे */
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-start; /* 🚀 कंटेंट ऊपर से शुरू हो */
+                padding: 20px;
+                background: #131c2c;
+                border-radius: 15px;
+                border: 1px solid #1e293b;
+            ">
+                
+                <!-- गुरुकुल हेडर -->
+                <div style="text-align: center; margin-bottom: 25px;">
+                    <h2 style="color: #fff; margin: 0; font-size: 24px; font-weight: 800;">
+                        🎓 त्रिकाल गुरुकुल
+                    </h2>
+                    <p style="color: #94a3b8; font-size: 14px; margin: 5px 0 0 0;">
+                        ज्योतिष सीखें, पीडीएफ पढ़ें और वीडियो देखें
+                    </p>
                 </div>
 
+                <!-- डायनामिक कंटेंट -->
                 {% if learn_categories %}
                     {% for cat in learn_categories %}
                         <h3 class="section-title">
@@ -463,7 +488,9 @@
                         <details class="folder-accordion">
                             <summary>
                                 <span>📂 {{ cat.name }} सामग्री</span>
-                                <span style="font-size: 12px; background: {% if cat.category_type == 'PLAYLIST' %}#ff4757{% else %}#24a1de{% endif %}; padding: 2px 8px; border-radius: 10px;">{{ cat.items.count }} Items</span>
+                                <span style="font-size: 11px; background: {% if cat.category_type == 'PLAYLIST' %}#b71c1c{% else %}#1a5c8a{% endif %}; padding: 3px 8px; border-radius: 10px; font-weight: bold;">
+                                    {{ cat.items.count }} Items
+                                </span>
                             </summary>
                             <div class="content-grid">
                                 {% for item in cat.items.all %}
@@ -478,16 +505,27 @@
                                         {% endif %}
                                     </div>
                                 {% empty %}
-                                    <p style="padding: 15px; color: #94a3b8; font-size: 14px;">इस सेक्शन में जल्द ही सामग्री अपलोड की जाएगी।</p>
+                                    <p style="padding: 15px; color: #94a3b8; font-size: 14px; text-align: center; grid-column: 1/-1;">
+                                        इस सेक्शन में जल्द ही सामग्री अपलोड की जाएगी।
+                                    </p>
                                 {% endfor %}
                             </div>
                         </details>
                     {% endfor %}
                 {% else %}
-                    <p style="text-align: center; color: #94a3b8; margin-top: 30px; font-size: 15px;">गुरुकुल में अभी कोई सामग्री अपलोड नहीं की गई है।</p>
+                    <!-- खाली होने पर सुंदर मैसेज -->
+                    <div style="text-align: center; color: #64748b; padding: 50px 20px; border: 1px dashed #1e293b; border-radius: 12px; background: #0f172a; margin-top: 20px;">
+                        <span style="font-size: 50px; display: block; margin-bottom: 15px;">📚</span>
+                        <p style="margin: 0; font-size: 15px;">गुरुकुल में अभी कोई सामग्री अपलोड नहीं की गई है।</p>
+                        <p style="margin: 5px 0 0 0; font-size: 13px;">कृपया एडमिन पैनल से सामग्री जोड़ें।</p>
+                    </div>
                 {% endif %}
-            </div>
-        </div>
+                
+                <!-- मोबाइल पर नीचे एक्स्ट्रा स्पेस देने के लिए (ताकि नैविगेशन बार कंटेंट को न ढके) -->
+                <div style="height: 80px; width: 100%;"></div>
+
+            </div> <!-- learn-container / card बंद -->
+        </div> <!-- view-learn बंद -->
 
     </div> <!-- main-viewport बंद -->
 </div> <!-- app-container बंद -->
