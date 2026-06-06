@@ -55,6 +55,7 @@ FESTIVAL_RULES = [
     {"name": "मोहिनी एकादशी",         "emoji": "🙏", "tithi": 11, "paksha": "S", "month": 2, "deity": "विष्णु", "desc": "वैशाख शुक्ल एकादशी"},
     {"name": "नरसिंह जयंती",           "emoji": "🦁", "tithi": 14, "paksha": "S", "month": 2, "deity": "नरसिंह", "desc": "वैशाख शुक्ल चतुर्दशी", "time_slot": "evening"},
     {"name": "कूर्म जयंती / पूर्णिमा",  "emoji": "🐢", "tithi": 15, "paksha": "S", "month": 2, "deity": "विष्णु", "desc": "वैशाख पूर्णिमा"},
+    {"name": "परशुराम जयंती",            "emoji": "🪓", "tithi": 3,  "paksha": "S", "month": 2, "deity": "परशुराम",      "desc": "वैशाख शुक्ल तृतीया (अक्षय तृतीया के दिन)"},
     {"name": "अपरा एकादशी",           "emoji": "🙏", "tithi": 11, "paksha": "K", "month": 2, "deity": "विष्णु", "desc": "वैशाख कृष्ण एकादशी"},
     {"name": "शनि जयंती / वट सावित्री", "emoji": "🪐", "tithi": 15, "paksha": "K", "month": 2, "deity": "शनिदेव", "desc": "वैशाख अमावस्या (अमांत)"},
 
@@ -144,6 +145,91 @@ FESTIVAL_RULES = [
 ]
 
 # ── Dynamic Tithi Calculator ─────────────────────────────────────────
+
+
+# ── सौर / Fixed-Date त्यौहार (date aur month se match hote hain) ──
+# Format: {"name", "emoji", "day": DD, "month": MM (Gregorian), "deity", "community", "desc"}
+SOLAR_FESTIVALS = [
+    # ── मकर संक्रांति / उत्तरायण ──
+    {"name": "मकर संक्रांति / उत्तरायण", "emoji": "🪁", "day": 14, "month": 1,  "deity": "सूर्यदेव",     "community": "Hindu",    "desc": "सूर्य का मकर राशि में प्रवेश"},
+    {"name": "पोंगल",                   "emoji": "🍚", "day": 14, "month": 1,  "deity": "सूर्यदेव",     "community": "Regional", "desc": "तमिलनाडु का फसल उत्सव"},
+    {"name": "लोहड़ी",                   "emoji": "🔥", "day": 13, "month": 1,  "deity": "अग्नि",        "community": "Sikh",     "desc": "पंजाब का शीत उत्सव"},
+    {"name": "भोगाली बिहू",              "emoji": "🌾", "day": 14, "month": 1,  "deity": "प्रकृति",      "community": "Regional", "desc": "असम का फसल उत्सव (माघ बिहू)"},
+    
+    # ── गणतंत्र दिवस ──
+    {"name": "गणतंत्र दिवस",             "emoji": "🇮🇳", "day": 26, "month": 1,  "deity": "-",           "community": "National", "desc": "भारत का 76वाँ गणतंत्र दिवस"},
+
+    # ── फरवरी ──
+    {"name": "वसंत पंचमी",              "emoji": "🌼", "day": None,"month": 2,  "deity": "सरस्वती",     "community": "Hindu",    "desc": "माघ शुक्ल पंचमी (tithi-based)"},
+
+    # ── मार्च ──
+    {"name": "होली (धुलंडी)",            "emoji": "🎨", "day": None,"month": 3,  "deity": "कृष्ण-राधा",   "community": "Hindu",    "desc": "फाल्गुन पूर्णिमा के अगले दिन"},
+    {"name": "उगादि / गुड़ी पड़वा",        "emoji": "🚩", "day": None,"month": 3,  "deity": "ब्रह्मा",      "community": "Regional", "desc": "चैत्र शुक्ल प्रतिपदा - तेलुगु/मराठी नववर्ष"},
+
+    # ── अप्रैल ──
+    {"name": "बैसाखी / वैसाखी",          "emoji": "🌾", "day": 13, "month": 4,  "deity": "वाहेगुरु",    "community": "Sikh",     "desc": "सिख नववर्ष एवं फसल उत्सव"},
+    {"name": "बिहू (रंगाली)",             "emoji": "🎭", "day": 14, "month": 4,  "deity": "प्रकृति",      "community": "Regional", "desc": "असम का वसंत उत्सव"},
+    {"name": "विशु",                    "emoji": "🌸", "day": 14, "month": 4,  "deity": "विष्णु",       "community": "Regional", "desc": "केरल का नववर्ष"},
+    {"name": "तमिल नववर्ष (पुथांडु)",    "emoji": "🌺", "day": 14, "month": 4,  "deity": "सूर्यदेव",     "community": "Regional", "desc": "तमिल नववर्ष"},
+    {"name": "अम्बेडकर जयंती",           "emoji": "🔵", "day": 14, "month": 4,  "deity": "-",           "community": "National", "desc": "डॉ. भीमराव अम्बेडकर जन्मदिन"},
+    {"name": "महावीर जयंती",             "emoji": "🕊️", "day": None,"month": 4,  "deity": "महावीर स्वामी","community": "Jain",     "desc": "चैत्र शुक्ल त्रयोदशी (Jain)"},
+
+    # ── मई ──
+    {"name": "बुद्ध पूर्णिमा",            "emoji": "☸️",  "day": None,"month": 5,  "deity": "गौतम बुद्ध",  "community": "Buddhist", "desc": "वैशाख पूर्णिमा"},
+    {"name": "परशुराम जयंती",            "emoji": "🪓", "day": None,"month": 5,  "deity": "परशुराम",      "community": "Hindu",    "desc": "वैशाख शुक्ल तृतीया"},
+
+    # ── जून ──
+    {"name": "जगन्नाथ रथ यात्रा",        "emoji": "🎡", "day": None,"month": 6,  "deity": "जगन्नाथ",     "community": "Hindu",    "desc": "आषाढ़ शुक्ल द्वितीया"},
+    {"name": "Sant Kabir Jayanti",       "emoji": "📿", "day": None,"month": 6,  "deity": "निर्गुण ब्रह्म","community": "Hindu",    "desc": "ज्येष्ठ पूर्णिमा"},
+
+    # ── अगस्त ──
+    {"name": "स्वतंत्रता दिवस",           "emoji": "🇮🇳", "day": 15, "month": 8,  "deity": "-",           "community": "National", "desc": "भारत का स्वतंत्रता दिवस"},
+    {"name": "पर्युषण पर्व",              "emoji": "🕊️", "day": None,"month": 8,  "deity": "जैन तीर्थंकर", "community": "Jain",     "desc": "जैन समाज का सबसे पवित्र पर्व"},
+    {"name": "ओणम",                     "emoji": "🌺", "day": None,"month": 8,  "deity": "महाबली/विष्णु","community": "Regional", "desc": "केरल का प्रमुख त्यौहार (थिरुवोणम)"},
+
+    # ── सितंबर ──
+    {"name": "विश्वकर्मा पूजा",           "emoji": "🔧", "day": 17, "month": 9,  "deity": "विश्वकर्मा",   "community": "Hindu",    "desc": "सूर्य के कन्या राशि प्रवेश पर"},
+    {"name": "सम्वत्सरी (Jain)",          "emoji": "🕊️", "day": None,"month": 9,  "deity": "जैन तीर्थंकर", "community": "Jain",     "desc": "जैन पर्युषण का अंतिम दिन - क्षमापना"},
+
+    # ── अक्टूबर ──
+    {"name": "गाँधी जयंती",              "emoji": "🕊️", "day": 2,  "month": 10, "deity": "-",           "community": "National", "desc": "महात्मा गाँधी जन्मदिन"},
+    {"name": "नवरात्रि (शारदीय)",         "emoji": "🚩", "day": None,"month": 10, "deity": "दुर्गा",       "community": "Hindu",    "desc": "आश्विन शुक्ल प्रतिपदा"},
+
+    # ── नवंबर ──
+    {"name": "गुरु नानक जयंती",           "emoji": "🙏", "day": None,"month": 11, "deity": "गुरु नानक देव","community": "Sikh",     "desc": "कार्तिक पूर्णिमा - गुरुपर्व"},
+    {"name": "बंदी छोड़ दिवस",            "emoji": "🕯️", "day": None,"month": 11, "deity": "गुरु हरगोविंद","community": "Sikh",     "desc": "दीपावली के दिन - सिख समाज"},
+
+    # ── दिसंबर ──
+    {"name": "क्रिसमस",                  "emoji": "🎄", "day": 25, "month": 12, "deity": "ईसा मसीह",    "community": "Christian","desc": "यीशु के जन्म का उत्सव"},
+
+    # ── जैन विशेष ──
+    {"name": "ऋषभदेव जयंती",             "emoji": "🕊️", "day": None,"month": 2,  "deity": "ऋषभदेव",      "community": "Jain",     "desc": "माघ कृष्ण त्रयोदशी"},
+    {"name": "दीपावली (जैन - महावीर निर्वाण)","emoji": "🪔", "day": None,"month": 11, "deity": "महावीर स्वामी","community": "Jain",    "desc": "महावीर स्वामी के निर्वाण का दिन"},
+
+    # ── सिख विशेष ──
+    {"name": "गुरु गोविंद सिंह जयंती",    "emoji": "⚔️",  "day": None,"month": 1,  "deity": "गुरु गोविंद सिंह","community": "Sikh",  "desc": "पौष शुक्ल सप्तमी"},
+    {"name": "होला मोहल्ला",              "emoji": "🏇", "day": None,"month": 3,  "deity": "वाहेगुरु",    "community": "Sikh",     "desc": "होली के अगले दिन - आनंदपुर साहिब"},
+
+    # ── बौद्ध विशेष ──
+    {"name": "धम्मचक्र प्रवर्तन दिवस",    "emoji": "☸️",  "day": 14, "month": 10, "deity": "गौतम बुद्ध",  "community": "Buddhist", "desc": "आश्विन पूर्णिमा - अशोक विजयदशमी"},
+    {"name": "बुद्ध पूर्णिमा",             "emoji": "☸️",  "day": None,"month": 5,  "deity": "गौतम बुद्ध",  "community": "Buddhist", "desc": "वैशाख पूर्णिमा"},
+]
+
+
+def get_today_solar_festivals():
+    """Fixed/Solar date festivals check karo"""
+    today = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
+    today_day   = today.day
+    today_month = today.month
+    matched = []
+    for f in SOLAR_FESTIVALS:
+        if f["day"] is None:
+            continue  # tithi-based hain, skip
+        if f["day"] == today_day and f["month"] == today_month:
+            matched.append(f)
+    return matched
+
+
 def get_tithi_at_hour(date_obj, hour_float):
     """
     उस दिन के किसी भी खास समय (जैसे दोपहर 2 बजे) पर तिथि और पक्ष की गणना करता है।
@@ -283,6 +369,8 @@ def send_festival_notifications():
     if not panchang: return
 
     festivals = get_today_festivals(panchang)
+    solar_festivals = get_today_solar_festivals()
+    all_festivals = festivals + solar_festivals
     if not festivals:
         print("  ℹ️  आज कोई विशेष पर्व नहीं है")
         return
