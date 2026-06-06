@@ -4,8 +4,6 @@ import pytz
 from pathlib import Path
 
 # ── Django Setup (For Background Tasks) ────────────────────────────────
-# ── Django Setup (For Background Tasks) ────────────────────────────────
-from pathlib import Path
 _env_path = Path(__file__).parent / '.env'
 if _env_path.exists():
     for _line in _env_path.read_text(encoding='utf-8').splitlines():
@@ -291,9 +289,6 @@ SOLAR_FESTIVALS = [
     {"name": "बुद्ध पूर्णिमा",             "emoji": "☸️",  "day": None,"month": 5,  "deity": "गौतम बुद्ध",  "community": "Buddhist", "desc": "वैशाख पूर्णिमा"},
 ]
 
-
-
-
 def get_tithi_at_hour(date_obj, hour_float):
     """
     उस दिन के किसी भी खास समय (जैसे दोपहर 2 बजे) पर तिथि और पक्ष की गणना करता है।
@@ -376,9 +371,6 @@ def get_today_festivals(panchang_data=None):
     if not panchang: return []
 
     current_date = parse_panchang_date(panchang)
-    
-    # ... (आपका Tithi, Paksha, Month निकालने वाला पुराना कोड यहाँ रहने दें) ...
-    # (लाइन 165 से 184 तक का कोड सेम रहेगा)
     
     p_tithi = panchang.get('tithi', 1)
     if isinstance(p_tithi, str):
