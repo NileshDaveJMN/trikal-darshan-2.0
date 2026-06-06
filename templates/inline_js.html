@@ -369,4 +369,29 @@ function fetchRashifal(rashiId, rashiName) {
 document.addEventListener('DOMContentLoaded', function() {
     initPushButton();
 });
+
+function openGurukulPdf(url, title) {
+    var previewUrl = url;
+    if (url.indexOf('drive.google.com') !== -1) {
+        // Extract file ID and make preview URL
+        var match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+        if (match) {
+            previewUrl = 'https://drive.google.com/file/d/' + match[1] + '/preview';
+        } else {
+            var idMatch = url.match(/id=([a-zA-Z0-9_-]+)/);
+            if (idMatch) previewUrl = 'https://drive.google.com/file/d/' + idMatch[1] + '/preview';
+        }
+    }
+    var modal = document.getElementById('gurukulPdfModal');
+    document.getElementById('gurukulPdfTitle').textContent = title || 'PDF';
+    document.getElementById('gurukulPdfFrame').src = previewUrl;
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeGurukulPdf() {
+    document.getElementById('gurukulPdfModal').style.display = 'none';
+    document.getElementById('gurukulPdfFrame').src = '';
+    document.body.style.overflow = '';
+}
 </script>

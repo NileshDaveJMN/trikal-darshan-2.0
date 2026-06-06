@@ -1,3 +1,12 @@
+
+<!-- PDF Modal for Gurukul -->
+<div id="gurukulPdfModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:99999; flex-direction:column;">
+    <div style="background:#1e293b; padding:12px 15px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #334155;">
+        <span id="gurukulPdfTitle" style="color:#fff; font-size:14px; font-weight:bold; flex:1; margin-right:10px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;">PDF</span>
+        <button onclick="closeGurukulPdf()" style="background:#b71c1c; color:white; border:none; padding:8px 16px; border-radius:8px; font-size:14px; cursor:pointer; white-space:nowrap;">✕ बंद करें</button>
+    </div>
+    <iframe id="gurukulPdfFrame" src="" style="flex:1; width:100%; border:none; background:#fff;"></iframe>
+</div>
 {% load static %}
 <!DOCTYPE html>
 <html lang="hi">
@@ -511,7 +520,7 @@
                                         {% if cat.category_type == 'PLAYLIST' and item.video_url %}
                                             <a href="{{ item.video_url }}" target="_blank" class="btn-read btn-video">▶ वीडियो देखें</a>
                                         {% elif cat.category_type == 'LIBRARY' and item.pdf_file %}
-                                            <a href="{{ item.pdf_file.url }}" target="_blank" class="btn-read btn-pdf">⬇ PDF पढ़ें</a>
+                                            <button onclick="openGurukulPdf(this.dataset.url, this.dataset.title)" data-url="{{ item.pdf_file }}" data-title="{{ item.title }}" class="btn-read btn-pdf" style="cursor:pointer;">📖 PDF पढ़ें</button>
                                         {% endif %}
                                     </div>
                                 {% empty %}
