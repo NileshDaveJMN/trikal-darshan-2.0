@@ -132,7 +132,7 @@ from django.contrib import admin
 from .models import UserNotification
 
 @admin.register(UserNotification)
-class UserNotificationAdmin(admin.Admin):
+class UserNotificationAdmin(admin.ModelAdmin):
     # एडमिन की लिस्ट में कौन-कौन से कॉलम दिखेंगे
     list_display = ('title', 'user', 'notification_type', 'is_read', 'created_at')
     
