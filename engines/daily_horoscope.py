@@ -6,39 +6,20 @@ import re
 import time
 import requests
 import urllib3
-from pathlib import Path
+import swisseph as swe
+import pytz
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-# .env Auto-Load
-_env_path = Path(__file__).parent / '.env'
-if _env_path.exists():
-    for _line in _env_path.read_text(encoding='utf-8').splitlines():
-        _line = _line.strip()
-        if _line and '=' in _line and not _line.startswith('#'):
-            _k, _v = _line.split('=', 1)
-            os.environ.setdefault(_k.strip(), _v.strip())
-
-# Django Setup
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'trikal_portal.settings')
-import django
-django.setup()
-
-# 🚀 नए मॉडल UserNotification को यहाँ इम्पोर्ट किया गया है
 from core.models import UserProfile, SavedKundali, DailyRashifal, UserNotification
 from core.views.rashifal_views import RASHI_LIST, _generate_rashifal, _get_transit_summary
-
 from engines.kundali_engine import get_vimshottari_dasha
-import swisseph as swe
-import pytz
 
 # API Keys Setup
 GEMINI_API_KEYS = []
 for i in range(1, 10):
     key = os.getenv(f"GEMINI_API_KEYS{i}", "").strip()
-    if key:
-        GEMINI_API_KEYS.append(key)
+    if key: GEMINI_API_KEYS.append(key)
 GEMINI_MODEL = "gemini-3-flash-preview"
 
 # Vedic Constants
@@ -53,8 +34,7 @@ TRANSIT_GOOD_HOUSES = {"शनि": [3, 6, 11], "गुरु": [2, 5, 7, 9, 11]
 # Swiss Ephemeris Core Functions
 def _dt_to_jd(dt: datetime.datetime, tz_str: str = "Asia/Kolkata") -> float:
     tz = pytz.timezone(tz_str)
-    if dt.tzinfo is None:
-        dt = tz.localize(dt)
+    if dt.tzinfo is None: dt = tz.localize(dt)
     dt_utc = dt.astimezone(pytz.utc)
     return swe.julday(dt_utc.year, dt_utc.month, dt_utc.day, dt_utc.hour + dt_utc.minute / 60.0 + dt_utc.second / 3600.0)
 
@@ -178,7 +158,21 @@ def build_dasha_info(kundali) -> dict:
     except Exception as e:
         return {"md": "अज्ञात", "ad": "अज्ञात", "md_end": "-", "ad_end": "-"}
 
-# Gemini Prompt & API
+def call_gemini(prompt: str, max_retries: int = 3):
+    if not GEMINI_API_KEYS: return None
+    keys = GEMINI_API_KEYS.copy()
+    random.shuffle(keys)
+    for attempt, api_key in enumerate(keys[:max_retries], 1):
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}"
+        try:
+            resp = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.75}}, timeout=30, verify=False)
+            if resp.status_code == 200:
+                text = resp.json().get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
+                return re.sub(r'[*#]', '', text) if text else None
+            elif resp.status_code == 429: time.sleep(2)
+        except Exception: time.sleep(1)
+    return None
+
 def build_horoscope_prompt(user_name, profile, natal_pos, transit_pos, lagna_idx, dasha, saadesati_text, guru_text, ashtakvarg, vakri_grahas, asta_grahas):
     today_str = datetime.date.today().strftime("%d %B %Y")
     n_chandra, n_nak, n_deg = natal_pos["चंद्र"]["rashi"], natal_pos["चंद्र"]["nakshatra"], natal_pos["चंद्र"]["degree"]
@@ -218,22 +212,6 @@ def build_horoscope_prompt(user_name, profile, natal_pos, transit_pos, lagna_idx
 5. अंत में आज के गोचर के अनुसार एक छोटा, स्पष्ट वैदिक उपाय जरूर बताएँ।
 """
 
-def call_gemini(prompt: str, max_retries: int = 3):
-    if not GEMINI_API_KEYS: return None
-    keys = GEMINI_API_KEYS.copy()
-    random.shuffle(keys)
-
-    for attempt, api_key in enumerate(keys[:max_retries], 1):
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}"
-        try:
-            resp = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}], "generationConfig": {"temperature": 0.75}}, timeout=30, verify=False)
-            if resp.status_code == 200:
-                text = resp.json().get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "").strip()
-                return re.sub(r'[*#]', '', text) if text else None
-            elif resp.status_code == 429: time.sleep(2)
-        except Exception: time.sleep(1)
-    return None
-
 def pre_generate_12_rashifal():
     print("\n  🌟 जनरेटिंग 12 राशियों का सामान्य राशिफल (Pre-caching)...")
     today = datetime.date.today()
@@ -241,12 +219,9 @@ def pre_generate_12_rashifal():
 
     for rashi in RASHI_LIST:
         if DailyRashifal.objects.filter(date=today, rashi_id=rashi["id"]).exists():
-            print(f"     ✅ {rashi['name']} - पहले से डेटाबेस में मौजूद है।")
             continue
-
         print(f"     ⏳ {rashi['name']} राशि जनरेट हो रही है...")
         data = _generate_rashifal(rashi["name"], rashi["lord"], transit_text)
-        
         if data:
             DailyRashifal.objects.create(
                 date=today,
@@ -258,79 +233,40 @@ def pre_generate_12_rashifal():
                 lucky=data.get("LUCKY", ""),
                 upay=data.get("UPAY", "")
             )
-            print(f"     ✅ {rashi['name']} सफलतापूर्वक सेव हो गया।")
-        else:
-            print(f"     ❌ {rashi['name']} फेल हो गया!")
-            
         time.sleep(2)
 
-def process_one_user(profile: UserProfile, today_transit: dict, today_jd: float) -> bool:
+# 🚀 MASTER ENGINE द्वारा कॉल किया जाने वाला फंक्शन
+def process_user_horoscope(profile, kundali, natal_pos, lagna_idx, dasha, today_transit):
     user_name = profile.user.first_name or profile.user.username
-    print(f"\n  👤 {user_name} ({profile.user.username})")
-
-    kundali = SavedKundali.objects.filter(user=profile.user).order_by("created_at").first()
-    if not kundali:
-        print("     ⚠️  कोई SavedKundali नहीं मिली, skip।")
+    today_str = datetime.date.today().strftime("%d %b %Y")
+    
+    # चेक करें कि क्या आज का राशिफल पहले से सेव्ड है
+    if UserNotification.objects.filter(user=profile.user, title=f"🔮 आज का राशिफल ({today_str})", notification_type='DAILY').exists():
+        print(f"     ℹ️  {user_name}: आज का व्यक्तिगत राशिफल पहले से मौजूद है। (Skip)")
         return False
 
-    natal_pos, natal_jd = calculate_natal_positions(kundali)
-    lagna_idx = calculate_lagna(natal_jd, kundali.lat, kundali.lon)
-    dasha = build_dasha_info(kundali)
-    
     n_chandra_idx = natal_pos["चंद्र"]["rashi_idx"]
     _, saadesati_text = check_saadesati(n_chandra_idx, today_transit["शनि"]["rashi_idx"])
-    
+    guru_text = check_guru_gochar(n_chandra_idx, today_transit["गुरु"]["rashi_idx"])
+    ashtakvarg = get_transit_ashtakvarg_score(n_chandra_idx, today_transit)
+    vakri_grahas = get_vakri_grahas(today_transit)
+    asta_grahas = get_asta_grahas(today_transit)
+
     prompt = build_horoscope_prompt(
         user_name, profile, natal_pos, today_transit, lagna_idx, dasha,
-        saadesati_text, check_guru_gochar(n_chandra_idx, today_transit["गुरु"]["rashi_idx"]),
-        get_transit_ashtakvarg_score(n_chandra_idx, today_transit),
-        get_vakri_grahas(today_transit), get_asta_grahas(today_transit)
+        saadesati_text, guru_text, ashtakvarg, vakri_grahas, asta_grahas
     )
 
     rashifal_text = call_gemini(prompt)
     if not rashifal_text:
-        print("     ❌ Gemini से जवाब नहीं मिला।")
+        print(f"     ❌ {user_name}: Gemini से जवाब नहीं मिला।")
         return False
 
-    # 🚀 यहाँ से हमने नया UserNotification सेव करने का लॉजिक जोड़ दिया है
-    today_str = datetime.date.today().strftime("%d %b %Y")
     UserNotification.objects.create(
         user=profile.user,
         title=f"🔮 आज का राशिफल ({today_str})",
         message=rashifal_text,
         notification_type='DAILY'
     )
-    
-    print("     ✅ राशिफल नए Notification इनबॉक्स में सफलतापूर्वक सेव हो गया।")
+    print(f"     ✅ {user_name}: व्यक्तिगत राशिफल इनबॉक्स में सेव हुआ।")
     return True
-
-def generate_daily_horoscopes():
-    print("\n" + "━" * 60)
-    print("  🔮 त्रिकाल दर्शन — Daily Horoscope Engine v3.2 (Inbox Ready)")
-    print("━" * 60)
-
-    if not GEMINI_API_KEYS:
-        print("  ❌ GEMINI_API_KEYS नहीं मिलीं! .env चेक करें।")
-        return
-
-    pre_generate_12_rashifal()
-
-    print("\n  🚀 अब यूज़र्स का व्यक्तिगत राशिफल जनरेट हो रहा है...")
-    today_jd = _dt_to_jd(datetime.datetime.now(pytz.timezone("Asia/Kolkata")), "Asia/Kolkata")
-    today_transit = calculate_transit_positions(today_jd)
-
-    profiles = UserProfile.objects.select_related("user").all()
-    print(f"\n  👥 कुल Users: {profiles.count()}")
-
-    sent, failed = 0, 0
-    for profile in profiles:
-        if process_one_user(profile, today_transit, today_jd): sent += 1
-        else: failed += 1
-        time.sleep(0.5)
-
-    print("\n" + "━" * 60)
-    print(f"  ✅ पर्सनल राशिफल जनरेट हुए: {sent} | ❌ विफल: {failed}")
-    print("━" * 60 + "\n")
-
-if __name__ == "__main__":
-    generate_daily_horoscopes()
