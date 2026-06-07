@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from datetime import datetime
 from engines.panchang_engine import get_panchang_data
-from festival_engine import get_today_festivals
+from engines.festival_alerts import get_today_festivals
 
 
 def panchang(request):

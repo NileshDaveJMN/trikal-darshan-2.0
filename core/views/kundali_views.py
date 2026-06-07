@@ -19,7 +19,7 @@ except (ImportError, OSError):
 # 🚀 यहाँ नए मॉडल्स UserNotification और LearnCategory जोड़े गए हैं
 from core.models import SavedKundali, TabSettings, AIQuestionHistory, KundaliMilanHistory, UserProfile, UserNotification, LearnCategory
 from core.views.rashifal_views import RASHI_LIST
-from festival_engine import get_today_festivals
+from engines.festival_alerts import get_today_festivals
 from engines.dosha_analyzer import analyze_doshas, recommend_gemstone
 from engines.kundali_engine import get_kundali_data
 from engines.panchang_engine import get_panchang_data
