@@ -101,6 +101,11 @@ def _analyze_hand_with_gemini(image_base64: str, mime_type: str, user_name: str,
                     return text
             elif resp.status_code == 429:
                 time.sleep(2)
+            else:
+                # 🚀 यह 2 लाइनें हमें असल बीमारी बताएंगी!
+                print(f"❌ [HastRekha] API Error Code: {resp.status_code}")
+                print(f"❌ [HastRekha] API Response: {resp.text}")
+                
         except Exception as e:
             print(f"[HastRekha] Gemini error: {e}")
             time.sleep(1)
