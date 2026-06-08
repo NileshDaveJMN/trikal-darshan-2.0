@@ -92,10 +92,10 @@ def send_push_to_user(user, title, body, url="/"):
             sent += 1
         except WebPushException as e:
             print(f"[PUSH] Failed for {sub.endpoint[:40]}... : {e}")
-            # 410 Gone = browser ne unsubscribe kar diya
+            # 410/404 = browser ne unsubscribe kar diya → delete karo
             if "410" in str(e) or "404" in str(e):
-                sub.is_active = False
-                sub.save()
+                sub.delete()
+                print(f"[PUSH] 🗑️ Expired subscription delete hui: {user.username}")
 
     return sent
 
@@ -122,8 +122,8 @@ def send_push_to_all(title, body, url="/"):
         except WebPushException as e:
             failed += 1
             if "410" in str(e) or "404" in str(e):
-                sub.is_active = False
-                sub.save()
+                sub.delete()
+                print(f"[PUSH] 🗑️ Expired subscription delete hui (broadcast)")
 
     return {"sent": sent, "failed": failed}
 
