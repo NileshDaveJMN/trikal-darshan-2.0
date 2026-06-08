@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from django.views.generic import TemplateView
+from core.views.hast_rekha_view import hast_rekha_view, api_analyze_hast_rekha, api_delete_hast_reading
 
 # Views Imports
 from core.views.kundali_views import home, download_kundali_pdf, api_get_ai_analysis, user_profile_view, save_onboarding, ping, kundali_calculation, mark_notifications_read
@@ -73,4 +74,7 @@ urlpatterns = [
 
     # Cron Job / Horoscope Engine
     path('api/bot/send-horoscope/', api_send_daily_horoscope, name='api_send_daily_horoscope'),
+    path('hast-rekha/', hast_rekha_view, name='hast_rekha'),
+path('api/hast-rekha/analyze/', api_analyze_hast_rekha, name='api_hast_rekha_analyze'),
+path('api/hast-rekha/delete/<int:reading_id>/', api_delete_hast_reading, name='api_hast_rekha_delete'),
 ]

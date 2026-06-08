@@ -219,3 +219,19 @@ class UserNotification(models.Model):
 
     def __str__(self):
         return f"[{self.get_notification_type_display()}] {self.user.username} - {self.title}"
+
+class HastRekhaReading(models.Model):
+    HAND_CHOICES = [
+        ('दाहिना हाथ', 'दाहिना हाथ (Right Hand)'),
+        ('बायाँ हाथ',  'बायाँ हाथ (Left Hand)'),
+    ]
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='hast_readings')
+    hand_type  = models.CharField(max_length=20, choices=HAND_CHOICES, default='दाहिना हाथ')
+    prediction = models.TextField(verbose_name="हस्त रेखा विश्लेषण")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.hand_type} ({self.created_at.strftime('%d/%m/%Y')})"
