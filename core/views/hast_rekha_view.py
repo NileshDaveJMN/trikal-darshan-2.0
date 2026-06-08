@@ -25,7 +25,7 @@ for _i in range(1, 10):
     _k = os.environ.get(f"GEMINI_API_KEYS{_i}", "").strip()
     if _k:
         GEMINI_API_KEYS.append(_k)
-GEMINI_VISION_MODEL = "gemini-2.0-flash-exp"
+GEMINI_VISION_MODEL = "gemini-3-flash-preview"
 
 # ── Gemini Vision Call ────────────────────────────────────────────────
 def _analyze_hand_with_gemini(image_base64: str, mime_type: str, user_name: str, profile) -> str:
