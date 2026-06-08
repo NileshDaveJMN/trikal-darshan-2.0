@@ -1,133 +1,143 @@
 {% load static %}
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>हस्त रेखा विश्लेषण — त्रिकाल दर्शन</title>
+    {% include 'inline_css.html' %}
+    <style>
+        .hast-container { background: #1a1a2e; color: #fff; padding: 20px; border-radius: 15px; margin-top: 20px; }
+        .hast-card { background: #16213e; border: 1px solid #334155; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        .hast-title { color: #d4af37; border-bottom: 2px solid #d4af37; padding-bottom: 8px; margin-bottom: 20px; font-weight: bold; font-size: 18px; }
+        .premium-badge { background: linear-gradient(135deg, #d4af37, #f39c12); color: #0f172a; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .btn-analyze { background: linear-gradient(135deg, #d4af37, #f39c12); border: none; color: #0f172a; padding: 14px 30px; font-size: 16px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 15px; }
+        .btn-analyze:hover { transform: scale(1.03); box-shadow: 0 5px 15px rgba(212,175,55,0.4); }
+        .btn-analyze:disabled { background: #2a2a3e; color: #555; cursor: not-allowed; transform: none; box-shadow: none; }
+        .upload-area { border: 2px dashed #d4af37; border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; transition: 0.3s; background: #0f172a; }
+        .upload-area:hover { background: #1a1a2e; border-color: #f39c12; }
+        .upload-area.dragover { background: #1e293b; border-color: #f39c12; }
+        .preview-img { max-width: 100%; max-height: 250px; border-radius: 10px; margin-top: 15px; border: 2px solid #d4af37; display: block; margin-left: auto; margin-right: auto; }
+        .prediction-box { background: #0f172a; border-left: 4px solid #d4af37; border-radius: 8px; padding: 20px; margin-top: 15px; line-height: 1.9; white-space: pre-wrap; color: #e2e8f0; font-size: 15px; }
+        .reading-card { background: #0f172a; border: 1px solid #334155; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+        .reading-date { font-size: 12px; color: #94a3b8; }
+        .reading-text { color: #e2e8f0; line-height: 1.7; margin-top: 8px; font-size: 14px; max-height: 80px; overflow: hidden; transition: max-height 0.4s ease; }
+        .reading-text.expanded { max-height: 3000px; }
+        .btn-expand { background: none; border: 1px solid #d4af37; color: #d4af37; padding: 4px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; margin-top: 8px; }
+        .btn-delete { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 18px; float: right; padding: 0; }
+        .loader { display: none; text-align: center; padding: 40px 20px; }
+        .loader-spinner { width: 55px; height: 55px; border: 4px solid #1e293b; border-top: 4px solid #d4af37; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.6s ease; }
+        .hand-select { background: #0f172a; border: 1px solid #334155; color: #fff; padding: 10px 15px; border-radius: 8px; width: 100%; margin-bottom: 15px; font-size: 15px; }
+        .back-btn { background: #1e293b; border: 1px solid #334155; color: #94a3b8; padding: 8px 18px; border-radius: 20px; text-decoration: none; font-size: 13px; display: inline-block; margin-bottom: 15px; }
+        .lock-overlay { text-align: center; padding: 50px 20px; }
+        .tip-box { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px 15px; margin-bottom: 15px; font-size: 13px; color: #94a3b8; }
+    </style>
+</head>
+<body>
 
-{% block title %}हस्त रेखा विश्लेषण — त्रिकाल दर्शन{% endblock %}
+<div class="container" style="max-width: 700px; margin: 0 auto; padding: 15px;">
 
-{% block content %}
+    <!-- Back Button -->
+    <a href="/" class="back-btn">← वापस जाएं</a>
 
-<style>
-    .hast-container { background: #1a1a1a; color: #fff; padding: 20px; border-radius: 15px; margin-top: 20px; }
-    .hast-card { background: #262626; border: 1px solid #3d3d3d; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
-    .hast-title { color: #d4af37; border-bottom: 2px solid #d4af37; padding-bottom: 8px; margin-bottom: 20px; font-weight: bold; }
-    .premium-badge { background: linear-gradient(135deg, #d4af37, #f39c12); color: #0f172a; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-    .btn-analyze { background: linear-gradient(135deg, #d4af37, #f39c12); border: none; color: #0f172a; padding: 12px 30px; font-size: 16px; border-radius: 50px; width: 100%; font-weight: bold; cursor: pointer; transition: 0.3s; }
-    .btn-analyze:hover { transform: scale(1.03); box-shadow: 0 5px 15px rgba(212,175,55,0.4); }
-    .btn-analyze:disabled { background: #4a4a4a; color: #888; cursor: not-allowed; transform: none; box-shadow: none; }
-    .upload-area { border: 2px dashed #d4af37; border-radius: 12px; padding: 40px 20px; text-align: center; cursor: pointer; transition: 0.3s; background: #1e1e1e; }
-    .upload-area:hover { background: #2a2a2a; border-color: #f39c12; }
-    .upload-area.dragover { background: #2c2c2c; border-color: #f39c12; }
-    .preview-img { max-width: 100%; max-height: 250px; border-radius: 10px; margin-top: 15px; border: 2px solid #d4af37; }
-    .prediction-box { background: #1e293b; border-left: 4px solid #d4af37; border-radius: 8px; padding: 20px; margin-top: 20px; line-height: 1.8; white-space: pre-wrap; }
-    .reading-card { background: #1e293b; border: 1px solid #334155; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
-    .reading-date { font-size: 12px; color: #94a3b8; }
-    .reading-text { color: #e2e8f0; line-height: 1.7; margin-top: 8px; font-size: 14px; max-height: 100px; overflow: hidden; transition: max-height 0.3s; }
-    .reading-text.expanded { max-height: 2000px; }
-    .btn-expand { background: none; border: 1px solid #d4af37; color: #d4af37; padding: 4px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; margin-top: 8px; }
-    .btn-delete { background: none; border: none; color: #e74c3c; cursor: pointer; font-size: 18px; float: right; }
-    .loader { display: none; text-align: center; padding: 30px; }
-    .loader-spinner { width: 50px; height: 50px; border: 4px solid #334155; border-top: 4px solid #d4af37; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 15px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    .fade-in { animation: fadeIn 0.6s ease; }
-    .hand-select { background: #2a2a2a; border: 1px solid #444; color: #fff; padding: 8px 15px; border-radius: 8px; width: 100%; margin-bottom: 15px; font-size: 15px; }
-    .lock-overlay { text-align: center; padding: 50px 20px; }
-</style>
+    <div class="hast-container">
+        <h2 class="text-center mb-1" style="color: #d4af37;">🖐️ हस्त रेखा विश्लेषण</h2>
+        <p class="text-center mb-3" style="color: #94a3b8; font-size: 14px;">AI-आधारित वैदिक हस्त रेखा शास्त्र</p>
 
-<div class="container hast-container mb-5">
-
-    <h2 class="text-center mb-1">🖐️ हस्त रेखा विश्लेषण</h2>
-    <p class="text-center text-muted mb-3">AI-आधारित वैदिक हस्त रेखा शास्त्र</p>
-
-    {% if not is_premium %}
-    <!-- Non-Premium User -->
-    <div class="hast-card lock-overlay">
-        <div style="font-size: 60px; margin-bottom: 20px;">🔮</div>
-        <h3 style="color: #d4af37;">प्रीमियम सुविधा</h3>
-        <p style="color: #94a3b8; margin: 15px 0;">हस्त रेखा विश्लेषण केवल <strong style="color:#d4af37;">प्रीमियम सदस्यों</strong> के लिए उपलब्ध है।</p>
-        <p style="color: #94a3b8; margin-bottom: 25px;">अपने हाथ की तस्वीर से पाएं:</p>
-        <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 25px;">
-            <span style="background:#1e293b; border:1px solid #334155; padding:8px 15px; border-radius:20px; font-size:14px;">❤️ हृदय रेखा</span>
-            <span style="background:#1e293b; border:1px solid #334155; padding:8px 15px; border-radius:20px; font-size:14px;">🧠 मस्तिष्क रेखा</span>
-            <span style="background:#1e293b; border:1px solid #334155; padding:8px 15px; border-radius:20px; font-size:14px;">🌱 जीवन रेखा</span>
-            <span style="background:#1e293b; border:1px solid #334155; padding:8px 15px; border-radius:20px; font-size:14px;">⭐ भाग्य रेखा</span>
-        </div>
-        <a href="/submit-payment/" style="background: linear-gradient(135deg,#d4af37,#f39c12); color:#0f172a; text-decoration:none; padding:12px 30px; border-radius:50px; font-weight:bold; display:inline-block;">
-            ✨ प्रीमियम लें
-        </a>
-    </div>
-
-    {% else %}
-    <!-- Premium User -->
-
-    <!-- Upload Section -->
-    <div class="hast-card">
-        <h4 class="hast-title">📸 हाथ की तस्वीर अपलोड करें <span class="premium-badge">PREMIUM</span></h4>
-
-        <select class="hand-select" id="handType">
-            <option value="दाहिना हाथ">🤚 दाहिना हाथ (Right Hand) — कर्म रेखाएं</option>
-            <option value="बायाँ हाथ">🤚 बायाँ हाथ (Left Hand) — जन्म रेखाएं</option>
-        </select>
-
-        <div class="upload-area" id="uploadArea" onclick="document.getElementById('handImage').click()">
-            <div id="uploadPrompt">
-                <div style="font-size: 48px; margin-bottom: 10px;">🖐️</div>
-                <p style="color: #d4af37; font-size: 16px; margin: 0;">यहाँ क्लिक करें या तस्वीर खींचें</p>
-                <p style="color: #94a3b8; font-size: 13px; margin-top: 8px;">JPG, PNG, WEBP — अधिकतम 5MB</p>
-                <p style="color: #64748b; font-size: 12px; margin-top: 5px;">💡 सुझाव: हाथ को सफेद/हल्के रंग की पृष्ठभूमि पर रखें</p>
+        {% if not is_premium %}
+        <!-- Non-Premium -->
+        <div class="hast-card lock-overlay">
+            <div style="font-size: 60px; margin-bottom: 20px;">🔮</div>
+            <h3 style="color: #d4af37;">प्रीमियम सुविधा</h3>
+            <p style="color: #94a3b8; margin: 15px 0;">हस्त रेखा विश्लेषण केवल <strong style="color:#d4af37;">प्रीमियम सदस्यों</strong> के लिए उपलब्ध है।</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin: 20px 0;">
+                <span style="background:#0f172a; border:1px solid #334155; padding:8px 15px; border-radius:20px; font-size:13px;">❤️ हृदय रेखा</span>
+                <span style="background:#0f172a; border:1px solid #334155; padding:8px 15px; border-radius:20px; font-size:13px;">🧠 मस्तिष्क रेखा</span>
+                <span style="background:#0f172a; border:1px solid #334155; padding:8px 15px; border-radius:20px; font-size:13px;">🌱 जीवन रेखा</span>
+                <span style="background:#0f172a; border:1px solid #334155; padding:8px 15px; border-radius:20px; font-size:13px;">⭐ भाग्य रेखा</span>
             </div>
-            <img id="previewImg" class="preview-img" style="display:none;" alt="हाथ की तस्वीर">
+            <a href="/submit-payment/" style="background: linear-gradient(135deg,#d4af37,#f39c12); color:#0f172a; text-decoration:none; padding:12px 30px; border-radius:50px; font-weight:bold; display:inline-block;">
+                ✨ प्रीमियम लें
+            </a>
         </div>
 
-        <input type="file" id="handImage" accept="image/*" style="display:none;" onchange="previewImage(this)">
+        {% else %}
+        <!-- Premium User -->
 
-        <button class="btn-analyze mt-3" id="analyzeBtn" onclick="analyzeHand()" disabled>
-            🔮 विश्लेषण करें
-        </button>
-    </div>
-
-    <!-- Loader -->
-    <div class="loader" id="loader">
-        <div class="loader-spinner"></div>
-        <p style="color: #d4af37; font-size: 16px;">हस्त रेखाओं का विश्लेषण हो रहा है...</p>
-        <p style="color: #94a3b8; font-size: 13px;">इसमें 15-30 सेकंड लग सकते हैं</p>
-    </div>
-
-    <!-- Result Section -->
-    <div id="resultSection" style="display:none;" class="fade-in">
+        <!-- Upload Section -->
         <div class="hast-card">
-            <h4 class="hast-title">🔮 आपका हस्त रेखा विश्लेषण</h4>
-            <div class="prediction-box" id="predictionText"></div>
-            <button onclick="resetForm()" style="background:none; border:1px solid #94a3b8; color:#94a3b8; padding:8px 20px; border-radius:20px; cursor:pointer; margin-top:15px; font-size:13px;">
-                🔄 नई तस्वीर से विश्लेषण करें
+            <h4 class="hast-title">📸 हाथ की तस्वीर अपलोड करें <span class="premium-badge">PREMIUM</span></h4>
+
+            <div class="tip-box">
+                💡 <strong>सुझाव:</strong> दाहिना हाथ (Right Hand) चुनें — यह आपके वर्तमान और भविष्य की रेखाएं दिखाता है।<br>
+                📸 अच्छी रोशनी में, हाथ को सीधा फैलाकर, सफेद पृष्ठभूमि पर तस्वीर लें।
+            </div>
+
+            <select class="hand-select" id="handType">
+                <option value="दाहिना हाथ">🤚 दाहिना हाथ (Right) — वर्तमान व भविष्य</option>
+                <option value="बायाँ हाथ">🤚 बायाँ हाथ (Left) — जन्म व स्वभाव</option>
+            </select>
+
+            <div class="upload-area" id="uploadArea" onclick="document.getElementById('handImage').click()">
+                <div id="uploadPrompt">
+                    <div style="font-size: 50px; margin-bottom: 10px;">🖐️</div>
+                    <p style="color: #d4af37; font-size: 16px; margin: 0;">यहाँ क्लिक करें या तस्वीर खींचें</p>
+                    <p style="color: #64748b; font-size: 13px; margin-top: 8px;">JPG, PNG, WEBP — अधिकतम 5MB</p>
+                </div>
+                <img id="previewImg" class="preview-img" style="display:none;" alt="हाथ की तस्वीर">
+            </div>
+
+            <input type="file" id="handImage" accept="image/*" style="display:none;" onchange="previewImage(this)">
+
+            <button class="btn-analyze" id="analyzeBtn" onclick="analyzeHand()" disabled>
+                🔮 विश्लेषण करें
             </button>
         </div>
-    </div>
 
-    <!-- Reading History -->
-    {% if readings %}
-    <div class="hast-card">
-        <h4 class="hast-title">📜 पिछले विश्लेषण ({{ readings_count }})</h4>
-        {% for r in readings %}
-        <div class="reading-card" id="card-{{ r.id }}">
-            <button class="btn-delete" onclick="deleteReading({{ r.id }})" title="हटाएं">🗑️</button>
-            <div>
+        <!-- Loader -->
+        <div class="loader" id="loader">
+            <div class="loader-spinner"></div>
+            <p style="color: #d4af37; font-size: 16px;">हस्त रेखाओं का विश्लेषण हो रहा है...</p>
+            <p style="color: #94a3b8; font-size: 13px;">इसमें 15-30 सेकंड लग सकते हैं</p>
+        </div>
+
+        <!-- Result -->
+        <div id="resultSection" style="display:none;" class="fade-in">
+            <div class="hast-card">
+                <h4 class="hast-title">🔮 आपका हस्त रेखा विश्लेषण</h4>
+                <div class="prediction-box" id="predictionText"></div>
+                <button onclick="resetForm()" style="background:none; border:1px solid #475569; color:#94a3b8; padding:8px 20px; border-radius:20px; cursor:pointer; margin-top:15px; font-size:13px;">
+                    🔄 नई तस्वीर से विश्लेषण करें
+                </button>
+            </div>
+        </div>
+
+        <!-- History -->
+        {% if readings %}
+        <div class="hast-card">
+            <h4 class="hast-title">📜 पिछले विश्लेषण ({{ readings_count }})</h4>
+            {% for r in readings %}
+            <div class="reading-card" id="card-{{ r.id }}">
+                <button class="btn-delete" onclick="deleteReading({{ r.id }})" title="हटाएं">🗑️</button>
                 <span style="color: #d4af37; font-size: 14px; font-weight: bold;">🖐️ {{ r.hand_type }}</span>
                 <span class="reading-date ms-2">{{ r.created_at|date:"d M Y, g:i A" }}</span>
+                <div class="reading-text" id="text-{{ r.id }}">{{ r.prediction }}</div>
+                <button class="btn-expand" onclick="toggleExpand({{ r.id }})">पूरा पढ़ें ▼</button>
             </div>
-            <div class="reading-text" id="text-{{ r.id }}">{{ r.prediction }}</div>
-            <button class="btn-expand" onclick="toggleExpand({{ r.id }})">पूरा पढ़ें ▼</button>
+            {% endfor %}
         </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+        {% endif %}
 
-    {% endif %}
+        {% endif %}
+    </div>
 </div>
 
 <script>
     let selectedFile = null;
 
-    // Image Preview
     function previewImage(input) {
         if (input.files && input.files[0]) {
             selectedFile = input.files[0];
@@ -142,29 +152,23 @@
         }
     }
 
-    // Drag & Drop
     const uploadArea = document.getElementById('uploadArea');
     if (uploadArea) {
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
         uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (file) {
-                document.getElementById('handImage').files = e.dataTransfer.files;
+            const dt = e.dataTransfer;
+            if (dt.files[0]) {
+                document.getElementById('handImage').files = dt.files;
                 previewImage(document.getElementById('handImage'));
             }
         });
     }
 
-    // Analyze
     async function analyzeHand() {
         if (!selectedFile) return;
-
         document.getElementById('analyzeBtn').disabled = true;
         document.getElementById('uploadArea').style.display = 'none';
         document.getElementById('loader').style.display = 'block';
@@ -176,14 +180,9 @@
         formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
 
         try {
-            const resp = await fetch('/api/hast-rekha/analyze/', {
-                method: 'POST',
-                body: formData
-            });
+            const resp = await fetch('/api/hast-rekha/analyze/', { method: 'POST', body: formData });
             const data = await resp.json();
-
             document.getElementById('loader').style.display = 'none';
-
             if (data.success) {
                 document.getElementById('predictionText').textContent = data.prediction;
                 document.getElementById('resultSection').style.display = 'block';
@@ -199,7 +198,6 @@
         }
     }
 
-    // Reset
     function resetForm() {
         selectedFile = null;
         document.getElementById('handImage').value = '';
@@ -209,23 +207,15 @@
         document.getElementById('analyzeBtn').disabled = true;
         document.getElementById('resultSection').style.display = 'none';
         document.getElementById('loader').style.display = 'none';
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // Toggle Expand
     function toggleExpand(id) {
         const el = document.getElementById('text-' + id);
         const btn = el.nextElementSibling;
-        if (el.classList.contains('expanded')) {
-            el.classList.remove('expanded');
-            btn.textContent = 'पूरा पढ़ें ▼';
-        } else {
-            el.classList.add('expanded');
-            btn.textContent = 'कम करें ▲';
-        }
+        el.classList.toggle('expanded');
+        btn.textContent = el.classList.contains('expanded') ? 'कम करें ▲' : 'पूरा पढ़ें ▼';
     }
 
-    // Delete Reading
     async function deleteReading(id) {
         if (!confirm('क्या आप यह विश्लेषण हटाना चाहते हैं?')) return;
         try {
@@ -234,13 +224,10 @@
                 headers: { 'X-CSRFToken': '{{ csrf_token }}' }
             });
             const data = await resp.json();
-            if (data.success) {
-                document.getElementById('card-' + id).remove();
-            }
-        } catch (err) {
-            alert('हटाने में समस्या आई।');
-        }
+            if (data.success) document.getElementById('card-' + id).remove();
+        } catch (err) { alert('हटाने में समस्या आई।'); }
     }
 </script>
 
-{% endblock %}
+</body>
+</html>
