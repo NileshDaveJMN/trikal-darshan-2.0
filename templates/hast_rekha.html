@@ -38,7 +38,8 @@
 </head>
 <body>
 
-<div class="container" style="max-width: 700px; margin: 0 auto; padding: 15px;">
+<div class="container" style="max-width: 700px; margin: 0 auto; padding: 15px; padding-bottom: 100px;">
+
 
     <!-- Back Button -->
     <a href="/" class="back-btn">← वापस जाएं</a>
@@ -138,7 +139,7 @@
 <script>
     let selectedFile = null;
 
-    function previewImage(input) {
+        function previewImage(input) {
         if (input.files && input.files[0]) {
             selectedFile = input.files[0];
             const reader = new FileReader();
@@ -147,10 +148,16 @@
                 document.getElementById('previewImg').style.display = 'block';
                 document.getElementById('uploadPrompt').style.display = 'none';
                 document.getElementById('analyzeBtn').disabled = false;
+                
+                // 🚀 नया कोड: मोबाइल पर बटन को अपने-आप स्क्रीन के सामने लाने के लिए
+                setTimeout(() => {
+                    document.getElementById('analyzeBtn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 200);
             };
             reader.readAsDataURL(input.files[0]);
         }
     }
+
 
     const uploadArea = document.getElementById('uploadArea');
     if (uploadArea) {
