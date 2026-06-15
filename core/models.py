@@ -235,3 +235,19 @@ class HastRekhaReading(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.hand_type} ({self.created_at.strftime('%d/%m/%Y')})"
+
+class FCMToken(models.Model):
+    """Flutter App ke liye Firebase Cloud Messaging Token"""
+    user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fcm_tokens')
+    token      = models.TextField(verbose_name="FCM Device Token")
+    device_id  = models.CharField(max_length=200, blank=True, null=True, verbose_name="Device ID (optional)")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+        # Ek device pe ek hi token hoga
+        unique_together = ('user', 'device_id')
+
+    def __str__(self):
+        return f"{self.user.username} - FCM ({self.updated_at.strftime('%d/%m/%Y')})"

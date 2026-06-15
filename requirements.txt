@@ -38,3 +38,4 @@ psycopg2-binary
 pytz
 whitenoise
 pywebpush
+firebase-admin==6.5.0
