@@ -100,3 +100,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # 🚀 WhiteNoise को फाइल्स कंप्रेस और सर्व करने के लिए कहें
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# ==========================================
+# Authentication URLs
+# ==========================================
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
