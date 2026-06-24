@@ -85,4 +85,5 @@ path('api/hast-rekha/analyze/', api_analyze_hast_rekha, name='api_hast_rekha_ana
 path('api/hast-rekha/delete/<int:reading_id>/', api_delete_hast_reading, name='api_hast_rekha_delete'),
 path('ads.txt', TemplateView.as_view(template_name="ads.txt", content_type="text/plain")),
 path('googlee8ee365b04e2ee23.html', TemplateView.as_view(template_name="googlee8ee365b04e2ee23.html")),
+path('robots.txt', TemplateView.as_view(template_name="robots.txt", content_type="text/plain")),
 ]
