@@ -32,29 +32,50 @@
     
     <!-- ... (ऊपर का कोड वैसे ही रहने दें) ... -->
 
-    <div class="primary-tabs">
-        <button class="p-tab-btn active" onclick="showView(event, 'view-user')">👤 प्रोफाइल</button>
-        <button class="p-tab-btn" onclick="showView(event, 'view-kundali')">📜 कुंडली</button>
-        <button class="p-tab-btn" onclick="showView(event, 'view-milan')">💑 मिलान</button>
-        <button class="p-tab-btn" onclick="showView(event, 'view-panchang')">📅 पंचांग</button>
-        <button class="p-tab-btn" onclick="showView(event, 'view-rashifal')">🔮 राशिफल</button> 
-        
-        <!-- 🚀 सिर्फ़ यह एक, सही और साफ़-सुथरा सूचनाएं बटन रखें -->
-        <a href="#" onclick="showView(event, 'view-notifications'); markNotificationsAsRead();" class="nav-item tab-link" data-target="view-notifications" style="text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <div style="position: relative; display: inline-block;">
-                <span class="nav-icon">🔔</span>
-                {% if unread_notifications_count > 0 %}
-                    <span id="notif-badge" style="position: absolute; top: -5px; right: -10px; background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 10px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.3); z-index: 10;">
-                        {{ unread_notifications_count }}
-                    </span>
-                {% endif %}
-            </div>
-            <span class="nav-text">सूचनाएं</span>
-        </a>
-        <!-- (यहाँ से फालतू टूटा हुआ कोड हटा दिया गया है) -->
-<button class="p-tab-btn" onclick="window.location.href='/hast-rekha/'">🖐️ हस्त रेखा</button>
-        <button class="p-tab-btn" onclick="showView(event, 'view-learn')">📚 गुरुकुल</button>
-    </div>
+   <!-- 🌟 नया 2-लाइन ग्रिड टैब डिज़ाइन 🌟 -->
+<div class="primary-tabs grid-tabs">
+    <button class="p-tab-btn active" onclick="showView(event, 'view-user')">
+        <span class="tab-icon">👤</span>
+        <span class="tab-text">प्रोफाइल</span>
+    </button>
+    <button class="p-tab-btn" onclick="showView(event, 'view-kundali')">
+        <span class="tab-icon">📜</span>
+        <span class="tab-text">कुंडली</span>
+    </button>
+    <button class="p-tab-btn" onclick="showView(event, 'view-milan')">
+        <span class="tab-icon">💑</span>
+        <span class="tab-text">मिलान</span>
+    </button>
+    <button class="p-tab-btn" onclick="showView(event, 'view-panchang')">
+        <span class="tab-icon">📅</span>
+        <span class="tab-text">पंचांग</span>
+    </button>
+    <button class="p-tab-btn" onclick="showView(event, 'view-rashifal')">
+        <span class="tab-icon">🔮</span>
+        <span class="tab-text">राशिफल</span>
+    </button> 
+    
+    <!-- सूचनाएं टैब (साफ़-सुथरा डिज़ाइन) -->
+    <a href="#" onclick="showView(event, 'view-notifications'); markNotificationsAsRead();" class="p-tab-btn tab-link" data-target="view-notifications">
+        <div style="position: relative; display: inline-block;">
+            <span class="tab-icon">🔔</span>
+            {% if unread_notifications_count > 0 %}
+                <span id="notif-badge" class="badge-icon">{{ unread_notifications_count }}</span>
+            {% endif %}
+        </div>
+        <span class="tab-text">सूचनाएं</span>
+    </a>
+
+    <button class="p-tab-btn" onclick="window.location.href='/hast-rekha/'">
+        <span class="tab-icon">🖐️</span>
+        <span class="tab-text">हस्त रेखा</span>
+    </button>
+    <button class="p-tab-btn" onclick="showView(event, 'view-learn')">
+        <span class="tab-icon">📚</span>
+        <span class="tab-text">गुरुकुल</span>
+    </button>
+</div>
+
 
 <!-- ... (नीचे का कोड वैसे ही रहने दें) ... -->
 
@@ -452,6 +473,89 @@
         <div id="view-learn" class="view-panel dashboard-content" style="display:none; max-width: 600px; margin: 0 auto; padding: 0 10px;">
             
             <style>
+            /* 🌟 2-लाइन ग्रिड का डिज़ाइन 🌟 */
+.grid-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* एक लाइन में 4 टैब */
+    gap: 10px; /* टैब्स के बीच की जगह */
+    background: #131c2c; /* डार्क थीम बैकग्राउंड */
+    padding: 12px;
+    border-radius: 15px;
+    border: 1px solid #1e293b;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+
+/* हर एक बटन का डिज़ाइन */
+.grid-tabs .p-tab-btn {
+    display: flex;
+    flex-direction: column; /* आइकॉन को ऊपर और टेक्स्ट को नीचे रखने के लिए */
+    align-items: center;
+    justify-content: center;
+    background: #0f172a;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 10px 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none; /* A टैग की लाइन हटाने के लिए */
+}
+
+/* एक्टिव या होवर करने पर रंग */
+.grid-tabs .p-tab-btn.active, 
+.grid-tabs .p-tab-btn:hover {
+    background: rgba(243, 156, 18, 0.1);
+    color: #ffca28;
+    border-color: #ffca28;
+    transform: translateY(-2px); /* हल्का सा ऊपर उठने का इफ़ेक्ट */
+}
+
+/* आइकॉन की साइज */
+.grid-tabs .tab-icon {
+    font-size: 22px;
+    margin-bottom: 5px;
+}
+
+/* टेक्स्ट की साइज */
+.grid-tabs .tab-text {
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* सूचनाओं का लाल बैज */
+.badge-icon {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 10px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+/* मोबाइल के लिए थोड़ा छोटा डिज़ाइन ताकि स्क्रीन से बाहर ना जाए */
+@media (max-width: 480px) {
+    .grid-tabs {
+        gap: 6px;
+        padding: 8px;
+    }
+    .grid-tabs .p-tab-btn {
+        padding: 8px 2px;
+    }
+    .grid-tabs .tab-icon {
+        font-size: 18px;
+    }
+    .grid-tabs .tab-text {
+        font-size: 10px;
+    }
+}
+
                 /* गुरुकुल के लिए विशिष्ट स्टाइल्स */
                 .learn-container { font-family: sans-serif; background: transparent; color: #e2e8f0; }
                 .section-title { color: #d4af37; font-size: 18px; border-bottom: 2px solid #334155; padding-bottom: 10px; margin-top: 20px; margin-bottom: 15px; font-weight: bold; }
