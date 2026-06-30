@@ -112,7 +112,7 @@ def get_bhav_phal(p_degrees_raw, l_idx, sav_points=None, curr_dasha=None, select
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={current_api_key}"
 
         try:
-            response = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=25, verify=False)
+            response = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=55, verify=False)
 
             if response.status_code == 200:
                 res_json = response.json()
@@ -158,8 +158,10 @@ def get_bhav_phal(p_degrees_raw, l_idx, sav_points=None, curr_dasha=None, select
                     last_error = "AI ने खाली रिस्पॉन्स भेजा।"
             else:
                 last_error = f"API Error {response.status_code}: {response.text[:100]}"
+        except requests.exceptions.Timeout:
+            last_error = "AI सर्वर अभी धीमा जवाब दे रहा है। कृपया कुछ देर बाद पुनः प्रयास करें।"
         except Exception as e:
-            last_error = f"Connection Error: {str(e)}"
+            last_error = "AI से जुड़ने में समस्या आई। कृपया पुनः प्रयास करें।"
 
         time.sleep(1)
 
