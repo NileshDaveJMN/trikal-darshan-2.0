@@ -112,7 +112,7 @@ def get_bhav_phal(p_degrees_raw, l_idx, sav_points=None, curr_dasha=None, select
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={current_api_key}"
 
         try:
-            response = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=55, verify=False)
+            response = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=30, verify=False)
 
             if response.status_code == 200:
                 res_json = response.json()
