@@ -6,7 +6,25 @@ from datetime import datetime, timedelta
 
 def get_panchang_data(target_dt_ist, is_today, lat=28.5839, lon=77.2090):
     try:
-        dt_utc = target_dt_ist - timedelta(hours=5, minutes=30)
+        # 🌟 FIX: सबसे पहले सूर्योदय निकालो — पारंपरिक पंचांग में तिथि/नक्षत्र
+        # सूर्योदय के समय वाली गणना से तय होते हैं, midnight/किसी भी रैंडम पल से नहीं।
+        # इससे "क्षय तिथि" (जैसे अमावस्या) गलती से midnight स्नैपशॉट में छूटने से बचेगी।
+        obs = ephem.Observer()
+        obs.lat, obs.long = str(lat), str(lon)
+        obs.elevation = 216
+        obs.horizon = '-0:50'
+        sun = ephem.Sun()
+
+        dt_midnight_ist = datetime(target_dt_ist.year, target_dt_ist.month, target_dt_ist.day, 0, 0, 0)
+        obs.date = dt_midnight_ist - timedelta(hours=5, minutes=30)
+
+        sr_utc = obs.next_rising(sun).datetime()
+        ss_utc = obs.next_setting(sun).datetime()
+        sr_ist = sr_utc + timedelta(hours=5, minutes=30)
+        ss_ist = ss_utc + timedelta(hours=5, minutes=30)
+
+        # 🌟 अब Sun/Moon longitude सूर्योदय (sr_ist) के समय निकालो, target_dt_ist के बजाय
+        dt_utc = sr_ist - timedelta(hours=5, minutes=30)
         jd_ut = swe.julday(dt_utc.year, dt_utc.month, dt_utc.day, dt_utc.hour + dt_utc.minute/60.0 + dt_utc.second/3600.0)
         swe.set_sid_mode(swe.SIDM_LAHIRI)
 
@@ -33,20 +51,6 @@ def get_panchang_data(target_dt_ist, is_today, lat=28.5839, lon=77.2090):
         
         maas_names = ["वैशाख", "ज्येष्ठ", "आषाढ़", "श्रावण", "भाद्रपद", "आश्विन", "कार्तिक", "मार्गशीर्ष", "पौष", "माघ", "फाल्गुन", "चैत्र"]
         hindu_maas = maas_names[amavasya_sun_rashi_idx]
-
-        obs = ephem.Observer()
-        obs.lat, obs.long = str(lat), str(lon) 
-        obs.elevation = 216
-        obs.horizon = '-0:50'
-        sun = ephem.Sun()
-
-        dt_midnight_ist = datetime(target_dt_ist.year, target_dt_ist.month, target_dt_ist.day, 0, 0, 0)
-        obs.date = dt_midnight_ist - timedelta(hours=5, minutes=30)
-
-        sr_utc = obs.next_rising(sun).datetime()
-        ss_utc = obs.next_setting(sun).datetime()
-        sr_ist = sr_utc + timedelta(hours=5, minutes=30)
-        ss_ist = ss_utc + timedelta(hours=5, minutes=30)
 
         obs.date = ss_utc
         next_sr_ist = obs.next_rising(sun).datetime() + timedelta(hours=5, minutes=30)
