@@ -54,7 +54,7 @@
                     <div style="color: #ffffff; font-weight: bold; font-size: 13px;">
                         {{ res.day|default:"-" }}/{{ res.month|default:"-" }}/{{ res.year|default:"-" }}
                         <br><span style="font-weight:normal; font-size:11px;">
-                            ({% if res.p_extra %}{{ res.p_extra.day|default:"-" }}{% else %}-{% endif %})
+                            ({{ res.vara|default:"-" }})
                         </span>
                     </div>
                 </div>
@@ -74,35 +74,35 @@
                 <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
                     <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">राशि (चन्द्र)</div>
                     <div style="color: #ffca28; font-weight: bold; font-size: 13px;">
-                        {% if res.p_extra %}{{ res.p_extra.moon_rashi|default:"-" }}{% else %}-{% endif %}
+                        {{ res.chandra_rashi|default:"-" }}
                     </div>
                 </div>
 
                 <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
                     <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">नक्षत्र</div>
                     <div style="color: #ffffff; font-weight: bold; font-size: 13px;">
-                        {% if res.p_extra %}{{ res.p_extra.nakshatra|default:"-" }}{% else %}-{% endif %}
+                        {{ res.nakshatra|default:"-" }}
                     </div>
                 </div>
 
                 <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
                     <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">तिथि / पक्ष</div>
                     <div style="color: #ffffff; font-weight: bold; font-size: 13px;">
-                        {% if res.p_extra %}{{ res.p_extra.tithi|default:"-" }}, {{ res.p_extra.paksha|default:"-" }}{% else %}-, -{% endif %}
+                        {{ res.tithi|default:"-" }}, {{ res.paksha|default:"-" }}
                     </div>
                 </div>
 
                 <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
                     <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">संवत / माह</div>
                     <div style="color: #ffffff; font-weight: bold; font-size: 13px;">
-                        {% if res.p_extra %}{{ res.p_extra.samvat|default:"-" }} ({{ res.p_extra.hindu_maas|default:"-" }}){% else %}- (-){% endif %}
+                        {{ res.samvat|default:"-" }} ({{ res.hindu_month|default:"-" }})
                     </div>
                 </div>
 
                 <div style="background: #131c2c; padding: 12px 10px; border-radius: 6px; border: 1px solid #334155; text-align: center;">
                     <div style="color: #94a3b8; font-size: 11px; margin-bottom: 4px;">योग / करण</div>
                     <div style="color: #ffffff; font-weight: bold; font-size: 13px;">
-                        {% if res.p_extra %}{{ res.p_extra.yoga|default:"-" }} / {{ res.p_extra.karana|default:"-" }}{% else %}- / -{% endif %}
+                        {{ res.yoga|default:"-" }} / {{ res.karana|default:"-" }}
                     </div>
                 </div>
                 

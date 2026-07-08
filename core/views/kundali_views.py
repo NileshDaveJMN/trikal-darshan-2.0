@@ -207,11 +207,10 @@ def home(request, k_id=None):
         res['detected_doshas'] = analyze_doshas({str(h["num"]): h for h in res["houses"]}, res['planet_details'])
         if 'lagna' in res:
             res['gemstone'] = recommend_gemstone(res['lagna'])
-        try:
-            birth_dt = datetime(int(res.get('year', 2000)), int(res.get('month', 1)), int(res.get('day', 1)), int(res.get('hour', 0)), int(res.get('minute', 0)), int(res.get('second', 0)))
-            res['p_extra'] = get_panchang_data(birth_dt, False)
-        except Exception as e:
-            pass
+        # 🚀 FIX: p_extra (sunrise-based panchang) hataya gaya — chart_tab.html ab
+        # kundali_engine ke apne birth-exact-moment fields (res.tithi, res.nakshatra,
+        # res.chandra_rashi, res.paksha, res.hindu_month, res.vara, res.yoga, res.karana)
+        # directly use karta hai, jo zyada accurate hain (sunrise ke bajaye exact birth time par).
 
     target_dt = datetime.now()
     user_lat, user_lon, current_city = 28.5839, 77.2090, 'नई दिल्ली'
@@ -265,16 +264,11 @@ def download_kundali_pdf(request):
     if not data: 
         return HttpResponse("डेटा नहीं मिला।")
         
-    try:
-        birth_dt = datetime(int(data.get('year', 2000)), int(data.get('month', 1)), int(data.get('day', 1)), int(data.get('hour', 0)), int(data.get('minute', 0)), int(data.get('second', 0)))
-        p_extra = get_panchang_data(birth_dt, False)
-        data.update({
-            'samvat': p_extra.get('samvat', ''),
-            'hindu_maas': p_extra.get('hindu_maas', ''),
-            'tithi': p_extra.get('tithi', data.get('tithi', '')),
-            'paksha': p_extra.get('paksha', data.get('paksha', ''))
-        })
-    except Exception: pass        
+    # 🚀 FIX: पहले यहाँ sunrise-based panchang (p_extra) tithi/paksha/samvat ko
+    # overwrite kar deta था — ab kundali_engine ke apne birth-exact-moment
+    # values (data['tithi'], data['paksha'], data['samvat'], data['hindu_month'])
+    # hi PDF me use honge, jo already sahi hain.
+    data['hindu_maas'] = data.get('hindu_month', '')
         
     ai_data_list = []
     if request.POST.get('include_ai') == 'yes':
