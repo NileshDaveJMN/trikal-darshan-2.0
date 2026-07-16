@@ -1,0 +1,488 @@
+<style>
+/* ── AI Chat Tab CSS ── */
+#ai-chat-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 75vh;
+    max-height: 650px;
+    background: #0f172a;
+    border-radius: 12px;
+    border: 1px solid #334155;
+    overflow: hidden;
+}
+
+/* ── Session Header ── */
+#chat-session-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #131c2c;
+    border-bottom: 1px solid #334155;
+    flex-shrink: 0;
+}
+#chat-session-select {
+    flex: 1;
+    padding: 7px 10px;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 6px;
+    color: #cbd5e1;
+    font-size: 13px;
+    cursor: pointer;
+}
+#chat-new-session-btn {
+    padding: 7px 12px;
+    background: transparent;
+    border: 1px solid #ffca28;
+    border-radius: 6px;
+    color: #ffca28;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+#chat-new-session-btn:hover {
+    background: #ffca28;
+    color: #0f172a;
+}
+
+/* ── Messages Area ── */
+#chat-messages-area {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scroll-behavior: smooth;
+}
+#chat-messages-area::-webkit-scrollbar { width: 4px; }
+#chat-messages-area::-webkit-scrollbar-track { background: #0f172a; }
+#chat-messages-area::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+/* ── Message Bubbles ── */
+.chat-bubble-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+.chat-bubble-wrap.user  { flex-direction: row-reverse; }
+.chat-bubble-wrap.assistant { flex-direction: row; }
+
+.chat-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    background: #1e293b;
+}
+
+.chat-bubble {
+    max-width: 78%;
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    word-break: break-word;
+}
+.chat-bubble-wrap.user .chat-bubble {
+    background: #ffca28;
+    color: #0f172a;
+    border-bottom-right-radius: 4px;
+    font-weight: 500;
+}
+.chat-bubble-wrap.assistant .chat-bubble {
+    background: #1e293b;
+    color: #e2e8f0;
+    border-bottom-left-radius: 4px;
+    border: 1px solid #334155;
+}
+.chat-bubble-wrap.assistant .chat-bubble p { margin: 0 0 6px 0; }
+.chat-bubble-wrap.assistant .chat-bubble p:last-child { margin-bottom: 0; }
+
+.chat-time {
+    font-size: 10px;
+    color: #64748b;
+    margin-top: 3px;
+    padding: 0 4px;
+}
+.chat-bubble-wrap.user   .chat-time { text-align: right; }
+.chat-bubble-wrap.assistant .chat-time { text-align: left; }
+
+/* ── Typing indicator ── */
+#chat-typing-indicator {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    padding: 0 4px;
+}
+#chat-typing-indicator span {
+    color: #64748b;
+    font-size: 13px;
+    font-style: italic;
+}
+.typing-dots {
+    display: flex; gap: 4px;
+}
+.typing-dots div {
+    width: 6px; height: 6px;
+    background: #ffca28;
+    border-radius: 50%;
+    animation: typingBounce 1.2s infinite ease-in-out;
+}
+.typing-dots div:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots div:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* ── Input Area ── */
+#chat-input-area {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    padding: 10px 14px;
+    background: #131c2c;
+    border-top: 1px solid #334155;
+    flex-shrink: 0;
+}
+#chat-input-field {
+    flex: 1;
+    padding: 10px 14px;
+    background: #1e293b;
+    border: 1px solid #475569;
+    border-radius: 22px;
+    color: #e2e8f0;
+    font-size: 14px;
+    resize: none;
+    max-height: 100px;
+    min-height: 42px;
+    overflow-y: auto;
+    outline: none;
+    line-height: 1.5;
+    transition: border-color 0.2s;
+}
+#chat-input-field:focus { border-color: #ffca28; }
+#chat-input-field::placeholder { color: #475569; }
+
+#chat-send-btn {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: #ffca28;
+    border: none;
+    color: #0f172a;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+#chat-send-btn:hover { background: #ffd54f; transform: scale(1.05); }
+#chat-send-btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; transform: none; }
+
+/* ── Empty state ── */
+#chat-empty-state {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    text-align: center;
+    padding: 20px;
+    gap: 12px;
+}
+#chat-empty-state .empty-icon { font-size: 40px; }
+#chat-empty-state p { font-size: 14px; line-height: 1.6; margin: 0; }
+
+/* ── Suggestion chips ── */
+#chat-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 0 14px 10px;
+    background: #131c2c;
+    border-top: 1px solid #1e293b;
+    flex-shrink: 0;
+}
+.chat-suggestion-chip {
+    padding: 6px 12px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 20px;
+    color: #94a3b8;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.chat-suggestion-chip:hover {
+    border-color: #ffca28;
+    color: #ffca28;
+}
+</style>
+
+<!-- Hidden form for kundali data (same as AI tab) -->
+<form id="aiChatHiddenForm" style="display:none;">
+    {% csrf_token %}
+    <input type="hidden" name="name"      value="{{ kundali_data.name|default:'' }}">
+    <input type="hidden" name="gender"    value="{{ kundali_data.gender|default:'' }}">
+    <input type="hidden" name="dd"        value="{{ kundali_data.day|default:'' }}">
+    <input type="hidden" name="mm"        value="{{ kundali_data.month|default:'' }}">
+    <input type="hidden" name="yyyy"      value="{{ kundali_data.year|default:'' }}">
+    <input type="hidden" name="hh"        value="{{ kundali_data.hour|default:'' }}">
+    <input type="hidden" name="min"       value="{{ kundali_data.minute|default:'' }}">
+    <input type="hidden" name="sec"       value="{{ kundali_data.second|default:'' }}">
+    <input type="hidden" name="city_name" value="{{ kundali_data.city|default:'' }}">
+    <input type="hidden" name="lat"       value="{{ kundali_data.lat|default:'' }}">
+    <input type="hidden" name="lon"       value="{{ kundali_data.lon|default:'' }}">
+    <input type="hidden" name="kundali_id" value="{{ kundali_data.id|default:'' }}">
+</form>
+
+<div style="padding: 5px;">
+
+    <!-- Title -->
+    <h4 style="color:#ffca28; border-bottom:1px solid #334155; padding-bottom:10px; margin-bottom:16px;">
+        💬 त्रिकाल AI चैट
+    </h4>
+
+    <!-- Chat Widget -->
+    <div id="ai-chat-wrapper">
+
+        <!-- Session Bar -->
+        <div id="chat-session-bar">
+            <select id="chat-session-select" onchange="loadChatSession(this.value)">
+                <option value="">-- बातचीत चुनें --</option>
+                {% if chat_sessions %}
+                    {% for session in chat_sessions %}
+                        <option value="{{ session.id }}">{{ session.title }} ({{ session.created_at|date:"d M" }})</option>
+                    {% endfor %}
+                {% endif %}
+            </select>
+            <button id="chat-new-session-btn" onclick="startNewChatSession()">＋ नई बातचीत</button>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="chat-messages-area">
+            <!-- Empty state by default -->
+            <div id="chat-empty-state">
+                <div class="empty-icon">🔮</div>
+                <p>नमस्ते! मैं आपकी कुंडली के आधार पर<br>ज्योतिष सम्बन्धी प्रश्नों के उत्तर दूँगा।<br><br>
+                <span style="color:#64748b; font-size:12px;">नीचे कोई सवाल पूछें या ऊपर पुरानी बातचीत चुनें।</span></p>
+            </div>
+        </div>
+
+        <!-- Typing indicator (inside messages area flow) -->
+        <div id="chat-typing-indicator" style="padding: 0 14px 8px; background:#0f172a;">
+            <div class="chat-avatar">🔮</div>
+            <div class="typing-dots">
+                <div></div><div></div><div></div>
+            </div>
+            <span>त्रिकाल AI सोच रहा है...</span>
+        </div>
+
+        <!-- Quick Suggestion Chips (shown when empty) -->
+        <div id="chat-suggestions">
+            <span class="chat-suggestion-chip" onclick="useChip(this)">💼 करियर कैसा रहेगा?</span>
+            <span class="chat-suggestion-chip" onclick="useChip(this)">❤️ विवाह कब होगा?</span>
+            <span class="chat-suggestion-chip" onclick="useChip(this)">🏥 स्वास्थ्य बताएं</span>
+            <span class="chat-suggestion-chip" onclick="useChip(this)">⏳ मेरी दशा क्या है?</span>
+            <span class="chat-suggestion-chip" onclick="useChip(this)">💰 धन योग हैं?</span>
+        </div>
+
+        <!-- Input Area -->
+        <div id="chat-input-area">
+            <textarea id="chat-input-field"
+                placeholder="अपना सवाल यहाँ लिखें..."
+                rows="1"
+                onkeydown="handleChatKey(event)"
+                oninput="autoResizeInput(this)"></textarea>
+            <button id="chat-send-btn" onclick="sendChatMessage()" title="भेजें">➤</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────
+var currentSessionId = null;
+
+// ── Session Management ─────────────────────────────────────
+function startNewChatSession() {
+    currentSessionId = null;
+    document.getElementById('chat-session-select').value = '';
+    clearMessages();
+    showEmptyState(true);
+    document.getElementById('chat-suggestions').style.display = 'flex';
+    document.getElementById('chat-input-field').focus();
+}
+
+function loadChatSession(sessionId) {
+    if (!sessionId) return;
+    currentSessionId = sessionId;
+    showEmptyState(false);
+    document.getElementById('chat-suggestions').style.display = 'none';
+
+    const formData = buildFormData();
+    formData.append('action', 'get_chat_history');
+    formData.append('session_id', sessionId);
+
+    clearMessages();
+
+    fetch('/', { method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}, body: formData })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success' && data.messages) {
+            data.messages.forEach(msg => {
+                appendBubble(msg.role, msg.content, msg.time);
+            });
+            scrollToBottom();
+        }
+    })
+    .catch(err => console.error('History load error:', err));
+}
+
+// ── Send Message ───────────────────────────────────────────
+function sendChatMessage() {
+    const inputEl  = document.getElementById('chat-input-field');
+    const sendBtn  = document.getElementById('chat-send-btn');
+    const userText = inputEl.value.trim();
+
+    if (!userText) return;
+
+    // Hide empty state & suggestions on first message
+    showEmptyState(false);
+    document.getElementById('chat-suggestions').style.display = 'none';
+
+    // Show user bubble
+    appendBubble('user', userText, nowTime());
+    inputEl.value = '';
+    autoResizeInput(inputEl);
+    sendBtn.disabled = true;
+
+    // Show typing
+    document.getElementById('chat-typing-indicator').style.display = 'flex';
+    scrollToBottom();
+
+    // Build payload
+    const formData = buildFormData();
+    formData.append('action',   'ai_chat');
+    formData.append('message',  userText);
+    if (currentSessionId) formData.append('session_id', currentSessionId);
+
+    fetch('/', { method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}, body: formData })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('chat-typing-indicator').style.display = 'none';
+        sendBtn.disabled = false;
+
+        if (data.status === 'success') {
+            // Update session id (first message creates a new session)
+            if (data.session_id && !currentSessionId) {
+                currentSessionId = data.session_id;
+                // Add to dropdown
+                addSessionToDropdown(data.session_id, data.session_title);
+            }
+            appendBubble('assistant', data.reply, nowTime());
+            scrollToBottom();
+        } else {
+            appendBubble('assistant', '❌ माफ करें, कोई त्रुटि आई। कृपया दोबारा प्रयास करें।', nowTime());
+            scrollToBottom();
+        }
+    })
+    .catch(err => {
+        document.getElementById('chat-typing-indicator').style.display = 'none';
+        sendBtn.disabled = false;
+        appendBubble('assistant', '❌ नेटवर्क त्रुटि: ' + err.message, nowTime());
+        scrollToBottom();
+    });
+}
+
+// ── Bubble Renderer ────────────────────────────────────────
+function appendBubble(role, content, time) {
+    const area    = document.getElementById('chat-messages-area');
+    const isUser  = (role === 'user');
+    const avatar  = isUser ? '👤' : '🔮';
+    const timeStr = time || nowTime();
+
+    const wrap = document.createElement('div');
+    wrap.className = 'chat-bubble-wrap ' + role;
+    wrap.innerHTML = `
+        <div class="chat-avatar">${avatar}</div>
+        <div>
+            <div class="chat-bubble">${isUser ? escapeHtml(content) : content}</div>
+            <div class="chat-time">${timeStr}</div>
+        </div>`;
+    area.appendChild(wrap);
+}
+
+// ── Helpers ────────────────────────────────────────────────
+function buildFormData() {
+    const form = document.getElementById('aiChatHiddenForm');
+    return new FormData(form);
+}
+
+function clearMessages() {
+    const area = document.getElementById('chat-messages-area');
+    area.innerHTML = '';
+}
+
+function showEmptyState(show) {
+    const area = document.getElementById('chat-messages-area');
+    const existing = document.getElementById('chat-empty-state');
+    if (show && !existing) {
+        const el = document.createElement('div');
+        el.id = 'chat-empty-state';
+        el.className = 'chat-empty-state'; // reuse class for flex child
+        el.innerHTML = `
+            <div class="empty-icon">🔮</div>
+            <p>नमस्ते! मैं आपकी कुंडली के आधार पर<br>ज्योतिष सम्बन्धी प्रश्नों के उत्तर दूँगा।<br><br>
+            <span style="color:#64748b;font-size:12px;">नीचे कोई सवाल पूछें या ऊपर पुरानी बातचीत चुनें।</span></p>`;
+        area.appendChild(el);
+    } else if (!show && existing) {
+        existing.remove();
+    }
+}
+
+function addSessionToDropdown(sessionId, sessionTitle) {
+    const sel = document.getElementById('chat-session-select');
+    const opt = document.createElement('option');
+    opt.value = sessionId;
+    opt.text  = sessionTitle || 'नई बातचीत';
+    opt.selected = true;
+    sel.insertBefore(opt, sel.options[1]);
+}
+
+function useChip(el) {
+    document.getElementById('chat-input-field').value = el.textContent.replace(/^[^\s]+\s/, '');
+    sendChatMessage();
+}
+
+function handleChatKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChatMessage();
+    }
+}
+
+function autoResizeInput(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+function scrollToBottom() {
+    const area = document.getElementById('chat-messages-area');
+    setTimeout(() => { area.scrollTop = area.scrollHeight; }, 50);
+}
+
+function nowTime() {
+    return new Date().toLocaleTimeString('hi-IN', { hour: '2-digit', minute: '2-digit' });
+}
+
+function escapeHtml(text) {
+    return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>

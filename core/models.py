@@ -251,3 +251,38 @@ class FCMToken(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - FCM ({self.updated_at.strftime('%d/%m/%Y')})"
+
+# ============================================================
+# models.py mein ye do classes ADD karo (existing ke neeche)
+# ============================================================
+
+class AIChatSession(models.Model):
+    """Ek kundali ki ek chat session — user kai sessions rakh sakta hai"""
+    kundali    = models.ForeignKey(SavedKundali, on_delete=models.CASCADE, related_name='chat_sessions')
+    title      = models.CharField(max_length=200, default="नई बातचीत", verbose_name="Chat का शीर्षक")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-updated_at']
+
+    def __str__(self):
+        return f"{self.kundali.name} - {self.title} ({self.created_at.strftime('%d/%m/%Y')})"
+
+
+class AIChatMessage(models.Model):
+    """Ek session ke andar har ek message — user ya assistant"""
+    ROLE_CHOICES = [
+        ('user',      'User'),
+        ('assistant', 'Assistant'),
+    ]
+    session    = models.ForeignKey(AIChatSession, on_delete=models.CASCADE, related_name='messages')
+    role       = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    content    = models.TextField(verbose_name="Message Content")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']   # purane messages pehle
+
+    def __str__(self):
+        return f"[{self.role}] {self.session.kundali.name}: {self.content[:40]}"

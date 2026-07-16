@@ -7,7 +7,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.template.loader import get_template
 from django.contrib.auth.decorators import login_required
-
+from core.models import SavedKundali, TabSettings, AIQuestionHistory, KundaliMilanHistory, UserProfile, UserNotification, LearnCategory, AIChatSession, AIChatMessage
 # WeasyPrint Integration
 try:
     from weasyprint import HTML
@@ -16,8 +16,6 @@ except (ImportError, OSError):
     HTML = None
     WEASYPRINT_AVAILABLE = False
 
-# 🚀 यहाँ नए मॉडल्स UserNotification और LearnCategory जोड़े गए हैं
-from core.models import SavedKundali, TabSettings, AIQuestionHistory, KundaliMilanHistory, UserProfile, UserNotification, LearnCategory
 from core.views.rashifal_views import RASHI_LIST
 from engines.festival_alerts import get_today_festivals
 from engines.dosha_analyzer import analyze_doshas, recommend_gemstone
@@ -147,6 +145,133 @@ def home(request, k_id=None):
                 return JsonResponse({'status': 'success', 'ai_data': final_sorted})
             return JsonResponse({'status': 'error', 'message': 'AI इंजन ने डेटा जनरेट नहीं किया।'})
 
+
+        elif is_ajax and action == 'ai_chat':
+            import requests as req
+            import random
+
+            current_id = request.session.get('current_kundali_id')
+            if not current_id:
+                return JsonResponse({'status': 'error', 'message': 'कृपया पहले कोई कुंडली चुनें।'})
+
+            kundali = SavedKundali.objects.filter(id=current_id, user=request.user).first()
+            if not kundali:
+                return JsonResponse({'status': 'error', 'message': 'कुंडली नहीं मिली।'})
+
+            user_message = request.POST.get('message', '').strip()
+            session_id   = request.POST.get('session_id', '').strip()
+
+            if not user_message:
+                return JsonResponse({'status': 'error', 'message': 'Message empty'})
+
+            # Session: naya ya existing
+            if session_id:
+                try:
+                    chat_session = AIChatSession.objects.get(id=session_id, kundali=kundali)
+                except AIChatSession.DoesNotExist:
+                    chat_session = AIChatSession.objects.create(
+                        kundali=kundali, title=user_message[:50]
+                    )
+            else:
+                chat_session = AIChatSession.objects.create(
+                    kundali=kundali, title=user_message[:50]
+                )
+
+            # User message DB mein save
+            AIChatMessage.objects.create(session=chat_session, role='user', content=user_message)
+
+            # Last 10 messages → conversation history
+            recent_msgs = list(chat_session.messages.order_by('created_at'))
+            history_text = "\n".join([
+                f"{'User' if m.role == 'user' else 'AI'}: {m.content}"
+                for m in recent_msgs
+            ])
+
+            # Gemini prompt
+            import datetime as _dt
+            current_date_str = _dt.datetime.now().strftime("%d %B, %Y")
+
+            prompt = f"""Aaj ki tarikh: {current_date_str}
+
+Tu Trikal Darshan ka AI Jyotish assistant hai — naam "Trikal AI".
+Tu sirf Vedic jyotish, kundali, graha, rashi, dasha, yoga aur spiritual topics par jawab deta hai.
+Agar koi aur topic ho toh politely bol de.
+
+User ki kundali:
+- Naam: {kundali.name}
+- Ling: {kundali.gender}
+- Janm: {kundali.day}/{kundali.month}/{kundali.year}
+- Samay: {kundali.hour:02d}:{kundali.minute:02d}:{kundali.second:02d}
+- Sthan: {kundali.city} (Lat: {kundali.lat}, Lon: {kundali.lon})
+
+Pichli baatcheet:
+{history_text}
+
+Niyam:
+1. Jawab Hindi mein de — simple, warm aur friendly tone
+2. 3-4 paragraph se zyada nahi
+3. Koi Markdown (**, ##) mat use karo
+4. Practical aur positive guidance de
+5. Kundali context ke hisaab se personalised jawab de"""
+
+            # Gemini API call (same pattern as prediction_engine.py)
+            from engines.prediction_engine import GEMINI_API_KEYS
+            keys = GEMINI_API_KEYS.copy()
+            random.shuffle(keys)
+
+            ai_reply = "माफ करें, AI सर्वर अभी व्यस्त है। कृपया कुछ देर बाद पुनः प्रयास करें।"
+
+            for api_key in keys:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
+                try:
+                    import urllib3
+                    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+                    resp = req.post(
+                        url,
+                        json={"contents": [{"parts": [{"text": prompt}]}]},
+                        timeout=30,
+                        verify=False
+                    )
+                    if resp.status_code == 200:
+                        res_json = resp.json()
+                        candidates = res_json.get('candidates', [])
+                        if candidates and candidates[0].get('finishReason') != 'SAFETY':
+                            parts = candidates[0].get('content', {}).get('parts', [])
+                            if parts:
+                                ai_reply = parts[0]['text'].replace("**", "").replace("##", "").strip()
+                                break
+                except Exception:
+                    continue
+
+            # Assistant reply save
+            AIChatMessage.objects.create(session=chat_session, role='assistant', content=ai_reply)
+            chat_session.save()
+
+            return JsonResponse({
+                'status':        'success',
+                'reply':         ai_reply,
+                'session_id':    chat_session.id,
+                'session_title': chat_session.title,
+            })
+
+        elif is_ajax and action == 'get_chat_history':
+            session_id = request.POST.get('session_id', '').strip()
+            try:
+                chat_session = AIChatSession.objects.get(id=session_id, kundali__user=request.user)
+                return JsonResponse({
+                    'status': 'success',
+                    'messages': [
+                        {
+                            'role':    msg.role,
+                            'content': msg.content,
+                            'time':    msg.created_at.strftime('%I:%M %p'),
+                        }
+                        for msg in chat_session.messages.all()
+                    ]
+                })
+            except AIChatSession.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'Session not found'})
+
         elif action == 'delete_kundali':
             k_id_to_del = request.POST.get('kundali_id')
             if request.user.is_authenticated and k_id_to_del:
@@ -252,6 +377,12 @@ def home(request, k_id=None):
         'user_notifications': user_notifications,
         'unread_notifications_count': unread_notifications_count,
         'learn_categories': learn_categories,
+        'chat_sessions': list(
+            AIChatSession.objects.filter(
+                kundali__user=request.user,
+                kundali_id=k_id
+            ).order_by('-updated_at').values('id', 'title', 'created_at')[:20]
+        ) if (request.user.is_authenticated and k_id) else [],
     }
             
     return render(request, 'home.html', context)

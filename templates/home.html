@@ -60,6 +60,7 @@
         <button class="sub-tab" onclick="switchSubTab(this, 'panel-dasha')">दशा</button>
         <button class="sub-tab" onclick="switchSubTab(this, 'panel-dosh')">दोष</button>
         <button class="sub-tab" onclick="switchSubTab(this, 'panel-ai')">AI फलित</button>
+        <button class="sub-tab" onclick="switchSubTab(this, 'panel-ai-chat')">💬 AI Chat</button>
     </div>
 
     <div class="main-viewport">
@@ -303,6 +304,13 @@
                         </div>
                     {% endif %}
                 </div>
+                <div id="panel-ai-chat" class="sub-panel" style="display:none;">
+    {% if user.is_authenticated %}
+        {% include 'tabs/ai_chat_tab.html' %}
+    {% else %}
+        ...login prompt...
+    {% endif %}
+</div>
 
                 <div style="text-align: center; margin-top: 20px;">
                     <button onclick="document.getElementById('kundali-result-section').style.display='none'; document.getElementById('kundali-input-section').style.display='block'; window.scrollTo(0,0);" class="primary-btn" style="background: transparent; border: 1px solid #ffca28; color: #ffca28; margin-bottom:20px; width: auto; padding: 10px 20px;">← अन्य कुंडली खोजें</button>
