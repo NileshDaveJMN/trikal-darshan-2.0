@@ -191,48 +191,61 @@ def home(request, k_id=None):
             import datetime as _dt
             current_date_str = _dt.datetime.now().strftime("%d %B, %Y")
 
-            # Session mein stored calculated kundali data
             kd = request.session.get('kundali_data') or {}
 
-            # Graha positions format karo
+            # planet_details — list bhi ho sakti hai ya dict bhi
             planet_lines = ""
-            planet_details = kd.get('planet_details', {})
-            if planet_details:
+            try:
+                planet_raw = kd.get('planet_details', {})
+                # Agar list hai toh dict mein convert karo
+                if isinstance(planet_raw, list):
+                    planet_raw = {p.get('name', p.get('planet', '')): p for p in planet_raw if isinstance(p, dict)}
                 planet_map = {
                     'Sun': 'सूर्य', 'Moon': 'चंद्र', 'Mars': 'मंगल',
                     'Mercury': 'बुध', 'Jupiter': 'गुरु', 'Venus': 'शुक्र',
                     'Saturn': 'शनि', 'Rahu': 'राहु', 'Ketu': 'केतु'
                 }
                 for eng, hin in planet_map.items():
-                    p = planet_details.get(eng, {})
+                    p = planet_raw.get(eng, {})
                     if p:
-                        house = p.get('house', '')
-                        rashi = p.get('rashi', p.get('sign', ''))
+                        house = p.get('house', p.get('house_num', ''))
+                        rashi = p.get('rashi', p.get('sign', p.get('rashi_name', '')))
                         retro = ' (वक्री)' if p.get('is_retro') or p.get('retro') else ''
                         planet_lines += f"  - {hin}: {rashi}, {house}वाँ भाव{retro}\n"
+            except Exception:
+                planet_lines = "  - Data available nahi\n"
 
             # Dasha info
-            dasha_info = ""
-            current_dasha = kd.get('current_dasha', '')
-            current_antardasha = kd.get('current_antardasha', '')
-            if current_dasha:
-                dasha_info = f"  - महादशा: {current_dasha}"
-                if current_antardasha:
-                    dasha_info += f", अंतर्दशा: {current_antardasha}"
+            dasha_info = "  - Data available nahi"
+            try:
+                current_dasha = kd.get('current_dasha', '')
+                current_antardasha = kd.get('current_antardasha', '')
+                if current_dasha:
+                    dasha_info = f"  - महादशा: {current_dasha}"
+                    if current_antardasha:
+                        dasha_info += f", अंतर्दशा: {current_antardasha}"
+            except Exception:
+                pass
 
             # Dosha info
-            dosha_info = ""
-            doshas = kd.get('detected_doshas', {})
-            if doshas:
-                dosha_list = [name for name, val in doshas.items() if val]
-                dosha_info = ", ".join(dosha_list) if dosha_list else "कोई मुख्य दोष नहीं"
+            dosha_info = "Data available nahi"
+            try:
+                doshas = kd.get('detected_doshas', {})
+                if isinstance(doshas, dict) and doshas:
+                    dosha_list = [name for name, val in doshas.items() if val]
+                    dosha_info = ", ".join(dosha_list) if dosha_list else "कोई मुख्य दोष नहीं"
+            except Exception:
+                pass
 
             # Yoga info
-            yoga_info = ""
-            yogas = kd.get('yogas', [])
-            if yogas:
-                yoga_names = [y.get('name', '') for y in yogas if isinstance(y, dict) and y.get('name')]
-                yoga_info = ", ".join(yoga_names[:5])
+            yoga_info = "Data available nahi"
+            try:
+                yogas = kd.get('yogas', [])
+                if yogas:
+                    yoga_names = [y.get('name', '') for y in yogas if isinstance(y, dict) and y.get('name')]
+                    yoga_info = ", ".join(yoga_names[:5]) if yoga_names else "Data available nahi"
+            except Exception:
+                pass
 
             prompt = (
                 f"Aaj ki tarikh: {current_date_str}\n\n"
@@ -247,19 +260,18 @@ def home(request, k_id=None):
                 f"  - Janm Samay: {kundali.hour:02d}:{kundali.minute:02d}:{kundali.second:02d}\n"
                 f"  - Janm Sthan: {kundali.city}\n\n"
                 "Lagna aur Rashi:\n"
-                f"  - Lagna (Ascendant): {kd.get('lagna', kd.get('ascendant', 'N/A'))}\n"
+                f"  - Lagna: {kd.get('lagna', kd.get('ascendant', 'N/A'))}\n"
                 f"  - Chandra Rashi: {kd.get('chandra_rashi', kd.get('moon_sign', 'N/A'))}\n"
                 f"  - Surya Rashi: {kd.get('surya_rashi', kd.get('sun_sign', 'N/A'))}\n"
-                f"  - Janm Nakshatra: {kd.get('nakshatra', 'N/A')}\n"
-                f"  - Nakshatra Pada: {kd.get('nakshatra_pada', kd.get('pada', 'N/A'))}\n\n"
+                f"  - Nakshatra: {kd.get('nakshatra', 'N/A')}\n\n"
                 "Graha Sthiti:\n"
-                f"{planet_lines if planet_lines else '  - Data available nahi'}\n"
+                f"{planet_lines}"
                 "Vimshottari Dasha:\n"
-                f"{dasha_info if dasha_info else '  - Data available nahi'}\n\n"
+                f"{dasha_info}\n\n"
                 "Dosha:\n"
-                f"  - {dosha_info if dosha_info else 'Data available nahi'}\n\n"
+                f"  - {dosha_info}\n\n"
                 "Pramukh Yoga:\n"
-                f"  - {yoga_info if yoga_info else 'Data available nahi'}\n\n"
+                f"  - {yoga_info}\n\n"
                 "=== Pichli Baatcheet ===\n"
                 f"{history_text}\n\n"
                 "=== Niyam ===\n"
