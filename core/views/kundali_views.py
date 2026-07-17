@@ -193,13 +193,15 @@ def home(request, k_id=None):
 
             kd = request.session.get('kundali_data') or {}
 
-            # planet_details — list bhi ho sakti hai ya dict bhi
+            # 🚀 FIX: planet_details - Case Insensitive Mapping Fix
             planet_lines = ""
             try:
                 planet_raw = kd.get('planet_details', {})
-                # Agar list hai toh dict mein convert karo
                 if isinstance(planet_raw, list):
-                    planet_raw = {p.get('name', p.get('planet', '')): p for p in planet_raw if isinstance(p, dict)}
+                    planet_raw = {str(p.get('name', p.get('planet', ''))).strip().capitalize(): p for p in planet_raw if isinstance(p, dict)}
+                elif isinstance(planet_raw, dict):
+                    planet_raw = {str(k).strip().capitalize(): v for k, v in planet_raw.items()}
+
                 planet_map = {
                     'Sun': 'सूर्य', 'Moon': 'चंद्र', 'Mars': 'मंगल',
                     'Mercury': 'बुध', 'Jupiter': 'गुरु', 'Venus': 'शुक्र',
@@ -401,6 +403,12 @@ def home(request, k_id=None):
         res['detected_doshas'] = analyze_doshas({str(h["num"]): h for h in res["houses"]}, res['planet_details'])
         if 'lagna' in res:
             res['gemstone'] = recommend_gemstone(res['lagna'])
+            
+        # 🚀 FIX: Update session state for 'detected_doshas' and 'gemstone' so AI chat can access them
+        if k_id and request.user.is_authenticated:
+            request.session['kundali_data'] = res
+            request.session.modified = True
+            
         # 🚀 FIX: p_extra (sunrise-based panchang) hataya gaya — chart_tab.html ab
         # kundali_engine ke apne birth-exact-moment fields (res.tithi, res.nakshatra,
         # res.chandra_rashi, res.paksha, res.hindu_month, res.vara, res.yoga, res.karana)
