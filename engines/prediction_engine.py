@@ -168,33 +168,41 @@ def get_bhav_phal(p_degrees_raw, l_idx, sav_points=None, curr_dasha=None, select
     return [{"topic_id": "ERROR", "planet_name": "Error", "text": f"<div style='color:red;'>{last_error}</div>"}], last_error
 
 def get_ai_chat_reply(kundali_name, kd, user_message, history_text):
-    """चैटबॉट के लिए डेडिकेटेड AI फंक्शन"""
+    import datetime
+    import requests
+    import random
+    
     current_date_str = datetime.datetime.now().strftime("%d %B, %Y")
     
+    # 1. 🚀 सटीक भाव और ग्रह (House & Planet) Extraction
+    # हम 'houses' लिस्ट से भाव निकालेंगे और 'planet_details' से डिग्री जोड़ेंगे
     house_planets = {i: [] for i in range(1, 13)}
     planet_to_house = {}
+    
+    # डिग्री निकालने के लिए planet_details का मैप बनाएं
+    deg_map = {}
+    for p in kd.get('planet_details', []):
+        name = p.get('name', '').strip()
+        degree = p.get('degree', '').strip()
+        if name:
+            deg_map[name] = degree
 
-    try:
-        planet_raw = kd.get('planet_details', {})
-        if isinstance(planet_raw, list):
-            planet_raw = {str(p.get('name', p.get('planet', ''))).strip().capitalize(): p for p in planet_raw if isinstance(p, dict)}
-        elif isinstance(planet_raw, dict):
-            planet_raw = {str(k).strip().capitalize(): v for k, v in planet_raw.items()}
+    for h in kd.get('houses', []):
+        h_num = h.get('num')
+        p_full = h.get('planets_full', '')
+        
+        # अगर भाव में ग्रह हैं (--- नहीं है)
+        if h_num and p_full and p_full != "---":
+            # ग्रहों के नाम कॉमा (,) से अलग होते हैं (e.g., "सूर्य, राहु")
+            planet_names = [p.strip() for p in p_full.split(',')]
+            for p_name in planet_names:
+                if p_name:
+                    deg = deg_map.get(p_name, "")
+                    deg_str = f" ({deg})" if deg else ""
+                    house_planets[h_num].append(f"{p_name}{deg_str}")
+                    planet_to_house[p_name] = h_num
 
-        for eng_name, p_data in planet_raw.items():
-            hindi_name = P_HINDI.get(eng_name, eng_name)
-            h_num = int(p_data.get('house', p_data.get('house_num', 0)))
-            deg_val = p_data.get('norm_degree', p_data.get('degree'))
-            deg_str = f" ({deg_val:.1f}°)" if isinstance(deg_val, (int, float)) else ""
-            retro = ' (वक्री)' if p_data.get('is_retro') or p_data.get('retro') else ''
-
-            if 1 <= h_num <= 12:
-                house_planets[h_num].append(f"{hindi_name}{deg_str}{retro}")
-                planet_to_house[hindi_name] = h_num
-    except Exception:
-        pass
-
-    # ग्रहों की दृष्टियां (Aspects)
+    # 2. 🚀 दृष्टियाँ (ASPECTS)
     drashti_info = []
     for p, h in planet_to_house.items():
         aspects = [(h + 7 - 1) % 12 + 1]
@@ -208,29 +216,24 @@ def get_ai_chat_reply(kundali_name, kd, user_message, history_text):
     prompt_data = "".join([f"भाव {i}: {', '.join(house_planets[i]) if house_planets[i] else 'खाली'}\n" for i in range(1, 13)])
     drashti_text = "\n".join(drashti_info)
 
-    # दशा कैलकुलेशन
+    # 3. 🚀 सटीक दशा Extraction (is_current के आधार पर)
     m_dasha_name, a_dasha_name = "N/A", "N/A"
-    try:
-        m_dasha = kd.get('current_dasha') or kd.get('mahadasha')
-        a_dasha = kd.get('current_antardasha') or kd.get('antardasha')
-        if not m_dasha:
-            for k in ['dasha', 'vimshottari', 'dasha_details']:
-                nested = kd.get(k)
-                if isinstance(nested, dict):
-                    m_dasha = nested.get('mahadasha') or nested.get('planet')
-                    a_dasha = nested.get('antardasha')
-                    if m_dasha: break
-        
-        if m_dasha: m_dasha_name = P_HINDI.get(str(m_dasha).strip().capitalize(), m_dasha)
-        if a_dasha: a_dasha_name = P_HINDI.get(str(a_dasha).strip().capitalize(), a_dasha)
-    except Exception:
-        pass
+    for md in kd.get('dasha', []):
+        if md.get('is_current'):
+            m_dasha_name = md.get('planet', 'N/A')
+            for ad in md.get('antardashas', []):
+                if ad.get('is_current'):
+                    a_dasha_name = ad.get('planet', 'N/A')
+                    break
+            break
+            
     dasha_info = f"{m_dasha_name} महादशा - {a_dasha_name} अंतर्दशा"
 
+    # 4. 🚀 प्रॉम्प्ट और AI कॉलिंग
     prompt = (
         f"आज की तारीख: {current_date_str}\n\n"
         "आप 30 साल के अनुभव वाले एक विशेषज्ञ और 'सकारात्मक मार्गदर्शक' (Constructive Guide) वैदिक ज्योतिषी हैं, आपका नाम 'Trikal AI' है।\n"
-        f"कुण्डली: नाम: {kundali_name}, लग्न: {kd.get('lagna', 'N/A')}, दशा: {dasha_info}\n\n"
+        f"कुण्डली: नाम: {kundali_name}, लग्न: {kd.get('lagna', 'N/A')}, चंद्र राशि: {kd.get('chandra_rashi', 'N/A')}, नक्षत्र: {kd.get('nakshatra', 'N/A')}, दशा: {dasha_info}\n\n"
         f"भाव स्थिति:\n{prompt_data}\n"
         f"दृष्टियाँ:\n{drashti_text}\n\n"
         f"=== पिछली बातचीत ===\n{history_text}\n\n"
@@ -240,7 +243,9 @@ def get_ai_chat_reply(kundali_name, kd, user_message, history_text):
 
     ai_reply = "माफ करें, AI सर्वर अभी व्यस्त है। कृपया कुछ देर बाद पुनः प्रयास करें।"
     
-    # आपका API रोटेशन लॉजिक
+    # GEMINI_API_KEYS का उपयोग 
+    # (अगर GEMINI_API_KEYS फाइल में ऊपर इम्पोर्टेड नहीं है, तो उसे यहाँ इम्पोर्ट करें)
+    from engines.prediction_engine import GEMINI_API_KEYS 
     keys = GEMINI_API_KEYS.copy()
     random.shuffle(keys)
     
