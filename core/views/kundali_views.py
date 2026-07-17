@@ -187,32 +187,89 @@ def home(request, k_id=None):
                 for m in recent_msgs
             ])
 
-            # Gemini prompt
+            # Gemini prompt — full kundali data session se nikalo
             import datetime as _dt
             current_date_str = _dt.datetime.now().strftime("%d %B, %Y")
 
-            prompt = f"""Aaj ki tarikh: {current_date_str}
+            # Session mein stored calculated kundali data
+            kd = request.session.get('kundali_data') or {}
 
-Tu Trikal Darshan ka AI Jyotish assistant hai — naam "Trikal AI".
-Tu sirf Vedic jyotish, kundali, graha, rashi, dasha, yoga aur spiritual topics par jawab deta hai.
-Agar koi aur topic ho toh politely bol de.
+            # Graha positions format karo
+            planet_lines = ""
+            planet_details = kd.get('planet_details', {})
+            if planet_details:
+                planet_map = {
+                    'Sun': 'सूर्य', 'Moon': 'चंद्र', 'Mars': 'मंगल',
+                    'Mercury': 'बुध', 'Jupiter': 'गुरु', 'Venus': 'शुक्र',
+                    'Saturn': 'शनि', 'Rahu': 'राहु', 'Ketu': 'केतु'
+                }
+                for eng, hin in planet_map.items():
+                    p = planet_details.get(eng, {})
+                    if p:
+                        house = p.get('house', '')
+                        rashi = p.get('rashi', p.get('sign', ''))
+                        retro = ' (वक्री)' if p.get('is_retro') or p.get('retro') else ''
+                        planet_lines += f"  - {hin}: {rashi}, {house}वाँ भाव{retro}\n"
 
-User ki kundali:
-- Naam: {kundali.name}
-- Ling: {kundali.gender}
-- Janm: {kundali.day}/{kundali.month}/{kundali.year}
-- Samay: {kundali.hour:02d}:{kundali.minute:02d}:{kundali.second:02d}
-- Sthan: {kundali.city} (Lat: {kundali.lat}, Lon: {kundali.lon})
+            # Dasha info
+            dasha_info = ""
+            current_dasha = kd.get('current_dasha', '')
+            current_antardasha = kd.get('current_antardasha', '')
+            if current_dasha:
+                dasha_info = f"  - महादशा: {current_dasha}"
+                if current_antardasha:
+                    dasha_info += f", अंतर्दशा: {current_antardasha}"
 
-Pichli baatcheet:
-{history_text}
+            # Dosha info
+            dosha_info = ""
+            doshas = kd.get('detected_doshas', {})
+            if doshas:
+                dosha_list = [name for name, val in doshas.items() if val]
+                dosha_info = ", ".join(dosha_list) if dosha_list else "कोई मुख्य दोष नहीं"
 
-Niyam:
-1. Jawab Hindi mein de — simple, warm aur friendly tone
-2. 3-4 paragraph se zyada nahi
-3. Koi Markdown (**, ##) mat use karo
-4. Practical aur positive guidance de
-5. Kundali context ke hisaab se personalised jawab de"""
+            # Yoga info
+            yoga_info = ""
+            yogas = kd.get('yogas', [])
+            if yogas:
+                yoga_names = [y.get('name', '') for y in yogas if isinstance(y, dict) and y.get('name')]
+                yoga_info = ", ".join(yoga_names[:5])
+
+            prompt = (
+                f"Aaj ki tarikh: {current_date_str}\n\n"
+                "Tu Trikal Darshan ka AI Jyotish assistant hai — naam \"Trikal AI\".\n"
+                "Tu sirf Vedic jyotish, kundali, graha, rashi, dasha, yoga aur spiritual topics par jawab deta hai.\n"
+                "Agar koi aur topic ho toh politely bol de.\n\n"
+                "=== User ki Sampurn Kundali ===\n\n"
+                "Janm Vivaran:\n"
+                f"  - Naam: {kundali.name}\n"
+                f"  - Ling: {kundali.gender}\n"
+                f"  - Janm Tithi: {kundali.day}/{kundali.month}/{kundali.year}\n"
+                f"  - Janm Samay: {kundali.hour:02d}:{kundali.minute:02d}:{kundali.second:02d}\n"
+                f"  - Janm Sthan: {kundali.city}\n\n"
+                "Lagna aur Rashi:\n"
+                f"  - Lagna (Ascendant): {kd.get('lagna', kd.get('ascendant', 'N/A'))}\n"
+                f"  - Chandra Rashi: {kd.get('chandra_rashi', kd.get('moon_sign', 'N/A'))}\n"
+                f"  - Surya Rashi: {kd.get('surya_rashi', kd.get('sun_sign', 'N/A'))}\n"
+                f"  - Janm Nakshatra: {kd.get('nakshatra', 'N/A')}\n"
+                f"  - Nakshatra Pada: {kd.get('nakshatra_pada', kd.get('pada', 'N/A'))}\n\n"
+                "Graha Sthiti:\n"
+                f"{planet_lines if planet_lines else '  - Data available nahi'}\n"
+                "Vimshottari Dasha:\n"
+                f"{dasha_info if dasha_info else '  - Data available nahi'}\n\n"
+                "Dosha:\n"
+                f"  - {dosha_info if dosha_info else 'Data available nahi'}\n\n"
+                "Pramukh Yoga:\n"
+                f"  - {yoga_info if yoga_info else 'Data available nahi'}\n\n"
+                "=== Pichli Baatcheet ===\n"
+                f"{history_text}\n\n"
+                "=== Niyam ===\n"
+                "1. Upar diye SAMPURN kundali data ka upyog karke jawab de — lagna, graha, dasha sab yaad rakho\n"
+                "2. Jawab Hindi mein de — simple, warm aur friendly tone\n"
+                "3. 3-4 paragraph se zyada nahi\n"
+                "4. Koi Markdown (**, ##) mat use karo\n"
+                "5. Har jawab mein kundali ke specific details mention karo\n"
+                "6. Practical aur positive guidance de"
+            )
 
             # Gemini API call (same pattern as prediction_engine.py)
             from engines.prediction_engine import GEMINI_API_KEYS
