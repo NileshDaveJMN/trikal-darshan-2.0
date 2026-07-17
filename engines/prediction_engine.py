@@ -166,3 +166,97 @@ def get_bhav_phal(p_degrees_raw, l_idx, sav_points=None, curr_dasha=None, select
         time.sleep(1)
 
     return [{"topic_id": "ERROR", "planet_name": "Error", "text": f"<div style='color:red;'>{last_error}</div>"}], last_error
+
+def get_ai_chat_reply(kundali_name, kd, user_message, history_text):
+    """चैटबॉट के लिए डेडिकेटेड AI फंक्शन"""
+    current_date_str = datetime.datetime.now().strftime("%d %B, %Y")
+    
+    house_planets = {i: [] for i in range(1, 13)}
+    planet_to_house = {}
+
+    try:
+        planet_raw = kd.get('planet_details', {})
+        if isinstance(planet_raw, list):
+            planet_raw = {str(p.get('name', p.get('planet', ''))).strip().capitalize(): p for p in planet_raw if isinstance(p, dict)}
+        elif isinstance(planet_raw, dict):
+            planet_raw = {str(k).strip().capitalize(): v for k, v in planet_raw.items()}
+
+        for eng_name, p_data in planet_raw.items():
+            hindi_name = P_HINDI.get(eng_name, eng_name)
+            h_num = int(p_data.get('house', p_data.get('house_num', 0)))
+            deg_val = p_data.get('norm_degree', p_data.get('degree'))
+            deg_str = f" ({deg_val:.1f}°)" if isinstance(deg_val, (int, float)) else ""
+            retro = ' (वक्री)' if p_data.get('is_retro') or p_data.get('retro') else ''
+
+            if 1 <= h_num <= 12:
+                house_planets[h_num].append(f"{hindi_name}{deg_str}{retro}")
+                planet_to_house[hindi_name] = h_num
+    except Exception:
+        pass
+
+    # ग्रहों की दृष्टियां (Aspects)
+    drashti_info = []
+    for p, h in planet_to_house.items():
+        aspects = [(h + 7 - 1) % 12 + 1]
+        if p == "मंगल": aspects.extend([(h + 4 - 1) % 12 + 1, (h + 8 - 1) % 12 + 1])
+        elif p in ["गुरु", "राहु", "केतु"]: aspects.extend([(h + 5 - 1) % 12 + 1, (h + 9 - 1) % 12 + 1])
+        elif p == "शनि": aspects.extend([(h + 3 - 1) % 12 + 1, (h + 10 - 1) % 12 + 1])
+        
+        unique_aspects = sorted(list(set(aspects)))
+        drashti_info.append(f"{p} की दृष्टि भाव {', '.join(map(str, unique_aspects))} पर है।")
+
+    prompt_data = "".join([f"भाव {i}: {', '.join(house_planets[i]) if house_planets[i] else 'खाली'}\n" for i in range(1, 13)])
+    drashti_text = "\n".join(drashti_info)
+
+    # दशा कैलकुलेशन
+    m_dasha_name, a_dasha_name = "N/A", "N/A"
+    try:
+        m_dasha = kd.get('current_dasha') or kd.get('mahadasha')
+        a_dasha = kd.get('current_antardasha') or kd.get('antardasha')
+        if not m_dasha:
+            for k in ['dasha', 'vimshottari', 'dasha_details']:
+                nested = kd.get(k)
+                if isinstance(nested, dict):
+                    m_dasha = nested.get('mahadasha') or nested.get('planet')
+                    a_dasha = nested.get('antardasha')
+                    if m_dasha: break
+        
+        if m_dasha: m_dasha_name = P_HINDI.get(str(m_dasha).strip().capitalize(), m_dasha)
+        if a_dasha: a_dasha_name = P_HINDI.get(str(a_dasha).strip().capitalize(), a_dasha)
+    except Exception:
+        pass
+    dasha_info = f"{m_dasha_name} महादशा - {a_dasha_name} अंतर्दशा"
+
+    prompt = (
+        f"आज की तारीख: {current_date_str}\n\n"
+        "आप 30 साल के अनुभव वाले एक विशेषज्ञ और 'सकारात्मक मार्गदर्शक' (Constructive Guide) वैदिक ज्योतिषी हैं, आपका नाम 'Trikal AI' है।\n"
+        f"कुण्डली: नाम: {kundali_name}, लग्न: {kd.get('lagna', 'N/A')}, दशा: {dasha_info}\n\n"
+        f"भाव स्थिति:\n{prompt_data}\n"
+        f"दृष्टियाँ:\n{drashti_text}\n\n"
+        f"=== पिछली बातचीत ===\n{history_text}\n\n"
+        f"यूजर का प्रश्न: {user_message}\n\n"
+        "नियम: 1. अत्यंत संतुलित दृष्टिकोण अपनाएं। 2. डराने के बजाय समाधान दें। 3. जवाब हिंदी में, साधारण और वार्म टोन में दें। कोई Markdown (**, ##) न हो।"
+    )
+
+    ai_reply = "माफ करें, AI सर्वर अभी व्यस्त है। कृपया कुछ देर बाद पुनः प्रयास करें।"
+    
+    # आपका API रोटेशन लॉजिक
+    keys = GEMINI_API_KEYS.copy()
+    random.shuffle(keys)
+    
+    for api_key in keys:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={api_key}"
+        try:
+            resp = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=30, verify=False)
+            if resp.status_code == 200:
+                res_json = resp.json()
+                candidates = res_json.get('candidates', [])
+                if candidates and candidates[0].get('finishReason') != 'SAFETY':
+                    parts = candidates[0].get('content', {}).get('parts', [])
+                    if parts:
+                        ai_reply = parts[0]['text'].replace("**", "").replace("##", "").strip()
+                        break
+        except Exception:
+            continue
+            
+    return ai_reply

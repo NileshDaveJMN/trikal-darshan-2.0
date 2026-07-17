@@ -7,6 +7,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.template.loader import get_template
 from django.contrib.auth.decorators import login_required
+from engines.prediction_engine import get_ai_chat_reply
 from core.models import SavedKundali, TabSettings, AIQuestionHistory, KundaliMilanHistory, UserProfile, UserNotification, LearnCategory, AIChatSession, AIChatMessage
 # WeasyPrint Integration
 try:
@@ -147,8 +148,8 @@ def home(request, k_id=None):
 
 
         elif is_ajax and action == 'ai_chat':
-            import requests as req
-            import random
+            # नया इम्पोर्ट
+            from engines.prediction_engine import get_ai_chat_reply 
 
             current_id = request.session.get('current_kundali_id')
             if not current_id:
@@ -164,164 +165,28 @@ def home(request, k_id=None):
             if not user_message:
                 return JsonResponse({'status': 'error', 'message': 'Message empty'})
 
-            # Session: naya ya existing
+            # Session मैनेजमेंट
             if session_id:
-                try:
-                    chat_session = AIChatSession.objects.get(id=session_id, kundali=kundali)
-                except AIChatSession.DoesNotExist:
-                    chat_session = AIChatSession.objects.create(
-                        kundali=kundali, title=user_message[:50]
-                    )
+                try: chat_session = AIChatSession.objects.get(id=session_id, kundali=kundali)
+                except AIChatSession.DoesNotExist: chat_session = AIChatSession.objects.create(kundali=kundali, title=user_message[:50])
             else:
-                chat_session = AIChatSession.objects.create(
-                    kundali=kundali, title=user_message[:50]
-                )
+                chat_session = AIChatSession.objects.create(kundali=kundali, title=user_message[:50])
 
-            # User message DB mein save
             AIChatMessage.objects.create(session=chat_session, role='user', content=user_message)
 
-            # Last 10 messages → conversation history
-            recent_msgs = list(chat_session.messages.order_by('created_at'))
-            history_text = "\n".join([
-                f"{'User' if m.role == 'user' else 'AI'}: {m.content}"
-                for m in recent_msgs
-            ])
-
-            # Gemini prompt — full kundali data session se nikalo
-            import datetime as _dt
-            current_date_str = _dt.datetime.now().strftime("%d %B, %Y")
-
+            history_text = "\n".join([f"{'User' if m.role == 'user' else 'AI'}: {m.content}" for m in chat_session.messages.order_by('created_at')])
             kd = request.session.get('kundali_data') or {}
 
-            # 🚀 FIX: planet_details - Case Insensitive Mapping Fix
-            planet_lines = ""
-            try:
-                planet_raw = kd.get('planet_details', {})
-                if isinstance(planet_raw, list):
-                    planet_raw = {str(p.get('name', p.get('planet', ''))).strip().capitalize(): p for p in planet_raw if isinstance(p, dict)}
-                elif isinstance(planet_raw, dict):
-                    planet_raw = {str(k).strip().capitalize(): v for k, v in planet_raw.items()}
+            # 🌟 बस यहाँ हमने अपनी दूसरी फ़ाइल का फंक्शन कॉल कर लिया!
+            ai_reply = get_ai_chat_reply(kundali.name, kd, user_message, history_text)
 
-                planet_map = {
-                    'Sun': 'सूर्य', 'Moon': 'चंद्र', 'Mars': 'मंगल',
-                    'Mercury': 'बुध', 'Jupiter': 'गुरु', 'Venus': 'शुक्र',
-                    'Saturn': 'शनि', 'Rahu': 'राहु', 'Ketu': 'केतु'
-                }
-                for eng, hin in planet_map.items():
-                    p = planet_raw.get(eng, {})
-                    if p:
-                        house = p.get('house', p.get('house_num', ''))
-                        rashi = p.get('rashi', p.get('sign', p.get('rashi_name', '')))
-                        retro = ' (वक्री)' if p.get('is_retro') or p.get('retro') else ''
-                        planet_lines += f"  - {hin}: {rashi}, {house}वाँ भाव{retro}\n"
-            except Exception:
-                planet_lines = "  - Data available nahi\n"
-
-            # Dasha info
-            dasha_info = "  - Data available nahi"
-            try:
-                current_dasha = kd.get('current_dasha', '')
-                current_antardasha = kd.get('current_antardasha', '')
-                if current_dasha:
-                    dasha_info = f"  - महादशा: {current_dasha}"
-                    if current_antardasha:
-                        dasha_info += f", अंतर्दशा: {current_antardasha}"
-            except Exception:
-                pass
-
-            # Dosha info
-            dosha_info = "Data available nahi"
-            try:
-                doshas = kd.get('detected_doshas', {})
-                if isinstance(doshas, dict) and doshas:
-                    dosha_list = [name for name, val in doshas.items() if val]
-                    dosha_info = ", ".join(dosha_list) if dosha_list else "कोई मुख्य दोष नहीं"
-            except Exception:
-                pass
-
-            # Yoga info
-            yoga_info = "Data available nahi"
-            try:
-                yogas = kd.get('yogas', [])
-                if yogas:
-                    yoga_names = [y.get('name', '') for y in yogas if isinstance(y, dict) and y.get('name')]
-                    yoga_info = ", ".join(yoga_names[:5]) if yoga_names else "Data available nahi"
-            except Exception:
-                pass
-
-            prompt = (
-                f"Aaj ki tarikh: {current_date_str}\n\n"
-                "Tu Trikal Darshan ka AI Jyotish assistant hai — naam \"Trikal AI\".\n"
-                "Tu sirf Vedic jyotish, kundali, graha, rashi, dasha, yoga aur spiritual topics par jawab deta hai.\n"
-                "Agar koi aur topic ho toh politely bol de.\n\n"
-                "=== User ki Sampurn Kundali ===\n\n"
-                "Janm Vivaran:\n"
-                f"  - Naam: {kundali.name}\n"
-                f"  - Ling: {kundali.gender}\n"
-                f"  - Janm Tithi: {kundali.day}/{kundali.month}/{kundali.year}\n"
-                f"  - Janm Samay: {kundali.hour:02d}:{kundali.minute:02d}:{kundali.second:02d}\n"
-                f"  - Janm Sthan: {kundali.city}\n\n"
-                "Lagna aur Rashi:\n"
-                f"  - Lagna: {kd.get('lagna', kd.get('ascendant', 'N/A'))}\n"
-                f"  - Chandra Rashi: {kd.get('chandra_rashi', kd.get('moon_sign', 'N/A'))}\n"
-                f"  - Surya Rashi: {kd.get('surya_rashi', kd.get('sun_sign', 'N/A'))}\n"
-                f"  - Nakshatra: {kd.get('nakshatra', 'N/A')}\n\n"
-                "Graha Sthiti:\n"
-                f"{planet_lines}"
-                "Vimshottari Dasha:\n"
-                f"{dasha_info}\n\n"
-                "Dosha:\n"
-                f"  - {dosha_info}\n\n"
-                "Pramukh Yoga:\n"
-                f"  - {yoga_info}\n\n"
-                "=== Pichli Baatcheet ===\n"
-                f"{history_text}\n\n"
-                "=== Niyam ===\n"
-                "1. Upar diye SAMPURN kundali data ka upyog karke jawab de — lagna, graha, dasha sab yaad rakho\n"
-                "2. Jawab Hindi mein de — simple, warm aur friendly tone\n"
-                "3. 3-4 paragraph se zyada nahi\n"
-                "4. Koi Markdown (**, ##) mat use karo\n"
-                "5. Har jawab mein kundali ke specific details mention karo\n"
-                "6. Practical aur positive guidance de"
-            )
-
-            # Gemini API call (same pattern as prediction_engine.py)
-            from engines.prediction_engine import GEMINI_API_KEYS
-            keys = GEMINI_API_KEYS.copy()
-            random.shuffle(keys)
-
-            ai_reply = "माफ करें, AI सर्वर अभी व्यस्त है। कृपया कुछ देर बाद पुनः प्रयास करें।"
-
-            for api_key in keys:
-                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={api_key}"
-                try:
-                    import urllib3
-                    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-                    resp = req.post(
-                        url,
-                        json={"contents": [{"parts": [{"text": prompt}]}]},
-                        timeout=30,
-                        verify=False
-                    )
-                    if resp.status_code == 200:
-                        res_json = resp.json()
-                        candidates = res_json.get('candidates', [])
-                        if candidates and candidates[0].get('finishReason') != 'SAFETY':
-                            parts = candidates[0].get('content', {}).get('parts', [])
-                            if parts:
-                                ai_reply = parts[0]['text'].replace("**", "").replace("##", "").strip()
-                                break
-                except Exception:
-                    continue
-
-            # Assistant reply save
             AIChatMessage.objects.create(session=chat_session, role='assistant', content=ai_reply)
             chat_session.save()
 
             return JsonResponse({
-                'status':        'success',
-                'reply':         ai_reply,
-                'session_id':    chat_session.id,
+                'status': 'success',
+                'reply': ai_reply,
+                'session_id': chat_session.id,
                 'session_title': chat_session.title,
             })
 
