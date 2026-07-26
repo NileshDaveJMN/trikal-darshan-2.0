@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.contrib import messages
 from .models import (UserProfile, SavedKundali, Lead, TabSettings, 
-                     AIQuestionHistory, KundaliMilanHistory, ManualPayment)
+                     AIQuestionHistory, KundaliMilanHistory, ManualPayment,
+                     AIChatSession, AIChatMessage)
 
 # ==========================================
 # 🌟 ADMIN DASHBOARD BRANDING 🌟
@@ -103,6 +104,83 @@ class LeadAdmin(admin.ModelAdmin):
 class AIQuestionHistoryAdmin(admin.ModelAdmin):
     list_display = ('kundali', 'question', 'created_at')
     search_fields = ('question', 'kundali__name')
+
+# ==========================================
+# 4.1 AI CHAT (SESSION + MESSAGES) — नया Chat feature
+# ==========================================
+
+# 🌟 Session ke andar hi saare messages inline (WhatsApp jaisa chat log) दिखेंगे
+class AIChatMessageInline(admin.TabularInline):
+    model = AIChatMessage
+    extra = 0
+    # ✅ AI/user ke asli messages edit na ho sakein (सिर्फ audit/view के लिए)
+    readonly_fields = ('role', 'content', 'created_at')
+    can_delete = True          # spam/abuse wala single message delete karne ki suvidha
+    ordering = ('created_at',)
+    fields = ('role', 'content', 'created_at')
+
+    def has_add_permission(self, request, obj=None):
+        # Admin naye AI/user messages manually inject na kar sake
+        return False
+
+
+@admin.register(AIChatSession)
+class AIChatSessionAdmin(admin.ModelAdmin):
+    list_display = ('title', 'get_kundali_name', 'get_user', 'message_count', 'created_at', 'updated_at')
+    list_filter = ('created_at', 'updated_at')
+    search_fields = ('title', 'kundali__name', 'kundali__user__username', 'messages__content')
+    readonly_fields = ('created_at', 'updated_at')
+    inlines = [AIChatMessageInline]
+
+    # किस kundali ki chat hai
+    def get_kundali_name(self, obj):
+        return obj.kundali.name
+    get_kundali_name.short_description = "कुंडली"
+    get_kundali_name.admin_order_field = 'kundali__name'
+
+    # किस user ki chat hai (kundali se user tak pahunchna)
+    def get_user(self, obj):
+        return obj.kundali.user.username if obj.kundali.user else "-"
+    get_user.short_description = "User"
+    get_user.admin_order_field = 'kundali__user__username'
+
+    # is session me kitne messages hain (quick glance ke liye)
+    def message_count(self, obj):
+        return obj.messages.count()
+    message_count.short_description = "कुल Messages"
+
+    # N+1 query se bachne ke liye
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('kundali', 'kundali__user').prefetch_related('messages')
+
+
+@admin.register(AIChatMessage)
+class AIChatMessageAdmin(admin.ModelAdmin):
+    # 🌟 Alag se bhi register kiya — taaki admin saare users ke saare
+    # AI messages me ek saath (bina session open kiye) search/filter kar sake,
+    # jaise koi abusive/spam content dhoondhna ho toh
+    list_display = ('get_kundali_name', 'session', 'role', 'short_content', 'created_at')
+    list_filter = ('role', 'created_at')
+    search_fields = ('content', 'session__title', 'session__kundali__name')
+    readonly_fields = ('session', 'role', 'content', 'created_at')
+
+    def get_kundali_name(self, obj):
+        return obj.session.kundali.name
+    get_kundali_name.short_description = "कुंडली"
+    get_kundali_name.admin_order_field = 'session__kundali__name'
+
+    def short_content(self, obj):
+        return obj.content[:60] + ("..." if len(obj.content) > 60 else "")
+    short_content.short_description = "Message"
+
+    def has_add_permission(self, request):
+        # Manually naya message create karne ka koi use-case nahi
+        return False
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('session', 'session__kundali')
 
 from django.contrib import admin
 from .models import LearnCategory, LearnItem
