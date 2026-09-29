@@ -12,7 +12,10 @@ import pytz
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from core.models import UserProfile, SavedKundali, DailyRashifal, UserNotification
-from core.views.rashifal_views import RASHI_LIST, _generate_rashifal, _get_transit_summary
+# ✏️ UPDATED: _generate_rashifal / _get_transit_summary ke imports hataye —
+#            wo rashifal_views ke buggy functions the (silent exception + 5.5h IST/UT offset).
+#            Ab engine apna sahi calculation use karta hai.
+from core.views.rashifal_views import RASHI_LIST
 from engines.kundali_engine import get_vimshottari_dasha
 
 # API Keys Setup
@@ -24,12 +27,44 @@ GEMINI_MODEL = "gemini-3-flash-preview"
 
 # Vedic Constants
 RASHI_NAMES = ["मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"]
-NAKSHATRA_NAMES = ["अश्विनी", "भरणी", "कृत्तिका", "रोहिणी", "मृगशिरा", "आर्द्रा", "पुनर्वसु", "पुष्य", "आश्लेषा", "मघा", "पूर्वाफाल्गुनी", "उत्तराफाल्गुनी", "हस्त", "चित्रा", "स्वाती", "विशाखा", "अनुराधा", "ज्येष्ठा", "मूल", "पूर्वाषाढ़ा", "उत्तराषाढ़ा", "श्रवण", "धनिष्ठा", "शतभिषा", "पूर्वाभाद्रपद", "उत्तराभाद्रपद", "रेवती"]
+NAKSHATRA_NAMES = ["अश्विनी", "भरणी", "कृत्तिका", "रोहिणी", "मृगशिरा", "आर्द्रा", "पुनर्वसु", "पुष्य", "आश्लेषा", "मघा", "पूर्वाफाल्गुनी", "उत्तराफाल्गुनी", "हस्त", "चित्रा", "स्वाति", "विशाखा", "अनुराधा", "ज्येष्ठा", "मूल", "पूर्वाषाढ़ा", "उत्तराषाढ़ा", "श्रवण", "धनिष्ठा", "शतभिषा", "पूर्वाभाद्रपद", "उत्तराभाद्रपद", "रेवती"]
 RASHI_LORD = {0: "मंगल", 1: "शुक्र", 2: "बुध", 3: "चंद्र", 4: "सूर्य", 5: "बुध", 6: "शुक्र", 7: "मंगल", 8: "गुरु", 9: "शनि", 10: "शनि", 11: "गुरु"}
 UCCHA = {"सूर्य": (0, 10), "चंद्र": (1, 3), "मंगल": (9, 28), "बुध": (5, 15), "गुरु": (3, 5), "शुक्र": (11, 27), "शनि": (6, 20), "राहु": (2, 20), "केतु": (8, 20)}
 NEECHA_RASHI = {"सूर्य": 6, "चंद्र": 7, "मंगल": 3, "बुध": 11, "गुरु": 9, "शुक्र": 5, "शनि": 0, "राहु": 8, "केतु": 2}
 SWE_IDS = {"सूर्य": swe.SUN, "चंद्र": swe.MOON, "मंगल": swe.MARS, "बुध": swe.MERCURY, "गुरु": swe.JUPITER, "शुक्र": swe.VENUS, "शनि": swe.SATURN, "राहु": swe.TRUE_NODE}
 TRANSIT_GOOD_HOUSES = {"शनि": [3, 6, 11], "गुरु": [2, 5, 7, 9, 11], "मंगल": [3, 6, 11], "सूर्य": [3, 6, 10, 11], "चंद्र": [1, 3, 6, 7, 10, 11], "बुध": [2, 4, 6, 8, 10, 11], "शुक्र": [1, 2, 3, 4, 5, 8, 9, 11, 12]}
+
+# ═══════════════════════════════════════════════════════════════════
+# 🆕 NEW: Daily-changing anchors — vaar, tithi, nakshatra-swami
+# Ye roz badalte hain → prompt ka mudda (focus) aur upay roz alag banega
+# ═══════════════════════════════════════════════════════════════════
+VAAR_HI = ["सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार"]   # weekday(): Mon=0
+TITHI_HI = ["प्रतिपदा", "द्वितीया", "तृतीया", "चतुर्थी", "पंचमी", "षष्ठी", "सप्तमी", "अष्टमी",
+            "नवमी", "दशमी", "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी"]                # 15vaan = पूर्णिमा/अमावस्या
+VAAR_THEME = {
+    "सोमवार": "मन और भावनाएँ", "मंगलवार": "साहस और कार्य-ऊर्जा", "बुधवार": "संचार और व्यापार",
+    "गुरुवार": "ज्ञान और भाग्य", "शुक्रवार": "संबंध और सुख", "शनिवार": "धैर्य और कर्तव्य",
+    "रविवार": "आत्मविश्वास और स्वास्थ्य",
+}
+NAKSHATRA_LORD = {
+    "अश्विनी": "केतु", "भरणी": "शुक्र", "कृत्तिका": "सूर्य", "रोहिणी": "चंद्र",
+    "मृगशिरा": "मंगल", "आर्द्रा": "राहु", "पुनर्वसु": "गुरु", "पुष्य": "शनि",
+    "आश्लेषा": "बुध", "मघा": "केतु", "पूर्वाफाल्गुनी": "शुक्र", "उत्तराफाल्गुनी": "सूर्य",
+    "हस्त": "चंद्र", "चित्रा": "मंगल", "स्वाति": "राहु", "विशाखा": "गुरु",
+    "अनुराधा": "शनि", "ज्येष्ठा": "बुध", "मूल": "केतु", "पूर्वाषाढ़ा": "शुक्र",
+    "उत्तराषाढ़ा": "सूर्य", "श्रवण": "चंद्र", "धनिष्ठा": "मंगल", "शतभिषा": "राहु",
+    "पूर्वाभाद्रपद": "गुरु", "उत्तराभाद्रपद": "शनि", "रेवती": "बुध",
+}
+
+def _get_tithi(transit_pos):
+    """🆕 Transit Moon-Sun se aaj ki tithi — roz badalti hai"""
+    moon, sun = transit_pos["चंद्र"], transit_pos["सूर्य"]
+    elong = (moon["full_deg"] - sun["full_deg"]) % 360
+    t_num = int(elong // 12) + 1                     # 1..30
+    paksha = "शुक्ल" if t_num <= 15 else "कृष्ण"
+    t_pos = t_num if t_num <= 15 else t_num - 15     # 1..15
+    tithi = ("पूर्णिमा" if paksha == "शुक्ल" else "अमावस्या") if t_pos == 15 else TITHI_HI[t_pos - 1]
+    return paksha, tithi
 
 # Swiss Ephemeris Core Functions
 def _dt_to_jd(dt: datetime.datetime, tz_str: str = "Asia/Kolkata") -> float:
@@ -146,7 +181,7 @@ def build_dasha_info(kundali) -> dict:
         swe.set_sid_mode(swe.SIDM_LAHIRI)
         moon_deg = swe.calc_ut(jd, swe.MOON, swe.FLG_SWIEPH | swe.FLG_SIDEREAL)[0][0]
         dasha_list, curr_dasha = get_vimshottari_dasha(moon_deg, dt_ist)
-        
+
         md_end, ad_end = "अज्ञात", "अज्ञात"
         for md in dasha_list:
             if md["is_current"]:
@@ -173,26 +208,47 @@ def call_gemini(prompt: str, max_retries: int = 3):
         except Exception: time.sleep(1)
     return None
 
-def build_horoscope_prompt(user_name, profile, natal_pos, transit_pos, lagna_idx, dasha, saadesati_text, guru_text, ashtakvarg, vakri_grahas, asta_grahas):
-    today_str = datetime.date.today().strftime("%d %B %Y")
+# ✏️ UPDATED: daily anchors (vaar/tithi/nakshatra-swami) + anti-repetition + naye rules
+def build_horoscope_prompt(user_name, profile, natal_pos, transit_pos, lagna_idx, dasha,
+                           saadesati_text, guru_text, ashtakvarg, vakri_grahas, asta_grahas,
+                           yesterday_upay=""):
+    # IST se date/vaar — UTC date bug bhi fix (00:00–05:30 IST mein galat date aati thi)
+    IST = pytz.timezone("Asia/Kolkata")
+    now = datetime.datetime.now(IST)
+    today_str = now.strftime("%d %B %Y")
+    vaar = VAAR_HI[now.weekday()]
+
     n_chandra, n_nak, n_deg = natal_pos["चंद्र"]["rashi"], natal_pos["चंद्र"]["nakshatra"], natal_pos["चंद्र"]["degree"]
-    
+
+    # 🆕 Aaj ki tithi aur transit chandra ka nakshatra + swami
+    paksha, tithi = _get_tithi(transit_pos)
+    moon = transit_pos["चंद्र"]
+    t_nak = moon["nakshatra"]
+    nak_lord = NAKSHATRA_LORD.get(t_nak, "चंद्र")
+
     transit_lines = [f"  {g}: {d['rashi']} {d['degree']:.1f}° | {d['nakshatra']} | {d['avastha']}{' (वक्री)' if d['vakri'] else ''}" for g, d in transit_pos.items() if g in ["सूर्य", "चंद्र", "मंगल", "बुध", "गुरु", "शुक्र", "शनि", "राहु", "केतु"]]
     natal_lines = [f"  {g}: {d['rashi']} {d['degree']:.1f}° | लग्न से {(d['rashi_idx'] - lagna_idx) % 12 + 1}वाँ भाव" for g, d in natal_pos.items() if g in ["सूर्य", "चंद्र", "मंगल", "बुध", "गुरु", "शुक्र", "शनि"]]
     av_lines = [f"  {g}: जन्म चंद्र से {v['house']}वाँ भाव → {v['score_label']}" for g, v in ashtakvarg.items()]
 
+    # 🆕 Anti-repetition rule — sirf tab jab kal ka upay available ho
+    upay_repeat_rule = ""
+    if yesterday_upay:
+        upay_repeat_rule = f"6. कल का उपाय यह था: \"{yesterday_upay}\" — आज इसे या इससे मिलता-जुलता उपाय बिल्कुल न दोहराएँ।\n"
+
     return f"""
-आज की तारीख: {today_str}
+आज की तारीख: {today_str} ({vaar})
+तिथि: {paksha} {tithi} | चंद्र नक्षत्र: {t_nak} (स्वामी: {nak_lord}) | आज का केंद्रीय विषय: {VAAR_THEME[vaar]}
+
 आप एक अनुभवी वैदिक ज्योतिषी हैं जो पाराशरी सिद्धांतों पर आधारित सटीक और व्यक्तिगत फलित देते हैं।
 
-जन्म-कुंडली विवरण:
+जन्म-कुंडली विवरण (केवल संदर्भ):
   नाम: {user_name}
   जन्म लग्न: {RASHI_NAMES[lagna_idx]}
   जन्म चंद्र-राशि: {n_chandra} ({n_nak} नक्षत्र, {n_deg:.1f}°)
   वर्तमान दशा: {dasha['md']} महादशा (अंत: {dasha['md_end']}) - {dasha['ad']} अंतर्दशा (अंत: {dasha['ad_end']})
   पेशा: {profile.profession or 'सामान्य'} | फोकस: {profile.primary_focus or 'सामान्य'}
 
-जन्म कुंडली ग्रह:
+जन्म कुंडली ग्रह (केवल संदर्भ):
 {chr(10).join(natal_lines)}
 
 आज का गोचर:
@@ -200,29 +256,89 @@ def build_horoscope_prompt(user_name, profile, natal_pos, transit_pos, lagna_idx
 
 गोचर अष्टकवर्ग (चंद्र से):
 {chr(10).join(av_lines)}
-  वक्री: {'、'.join(vakri_grahas) if vakri_grahas else 'कोई नहीं'} | अस्त: {'、'.join(asta_grahas) if asta_grahas else 'कोई नहीं'}
+  वक्री: {', '.join(vakri_grahas) if vakri_grahas else 'कोई नहीं'} | अस्त: {', '.join(asta_grahas) if asta_grahas else 'कोई नहीं'}
   शनि गोचर: {saadesati_text}
   गुरु गोचर: {guru_text}
 
 नियम:
-1. सरल, सकारात्मक हिंदी में 5-6 लाइन का राशिफल दें।
-2. शुरुआत '{user_name} जी,' से करें।
-3. जन्म चंद्र-राशि ({n_chandra}) के अनुसार आज के गोचर का फल दें।
-4. दशा स्वामी और गोचर को मिलाकर फलित निकालें।
-5. अंत में आज के गोचर के अनुसार एक छोटा, स्पष्ट वैदिक उपाय जरूर बताएँ।
-"""
+1. सरल, सकारात्मक हिंदी में 5-6 लाइन का राशिफल दें। शुरुआत '{user_name} जी,' से करें।
+2. राशिफल का मुख्य आधार आज का चंद्र-गोचर, नक्षत्र ({t_nak}), तिथि ({paksha} {tithi}) और वार ({vaar}) हो — ये रोज़ बदलते हैं। जन्म चंद्र-राशि ({n_chandra}) से गोचर के भाव गिनें।
+3. दशा, गुरु गोचर, साढ़ेसाती और जन्म-कुंडली केवल संदर्भ हैं — इन पर राशिफल का भार न डालें (ये महीनों-वर्षों तक एक जैसे रहते हैं, रोज़ दोहराने योग्य नहीं)।
+4. उपाय (सबसे ज़रूरी नियम): उपाय आज के चंद्र-नक्षत्र के स्वामी ग्रह ({nak_lord}), तिथि और वार पर आधारित हो। दशा या गुरु-गोचर पर आधारित उपाय बिल्कुल न दें।
+5. अंत में "आज का विशेष उपाय:" लिखकर एक छोटा, स्पष्ट वैदिक उपाय जरूर बताएँ।
+{upay_repeat_rule}"""
 
+def _get_yesterday_upay(user):
+    """🆕 Kal (ya sabse recent) DAILY rashifal se upay nikaalta hai — anti-repetition ke liye"""
+    try:
+        n = UserNotification.objects.filter(user=user, notification_type='DAILY') \
+              .order_by('-created_at').first()
+        if n and n.message:
+            m = re.search(r"विशेष उपाय\s*[:\-]\s*(.+)", n.message, re.DOTALL) or \
+                re.search(r"उपाय\s*[:\-]\s*(.+)", n.message, re.DOTALL)
+            if m:
+                return m.group(1).strip()[:250]
+    except Exception:
+        pass
+    return ""
+
+# ✏️ UPDATED: engine ka apna sahi transit + house-wise gochar (rashifal_views ke buggy
+#            _get_transit_summary/_generate_rashifal pe depend karna hata diya) + IST date
 def pre_generate_12_rashifal():
     print("\n  🌟 जनरेटिंग 12 राशियों का सामान्य राशिफल (Pre-caching)...")
-    today = datetime.date.today()
-    transit_text = _get_transit_summary()
+    IST = pytz.timezone("Asia/Kolkata")
+    now_ist = datetime.datetime.now(IST)
+    today = now_ist.date()
+    vaar = VAAR_HI[now_ist.weekday()]
+    transit = calculate_transit_positions(_dt_to_jd(now_ist))
+
+    paksha, tithi = _get_tithi(transit)
+    moon = transit["चंद्र"]
+    nak_lord = NAKSHATRA_LORD.get(moon["nakshatra"], "चंद्र")
 
     for rashi in RASHI_LIST:
         if DailyRashifal.objects.filter(date=today, rashi_id=rashi["id"]).exists():
             continue
         print(f"     ⏳ {rashi['name']} राशि जनरेट हो रही है...")
-        data = _generate_rashifal(rashi["name"], rashi["lord"], transit_text)
-        if data:
+
+        # 🆕 Har rashi ke liye house-wise gochar (us rashi se bhav ginkar)
+        r_idx = rashi["idx"]
+        gochar_lines = []
+        for g, d in transit.items():
+            house = (d["rashi_idx"] - r_idx) % 12 + 1
+            line = f"  {g}: {d['rashi']} ({d['degree']:.1f}°) — इस राशि से भाव {house}"
+            if d.get("vakri"):
+                line += " (वक्री)"
+            gochar_lines.append(line)
+
+        prompt = f"""आज की तारीख: {today.strftime('%d %B %Y')} ({vaar})
+आप एक अनुभवी वैदिक ज्योतिषी हैं। {rashi['name']} राशि (स्वामी: {rashi['lord']}) का आज का राशिफल लिखें।
+
+आज का गोचर — इस राशि से भावों के हिसाब से:
+{chr(10).join(gochar_lines)}
+चंद्र नक्षत्र: {moon['nakshatra']} (स्वामी: {nak_lord}) | तिथि: {paksha} {tithi}
+
+नीचे दिए गए विषयों पर 2-3 वाक्यों में सकारात्मक और व्यावहारिक मार्गदर्शन दें:
+[GENERAL] सामान्य दिन कैसा रहेगा
+[CAREER] करियर और व्यापार
+[LOVE] प्रेम और रिश्ते
+[HEALTH] स्वास्थ्य
+[LUCKY] शुभ रंग, अंक और समय
+[UPAY] आज का एक सरल उपाय
+
+नियम:
+- केवल हिंदी में लिखें, कोई Markdown (**, ##) न हो
+- गोचर को आधार बनाएं: कौन-सा ग्रह इस राशि से किस भाव में है, उसका फल बताएं
+- चंद्र की नक्षत्र और तिथि का प्रभाव शामिल करें
+- उपाय चंद्र-नक्षत्र के स्वामी या वार के अनुसार हो
+- हर विषय [TAG] से शुरू करें
+"""
+        raw = call_gemini(prompt)
+        if raw:
+            data = {}
+            for tag in ["GENERAL", "CAREER", "LOVE", "HEALTH", "LUCKY", "UPAY"]:
+                m = re.search(rf"\[{tag}\][:\s]*(.*?)(?=\[|$)", raw, re.DOTALL)
+                data[tag] = m.group(1).strip() if m else ""
             DailyRashifal.objects.create(
                 date=today,
                 rashi_id=rashi["id"],
@@ -233,13 +349,18 @@ def pre_generate_12_rashifal():
                 lucky=data.get("LUCKY", ""),
                 upay=data.get("UPAY", "")
             )
+            print(f"     ✅ {rashi['name']} सेव हुई।")
+        else:
+            print(f"     ❌ {rashi['name']}: Gemini जवाब नहीं दिया।")
         time.sleep(2)
 
 # 🚀 MASTER ENGINE द्वारा कॉल किया जाने वाला फंक्शन
+# ✏️ UPDATED: IST date + yesterday_upay anti-repetition pass hota hai
 def process_user_horoscope(profile, kundali, natal_pos, lagna_idx, dasha, today_transit):
     user_name = profile.user.first_name or profile.user.username
-    today_str = datetime.date.today().strftime("%d %b %Y")
-    
+    IST = pytz.timezone("Asia/Kolkata")
+    today_str = datetime.datetime.now(IST).strftime("%d %b %Y")
+
     # चेक करें कि क्या आज का राशिफल पहले से सेव्ड है
     if UserNotification.objects.filter(user=profile.user, title=f"🔮 आज का राशिफल ({today_str})", notification_type='DAILY').exists():
         print(f"     ℹ️  {user_name}: आज का व्यक्तिगत राशिफल पहले से मौजूद है। (Skip)")
@@ -254,7 +375,8 @@ def process_user_horoscope(profile, kundali, natal_pos, lagna_idx, dasha, today_
 
     prompt = build_horoscope_prompt(
         user_name, profile, natal_pos, today_transit, lagna_idx, dasha,
-        saadesati_text, guru_text, ashtakvarg, vakri_grahas, asta_grahas
+        saadesati_text, guru_text, ashtakvarg, vakri_grahas, asta_grahas,
+        yesterday_upay=_get_yesterday_upay(profile.user)   # 🆕 anti-repetition
     )
 
     rashifal_text = call_gemini(prompt)
