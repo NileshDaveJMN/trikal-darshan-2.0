@@ -251,13 +251,13 @@ def get_bhav_phal(p_degrees_raw, l_idx, sav_points=None, curr_dasha=None, select
     return [{"topic_id": "ERROR", "planet_name": "Error", "text": f"<div style='color:red;'>{last_error}</div>"}], last_error
 
 def get_ai_chat_reply(kundali_name, kd, user_message, history_text):
-    # ✏️ UPDATED: andar ke duplicate imports + self-import
-    #            (from engines.prediction_engine import GEMINI_API_KEYS — ye khud
-    #            hi ye file hai!) hata diye — globals directly use hote hain
+    """✏️ UPDATED: Gochar add kiya — ab 'आज/अभी/इस महीने' wale timing
+    questions pe AI ke paas real current positions hongi (pehle sirf natal+dasha tha)"""
     
-    current_date_str = datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d %B, %Y")
+    IST = pytz.timezone("Asia/Kolkata")
+    current_date_str = datetime.datetime.now(IST).strftime("%d %B, %Y")
     
-    # 1. 🚀 सटीक भाव और ग्रह (House & Planet) Extraction
+    # 1. भाव और ग्रह Extraction (unchanged)
     house_planets = {i: [] for i in range(1, 13)}
     planet_to_house = {}
     
@@ -271,7 +271,6 @@ def get_ai_chat_reply(kundali_name, kd, user_message, history_text):
     for h in kd.get('houses', []):
         h_num = h.get('num')
         p_full = h.get('planets_full', '')
-        
         if h_num and p_full and p_full != "---":
             planet_names = [p.strip() for p in p_full.split(',')]
             for p_name in planet_names:
@@ -281,7 +280,7 @@ def get_ai_chat_reply(kundali_name, kd, user_message, history_text):
                     house_planets[h_num].append(f"{p_name}{deg_str}")
                     planet_to_house[p_name] = h_num
 
-    # 2. 🚀 दृष्टियाँ (ASPECTS)
+    # 2. दृष्टियाँ (unchanged)
     drashti_info = []
     for p, h in planet_to_house.items():
         aspects = [(h + 7 - 1) % 12 + 1]
@@ -295,7 +294,7 @@ def get_ai_chat_reply(kundali_name, kd, user_message, history_text):
     prompt_data = "".join([f"भाव {i}: {', '.join(house_planets[i]) if house_planets[i] else 'खाली'}\n" for i in range(1, 13)])
     drashti_text = "\n".join(drashti_info)
 
-    # 3. 🚀 सटीक दशा Extraction (is_current के आधार पर)
+    # 3. दशा Extraction (unchanged)
     m_dasha_name, a_dasha_name = "N/A", "N/A"
     for md in kd.get('dasha', []):
         if md.get('is_current'):
@@ -305,24 +304,43 @@ def get_ai_chat_reply(kundali_name, kd, user_message, history_text):
                     a_dasha_name = ad.get('planet', 'N/A')
                     break
             break
-            
     dasha_info = f"{m_dasha_name} महादशा - {a_dasha_name} अंतर्दशा"
 
-    # 4. 🚀 प्रॉम्प्ट और AI कॉलिंग
+    # 4. 🆕 आज का गोचर — lagna/chandra rashi ke naam se index
+    #    Fail-safe: naam match na ho toh chat bina gochar ke chalega, kabhi crash nahi
+    gochar_block = ""
+    try:
+        RASHI_NAMES = ["मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक", "धनु", "मकर", "कुंभ", "मीन"]
+        rashi_lookup = {name: idx for idx, name in enumerate(RASHI_NAMES)}
+        l_idx = rashi_lookup.get((kd.get('lagna') or '').strip())
+        moon_idx = rashi_lookup.get((kd.get('chandra_rashi') or '').strip())
+        if l_idx is not None and moon_idx is not None:
+            gochar_block = (
+                f"आज का गोचर (वर्तमान ग्रह स्थिति — लग्न और चंद्र राशि से भाव):\n"
+                f"{_get_gochar_text(l_idx, moon_idx)}\n\n"
+            )
+    except Exception:
+        pass
+
+    # 5. प्रॉम्प्ट और AI कॉलिंग
     prompt = (
         f"आज की तारीख: {current_date_str}\n\n"
         "आप 30 साल के अनुभव वाले एक विशेषज्ञ और 'सकारात्मक मार्गदर्शक' (Constructive Guide) वैदिक ज्योतिषी हैं, आपका नाम 'Trikal AI' है।\n"
         f"कुण्डली: नाम: {kundali_name}, लग्न: {kd.get('lagna', 'N/A')}, चंद्र राशि: {kd.get('chandra_rashi', 'N/A')}, नक्षत्र: {kd.get('nakshatra', 'N/A')}, दशा: {dasha_info}\n\n"
         f"भाव स्थिति:\n{prompt_data}\n"
         f"दृष्टियाँ:\n{drashti_text}\n\n"
+        f"{gochar_block}"   # 🆕 gochar yahan inject hota hai
         f"=== पिछली बातचीत ===\n{history_text}\n\n"
         f"यूजर का प्रश्न: {user_message}\n\n"
-        "नियम: 1. अत्यंत संतुलित दृष्टिकोण अपनाएं। 2. डराने के बजाय समाधान दें। 3. जवाब हिंदी में, साधारण और वार्म टोन में दें। कोई Markdown (**, ##) न हो।"
+        "नियम: 1. अत्यंत संतुलित दृष्टिकोण अपनाएं। 2. डराने के बजाय समाधान दें। "
+        "3. जवाब हिंदी में, साधारण और वार्म टोन में दें। कोई Markdown (**, ##) न हो। "
+        "4. 🆕 अगर प्रश्न 'आज', 'अभी', 'इस महीने', 'कब' जैसे समय से जुड़ा हो, तो आज के गोचर का उपयोग करें — "
+        "अपने आप से ग्रहों की वर्तमान स्थिति का अनुमान (assumption) कभी न लगाएं।"
     )
 
     ai_reply = "माफ करें, AI सर्वर अभी व्यस्त है। कृपया कुछ देर बाद पुनः प्रयास करें।"
     
-    keys = GEMINI_API_KEYS.copy()      # ✏️ self-import ki jagah direct global
+    keys = GEMINI_API_KEYS.copy()
     random.shuffle(keys)
     
     for api_key in keys:
