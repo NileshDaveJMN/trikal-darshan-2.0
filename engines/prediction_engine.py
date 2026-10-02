@@ -3,13 +3,15 @@ import time
 import datetime
 import random
 import re
-import urllib3
 import os
+import pytz
+import swisseph as swe
 from pathlib import Path
 
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+# ✏️ UPDATED: urllib3 warnings disable + verify=False hata diya (TLS verification on —
+#            pehle API key ke saath insecure request jaati thi)
 
-# 🌟 .env Auto-Load
+# 🌟 .env Auto-Load — ⚠️ ye file git mein commit NA ho (keys leak ho jayengi)
 _env_path = Path(__file__).parent / '.env'
 if _env_path.exists():
     for _line in _env_path.read_text(encoding='utf-8').splitlines():
@@ -25,8 +27,11 @@ for _i in range(1, 10):
     if _key:
         GEMINI_API_KEYS.append(_key)
 
-current_time = datetime.datetime.now()
-month_year = current_time.strftime("%B %Y")
+# 🆕 Model name ab ek hi constant — pehle 2 jagah hardcoded tha
+GEMINI_MODEL = "gemini-3-flash-preview"
+
+# ✏️ UPDATED: module-level current_time/month_year delete kiye — dead code the
+#            (function ke andar wale shadow kar dete the, confusion hota tha)
 
 P_HINDI = {"Sun": "सूर्य", "Moon": "चंद्र", "Mars": "मंगल", "Mercury": "बुध", "Jupiter": "गुरु", "Venus": "शुक्र", "Saturn": "शनि", "Rahu": "राहु", "Ketu": "केतु"}
 
@@ -36,8 +41,64 @@ TOPIC_MAP = {
     "TRAVEL": "✈️ विदेश यात्रा", "DASHA": "⏳ दशा विश्लेषण", "SPECIAL_QUERY": "🎯 समाधान"
 }
 
+# ═══════════════════════════════════════════════════════════════════
+# 🆕 NEW: Gochar ke liye constants (daily_horoscope se sync)
+# ═══════════════════════════════════════════════════════════════════
+NAKSHATRA_NAMES = ["अश्विनी", "भरणी", "कृत्तिका", "रोहिणी", "मृगशिरा", "आर्द्रा", "पुनर्वसु", "पुष्य", "आश्लेषा", "मघा", "पूर्वाफाल्गुनी", "उत्तराफाल्गुनी", "हस्त", "चित्रा", "स्वाति", "विशाखा", "अनुराधा", "ज्येष्ठा", "मूल", "पूर्वाषाढ़ा", "उत्तराषाढ़ा", "श्रवण", "धनिष्ठा", "शतभिषा", "पूर्वाभाद्रपद", "उत्तराभाद्रपद", "रेवती"]
+VAAR_HI = ["सोमवार", "मंगलवार", "बुधवार", "गुरुवार", "शुक्रवार", "शनिवार", "रविवार"]   # weekday(): Mon=0
+TITHI_HI = ["प्रतिपदा", "द्वितीया", "तृतीया", "चतुर्थी", "पंचमी", "षष्ठी", "सप्तमी", "अष्टमी",
+            "नवमी", "दशमी", "एकादशी", "द्वादशी", "त्रयोदशी", "चतुर्दशी"]                # 15vaan = पूर्णिमा/अमावस्या
+
+
+def _get_gochar_text(l_idx, moon_sign_idx):
+    """🆕 Aaj ka gochar — lagna AUR janma chandra rashi dono se bhav gin kar.
+    YE HI MISSING THA is file mein — web wale kundali prediction roz same
+    isliye aate the ki prompt mein sirf fixed natal data tha."""
+    IST = pytz.timezone("Asia/Kolkata")
+    now_ist = datetime.datetime.now(IST)
+    now_utc = now_ist.astimezone(pytz.utc)
+    jd = swe.julday(now_utc.year, now_utc.month, now_utc.day,
+                    now_utc.hour + now_utc.minute / 60.0)
+    swe.set_sid_mode(swe.SIDM_LAHIRI)
+    ayan = swe.get_ayanamsa_ut(jd)
+
+    PLANETS = {"Sun": swe.SUN, "Moon": swe.MOON, "Mars": swe.MARS,
+               "Mercury": swe.MERCURY, "Jupiter": swe.JUPITER, "Venus": swe.VENUS,
+               "Saturn": swe.SATURN, "Rahu": swe.TRUE_NODE}
+
+    lines, moon_lon, sun_lon, rahu_lon = [], None, None, None
+    for name, pid in PLANETS.items():
+        res = swe.calc_ut(jd, pid, swe.FLG_SWIEPH | swe.FLG_SPEED)[0]
+        lon = (res[0] - ayan) % 360
+        p_sign = int(lon // 30)
+        h_lagna = (p_sign - l_idx) % 12 + 1
+        h_moon  = (p_sign - moon_sign_idx) % 12 + 1
+        retro = " वक्री" if res[3] < 0 else ""
+        lines.append(f"  {P_HINDI[name]}{retro} — लग्न से भाव {h_lagna}, चंद्र राशि से भाव {h_moon}")
+        if name == "Moon": moon_lon = lon
+        if name == "Sun":  sun_lon = lon
+        if name == "Rahu": rahu_lon = lon
+
+    # केतु = राहु से सातवाँ (180°)
+    if rahu_lon is not None:
+        ketu_lon = (rahu_lon + 180) % 360
+        k_sign = int(ketu_lon // 30)
+        lines.append(f"  केतु वक्री — लग्न से भाव {(k_sign - l_idx) % 12 + 1}, चंद्र राशि से भाव {(k_sign - moon_sign_idx) % 12 + 1}")
+
+    # नक्षत्र + तिथि + वार — ये रोज़ बदलते हैं
+    nak = NAKSHATRA_NAMES[min(int(moon_lon // (360 / 27)), 26)]
+    t_num = int(((moon_lon - sun_lon) % 360) // 12) + 1
+    paksha = "शुक्ल" if t_num <= 15 else "कृष्ण"
+    t_pos = t_num if t_num <= 15 else t_num - 15
+    tithi = ("पूर्णिमा" if paksha == "शुक्ल" else "अमावस्या") if t_pos == 15 else TITHI_HI[t_pos - 1]
+    vaar = VAAR_HI[now_ist.weekday()]
+
+    header = f"  चंद्र नक्षत्र: {nak} | तिथि: {paksha} {tithi} | वार: {vaar}"
+    return header + "\n" + "\n".join(lines)
+
+
 def get_bhav_phal(p_degrees_raw, l_idx, sav_points=None, curr_dasha=None, selected_topics=None, custom_question=""):
-    current_time = datetime.datetime.now()
+    current_time = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))   # ✏️ IST — UTC date bug fix
     current_date_str = current_time.strftime("%d %B, %Y")
     month_year = current_time.strftime("%B %Y")
 
@@ -45,32 +106,47 @@ def get_bhav_phal(p_degrees_raw, l_idx, sav_points=None, curr_dasha=None, select
     lagna_name = RASHI_NAMES[l_idx]
 
     house_planets = {i: [] for i in range(1, 13)}
-    planet_to_house = {} 
-    
+    planet_to_house = {}
+
     for p_name, deg in p_degrees_raw.items():
         p_sign = int(deg / 30)
-        h_num = (p_sign - l_idx) % 12 + 1 
+        h_num = (p_sign - l_idx) % 12 + 1
         hindi_name = P_HINDI.get(p_name, p_name)
-        
         house_planets[h_num].append(f"{hindi_name} ({deg % 30:.1f}°)")
         planet_to_house[hindi_name] = h_num
 
     drashti_info = []
     for p, h in planet_to_house.items():
-        aspects = [(h + 7 - 1) % 12 + 1] 
-        if p == "मंगल": 
+        aspects = [(h + 7 - 1) % 12 + 1]
+        if p == "मंगल":
             aspects.extend([(h + 4 - 1) % 12 + 1, (h + 8 - 1) % 12 + 1])
-        elif p in ["गुरु", "राहु", "केतु"]: 
+        elif p in ["गुरु", "राहु", "केतु"]:
             aspects.extend([(h + 5 - 1) % 12 + 1, (h + 9 - 1) % 12 + 1])
-        elif p == "शनि": 
+        elif p == "शनि":
             aspects.extend([(h + 3 - 1) % 12 + 1, (h + 10 - 1) % 12 + 1])
-        
         unique_aspects = sorted(list(set(aspects)))
         drashti_info.append(f"{p} की दृष्टि भाव {', '.join(map(str, unique_aspects))} पर है।")
 
     prompt_data = "".join([f"भाव {i}: {', '.join(house_planets[i]) if house_planets[i] else 'खाली'}, SAV: {sav_points[i-1] if sav_points else 0}\n" for i in range(1, 13)])
     drashti_text = "\n".join(drashti_info)
-    
+
+    # ── 🆕 GOCHAR — yahi asli fix hai ──
+    # Janma chandra rashi natal Moon ki degree se (English/Hindi dono keys handle)
+    moon_deg = None
+    for k in ("Moon", "चंद्र", "moon", "MOON"):
+        if k in p_degrees_raw:
+            moon_deg = float(p_degrees_raw[k])
+            break
+    moon_sign_idx = int((moon_deg if moon_deg is not None else 0) / 30) % 12
+    try:
+        gochar_text = _get_gochar_text(l_idx, moon_sign_idx)
+    except Exception as e:
+        gochar_text = f"  गोचर उपलब्ध नहीं: {e}"   # fail-safe — reading kabhi crash na ho
+
+    # 🆕 Dasha defensive — None aaye toh crash ke bajaye 'अज्ञात'
+    dasha_md = (curr_dasha or {}).get("md", "अज्ञात")
+    dasha_ad = (curr_dasha or {}).get("ad", "अज्ञात")
+
     topics = selected_topics.copy() if selected_topics is not None else ["SUMMARY", "CAREER", "MARRIAGE", "DASHA"]
     if custom_question.strip() and "SPECIAL_QUERY" not in topics: topics.append("SPECIAL_QUERY")
     topic_instr = "".join([f"[{t}]\n" for t in topics])
@@ -83,7 +159,7 @@ def get_bhav_phal(p_degrees_raw, l_idx, sav_points=None, curr_dasha=None, select
 
 कुण्डली का मूल विवरण:
 - लग्न: {lagna_name}
-- वर्तमान दशा: {curr_dasha['md']} महादशा - {curr_dasha['ad']} अंतर्दशा
+- वर्तमान दशा: {dasha_md} महादशा - {dasha_ad} अंतर्दशा
 
 ग्रहों की भाव स्थिति और SAV स्कोर:
 {prompt_data}
@@ -91,28 +167,35 @@ def get_bhav_phal(p_degrees_raw, l_idx, sav_points=None, curr_dasha=None, select
 ग्रहों की दृष्टियाँ (Aspects):
 {drashti_text}
 
+आज का गोचर (वर्तमान ग्रह स्थितियाँ — इस कुंडली के लग्न और चंद्र राशि से भाव):
+{gochar_text}
+
 प्रश्न: {custom_question}
 
 फलित के लिए नियम:
-1. अत्यंत संतुलित दृष्टिकोण (Balanced Approach): केवल नकारात्मक (Negative) बातें न करें। अगर किसी भाव में कम SAV या नीच ग्रह के कारण चुनौती है, तो उसी कुण्डली में मौजूद शुभ ग्रहों की दृष्टि, उच्च ग्रहों या मजबूत योगों के कारण मिलने वाले अवसरों (Opportunities) को भी प्रमुखता से बताएं।
-2. डराने के बजाय मार्गदर्शन दें: अगर कोई संघर्ष है, तो बताएं कि जातक अपनी किस ताकत (Strength) या शुभ ग्रह का इस्तेमाल करके उस से बाहर आ सकता है। 
+1. अत्यंत संतुलित दृष्टिकोण (Balanced Approach): केवल नकारात्मक (Negative) बातें न करें। अगर किसी भाव में कम SAV या नीच ग्रह के कारण चुनौती है, तो उसी कुंडली में मौजूद शुभ ग्रहों की दृष्टि, उच्च ग्रहों या मजबूत योगों के कारण मिलने वाले अवसरों (Opportunities) को भी प्रमुखता से बताएं।
+2. डराने के बजाय मार्गदर्शन दें: अगर कोई संघर्ष है, तो बताएं कि जातक अपनी किस ताकत (Strength) या शुभ ग्रह का इस्तेमाल करके उस से बाहर आ सकता है।
 3. ग्रहों की भाव स्थिति, डिग्री, SAV स्कोर और ऊपर दी गई दृष्टियों (Aspects) का सटीक उपयोग करें।
 4. हर विषय पर 3-4 लाइन में स्पष्ट, निष्पक्ष और समाधान-केंद्रित (Solution-oriented) फलित लिखें। कोई Markdown (**, ##) न हो।
-5. विशेष ध्यान: अभी {month_year} चल रहा है। आपकी गणना और समय-सीमा इसी महीने से आगे की होनी चाहिए। 2025 या पुराने समय की बात न करें।
+5. विशेष ध्यान: अभी {month_year} चल रहा है। आपकी गणना और समय-सीमा इसी महीने से आगे की होनी चाहिए। पुराने समय की बातें न करें।
+6. आज के गोचर का प्रभाव ज़रूर शामिल करें — वर्तमान ग्रह इस कुंडली के लग्न और चंद्र राशि से किस भाव में घूम रहे हैं, उनका अभी के समय पर क्या असर है। चंद्र की आज की नक्षत्र, तिथि और वार का ध्यान रखें।
 
 फॉर्मेट:
 {topic_instr}
 """
     ai_responses = {t: "AI गणना करने में असमर्थ रहा।" for t in topics}
-    last_error = "सर्वर कोटा समाप्त। कृपया थोड़ी देर बाद प्रयास करें।"
+    last_error = "सर्वर कोटा समाप्त। कृपया थोड़ी देर बाद प्रयास करें।"
 
-    random.shuffle(GEMINI_API_KEYS)
-    for attempt in range(len(GEMINI_API_KEYS)):
-        current_api_key = GEMINI_API_KEYS[attempt]
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={current_api_key}"
+    # ✏️ UPDATED: global list copy karke shuffle (pehle global ko directly
+    #            shuffle karta tha — threads ke saath race)
+    keys = GEMINI_API_KEYS.copy()
+    random.shuffle(keys)
+    for attempt in range(len(keys)):
+        current_api_key = keys[attempt]
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={current_api_key}"
 
         try:
-            response = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=30, verify=False)
+            response = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=30)
 
             if response.status_code == 200:
                 res_json = response.json()
@@ -168,18 +251,16 @@ def get_bhav_phal(p_degrees_raw, l_idx, sav_points=None, curr_dasha=None, select
     return [{"topic_id": "ERROR", "planet_name": "Error", "text": f"<div style='color:red;'>{last_error}</div>"}], last_error
 
 def get_ai_chat_reply(kundali_name, kd, user_message, history_text):
-    import datetime
-    import requests
-    import random
+    # ✏️ UPDATED: andar ke duplicate imports + self-import
+    #            (from engines.prediction_engine import GEMINI_API_KEYS — ye khud
+    #            hi ye file hai!) hata diye — globals directly use hote hain
     
-    current_date_str = datetime.datetime.now().strftime("%d %B, %Y")
+    current_date_str = datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d %B, %Y")
     
     # 1. 🚀 सटीक भाव और ग्रह (House & Planet) Extraction
-    # हम 'houses' लिस्ट से भाव निकालेंगे और 'planet_details' से डिग्री जोड़ेंगे
     house_planets = {i: [] for i in range(1, 13)}
     planet_to_house = {}
     
-    # डिग्री निकालने के लिए planet_details का मैप बनाएं
     deg_map = {}
     for p in kd.get('planet_details', []):
         name = p.get('name', '').strip()
@@ -191,9 +272,7 @@ def get_ai_chat_reply(kundali_name, kd, user_message, history_text):
         h_num = h.get('num')
         p_full = h.get('planets_full', '')
         
-        # अगर भाव में ग्रह हैं (--- नहीं है)
         if h_num and p_full and p_full != "---":
-            # ग्रहों के नाम कॉमा (,) से अलग होते हैं (e.g., "सूर्य, राहु")
             planet_names = [p.strip() for p in p_full.split(',')]
             for p_name in planet_names:
                 if p_name:
@@ -243,16 +322,13 @@ def get_ai_chat_reply(kundali_name, kd, user_message, history_text):
 
     ai_reply = "माफ करें, AI सर्वर अभी व्यस्त है। कृपया कुछ देर बाद पुनः प्रयास करें।"
     
-    # GEMINI_API_KEYS का उपयोग 
-    # (अगर GEMINI_API_KEYS फाइल में ऊपर इम्पोर्टेड नहीं है, तो उसे यहाँ इम्पोर्ट करें)
-    from engines.prediction_engine import GEMINI_API_KEYS 
-    keys = GEMINI_API_KEYS.copy()
+    keys = GEMINI_API_KEYS.copy()      # ✏️ self-import ki jagah direct global
     random.shuffle(keys)
     
     for api_key in keys:
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key={api_key}"
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}"
         try:
-            resp = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=30, verify=False)
+            resp = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]}, timeout=30)
             if resp.status_code == 200:
                 res_json = resp.json()
                 candidates = res_json.get('candidates', [])
