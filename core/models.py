@@ -235,7 +235,28 @@ class HastRekhaReading(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.hand_type} ({self.created_at.strftime('%d/%m/%Y')})"
+class EngineRun(models.Model):
+    """Master engine ki daily run ka record — admin se roz verify karo"""
+    STATUS_CHOICES = [
+        ("RUNNING", "Chal rahi hai"), ("SUCCESS", "Sab theek"),
+        ("PARTIAL", "Kuch fail"), ("FAILED", "Sab fail"), ("INTERRUPTED", "Adhoori rahi"),
+    ]
+    date = models.DateField()
+    started_at = models.DateTimeField(auto_now_add=True)
+    finished_at = models.DateTimeField(null=True, blank=True)
+    status = models.CharField(max_length=12, choices=STATUS_CHOICES, default="RUNNING")
+    total_users = models.PositiveIntegerField(default=0)
+    users_ok = models.PositiveIntegerField(default=0)
+    users_failed = models.PositiveIntegerField(default=0)
+    users_no_kundali = models.PositiveIntegerField(default=0)
+    notifications_sent = models.PositiveIntegerField(default=0)
+    errors = models.TextField(blank=True, default="")
 
+    class Meta:
+        ordering = ["-started_at"]
+
+    def __str__(self):
+        return f"{self.date} — {self.status} ({self.users_ok}/{self.total_users})"
 class FCMToken(models.Model):
     """Flutter App ke liye Firebase Cloud Messaging Token"""
     user       = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fcm_tokens')
