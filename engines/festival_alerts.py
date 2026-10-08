@@ -2,12 +2,13 @@ import os
 import random
 import re
 import datetime
+import time
 import requests
 import urllib3
 import swisseph as swe
 import pytz
 from core.models import UserNotification
-
+from engines.panchang_engine import get_panchang_data   # 🆕
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 GEMINI_API_KEYS = []
@@ -15,7 +16,7 @@ for _i in range(1, 10):
     _k = os.environ.get(f"GEMINI_API_KEYS{_i}", "").strip()
     if _k:
         GEMINI_API_KEYS.append(_k)
-GEMINI_MODEL = "gemini-2.0-flash-exp"
+GEMINI_MODEL = "gemini-3-flash-preview"   # ✏️ FIXED: purana exp model deprecated tha
 
 # ── Lunar Month Names & Festival Rules ────────────────────────────────
 LUNAR_MONTHS = ["चैत्र", "वैशाख", "ज्येष्ठ", "आषाढ़", "श्रावण", "भाद्रपद", "आश्विन", "कार्तिक", "मार्गशीर्ष", "पौष", "माघ", "फाल्गुन"]
@@ -179,40 +180,13 @@ def get_today_solar_festivals(date_obj=None):
     return matched
 
 # 🚀 यह है वह फंक्शन जो छूट गया था!
-def get_today_panchang():
-    try:
-        now    = datetime.datetime.now(pytz.timezone("Asia/Kolkata"))
-        dt_utc = now - datetime.timedelta(hours=5, minutes=30)
-        jd_ut  = swe.julday(dt_utc.year, dt_utc.month, dt_utc.day, dt_utc.hour + dt_utc.minute / 60.0 + dt_utc.second / 3600.0)
-        swe.set_sid_mode(swe.SIDM_LAHIRI)
-
-        res_sun,  _ = swe.calc_ut(jd_ut, swe.SUN,  swe.FLG_SWIEPH | swe.FLG_SIDEREAL)
-        res_moon, _ = swe.calc_ut(jd_ut, swe.MOON, swe.FLG_SWIEPH | swe.FLG_SIDEREAL)
-        sun_lon  = res_sun[0]
-        moon_lon = res_moon[0]
-
-        tithi_idx = int(((moon_lon - sun_lon) % 360) / 12.0)
-        paksha    = "S" if tithi_idx < 15 else "K"
-        tithi_num = (tithi_idx % 15) + 1                       
-
-        moon_sun_diff       = (moon_lon - sun_lon) % 360
-        days_since_amavasya = moon_sun_diff / 12.190749
-        amavasya_sun_lon    = (sun_lon - (days_since_amavasya * 0.9856)) % 360
-        lunar_month_idx     = int(amavasya_sun_lon / 30)       
-
-        return {
-            "tithi":       tithi_num,
-            "tithi_idx":   tithi_idx,
-            "paksha":      paksha,
-            "lunar_month": lunar_month_idx,   
-        }
-    except Exception as e:
-        print(f"❌ Panchang error: {e}")
-        return None
 
 def get_today_festivals(panchang=None):
     if panchang is None:
-        panchang = get_today_panchang()
+        # ✏️ UPDATED: pehle yahan buggy get_today_panchang() call hota tha —
+        # ab bina-argument call pe bhi panchang_engine (page wala source) chalega
+        now_naive = datetime.datetime.now(pytz.timezone("Asia/Kolkata")).replace(tzinfo=None)
+        panchang = get_panchang_data(now_naive, is_today=False)
     if not panchang: 
         return []
 
@@ -240,7 +214,9 @@ def get_today_festivals(panchang=None):
                 break
                 
     if p_month_idx == -1:
-        p_month_idx = int(panchang.get('lunar_month', 0)) + 1
+        # ✏️ FIXED (off-by-one): ye path ab kabhi nahi chalega (hindu_maas aata hai),
+        # par safety ke liye sahi formula — Pisces→चैत्र, Cancer→श्रावण, Leo→भाद्रपद
+        p_month_idx = ((int(panchang.get('lunar_month', 0)) + 1) % 12) + 1
 
     slot_hours = {"predawn": 4.0, "afternoon": 14.0, "evening": 19.0, "midnight": 23.5}
     slot_cache = {}
@@ -333,11 +309,13 @@ def build_festival_remedy_prompt(user_name, profile, festival, natal_pos, lagna_
 """
 
 def process_user_festival(profile, kundali, natal_pos, lagna_idx, dasha, festival):
+    
     user_name = profile.user.first_name or profile.user.username
     festival_name = festival.get("name", "")
     emoji = festival.get("emoji", "🎊")
-    title = f"{emoji} {festival_name} की शुभकामनाएं!"
-    
+    # ✏️ FIXED: title mein date — warna agli saal same title se sab festivals skip
+    today_str = datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%d %b %Y")
+    title = f"{emoji} {festival_name} की शुभकामनाएं! ({today_str})"    
     # चेक करें कि क्या इस त्यौहार का मैसेज पहले भेजा जा चुका है
     if UserNotification.objects.filter(user=profile.user, title=title, notification_type='FESTIVAL').exists():
         print(f"     ℹ️  {user_name}: {festival_name} का अलर्ट पहले से मौजूद है। (Skip)")

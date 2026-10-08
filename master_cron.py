@@ -27,11 +27,13 @@ from engines.daily_horoscope import (
     build_dasha_info,
     process_user_horoscope
 )
+# ✏️ UPDATED: get_today_panchang hata diya — panchang ab engine (page) se aayega
 from engines.festival_alerts import (
-    get_today_panchang,
     get_today_festivals,
     process_user_festival
 )
+# 🆕 Single source of truth — panchang PAGE wala hi engine
+from engines.panchang_engine import get_panchang_data
 from engines.gochar_alerts import (
     get_current_gochar,
     get_yesterday_gochar,
@@ -109,10 +111,11 @@ def _run_engine():
         errors.append(f"STEP1a pre_generate_12_rashifal: {repr(e)[:300]}")
         print(f"  ❌ राशिफल जनरेशन फेल: {e}")
 
-    # b. Aaj ka panchang aur tyohar
+    # b. Aaj ka panchang aur tyohar — 🆕 ab panchang_engine se (page ka source)
     today_festivals = []
     try:
-        panchang = get_today_panchang()
+        now_naive = datetime.datetime.now(pytz.timezone("Asia/Kolkata")).replace(tzinfo=None)
+        panchang = get_panchang_data(now_naive, is_today=True)
         today_festivals = get_today_festivals(panchang) if panchang else []
     except Exception as e:
         errors.append(f"STEP1b panchang: {repr(e)[:300]}")
